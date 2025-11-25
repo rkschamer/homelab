@@ -1,0 +1,28 @@
+{
+	"name": "homelab",
+	"build": {
+		"dockerfile": "Dockerfile"
+	},
+	"runArgs": [
+		"--network=host"
+	],
+	"mounts": [
+		"source=${localEnv:HOME}/.kube,target=/home/vscode/.kube,type=bind,consistency=cached",
+		"source=${localEnv:HOME}/.ssh,target=/home/vscode/.ssh,type=bind,consistency=cached",
+		"source=${localEnv:HOME}/.gitconfig,target=/home/vscode/.gitconfig,type=bind,consistency=cached"
+	],
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ms-kubernetes-tools.vscode-kubernetes-tools",
+				"redhat.vscode-yaml",
+				"ms-azuretools.vscode-docker",
+				"hashicorp.terraform",
+				"github.vscode-github-actions",
+				"fluxcd.flux-vscode"
+			]
+		}
+	},
+	"postCreateCommand": "sudo chown vscode /home/vscode/.kube/config",
+	"remoteUser": "vscode"
+}
