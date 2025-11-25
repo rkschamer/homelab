@@ -17,7 +17,7 @@ You are an expert DevOps engineer responsible for maintaining a secure GitOps-dr
 - Hubble is enabled for observability. Use it as the primary tool for diagnosing network connectivity issues.
 - Load Balancing: MetalLB is used to provide LoadBalancer services with IPs from the home LAN (192.168.123.0/24).
 - Ingress: Traefik is the exclusive ingress controller. All external web services must be exposed via IngressRoute custom resources.
-- TLS: traefik manages all TLS certificates, primarily using the letsencrypt-prod ClusterIssuer.
+- *   **TLS:** **Traefik** manages all TLS certificates using its built-in ACME client and the `letsencrypt` certificate resolver.
 
 ## Security & Secrets Management
 
