@@ -13,7 +13,7 @@ The entire platform is designed to be resilient, secure, and fully automated. Al
 *   **Ingress:** Traefik
 *   **Load Balancing:** MetalLB
 *   **Secrets Management:** Sealed Secrets (with the master key stored externally in Vaultwarden)
-*   **TLS:** traefik with Let's Encrypt
+*   **TLS:** Traefik's built-in ACME client
 
 ### Architecture Diagram
 
@@ -62,10 +62,9 @@ The entire platform is designed to be resilient, secure, and fully automated. Al
 |  |  | VM              |   | (Public Facing) |   | (Internal Apps)   |   | (Experiments)        | | |
 |  |  |-----------------|   |-----------------|   |-----------------|   |------------------------| | |
 |  |  | [FluxCD] <------(2. Syncs)------------|   | [Home Assistant]|   | [Temporary Test Pod]   | | |
-|  |  | [Sealed Secrets |   | [Traefik Ingress] |   | [Plex]          |   |                        | | |
-|  |  |  Controller]    |   | [Public App]    |   | [Database]      |   |                        | | |
-|  |  | [cert-manager]  |   +-------^---------+   +-------^---------+   +------------^-----------+ | |
-|  |  | [MetalLB]       |           |                     |                          |             | |
+|  | [Sealed Secrets |   | [Traefik Ingress] |   | [Plex]          |   |                        | | |
+|  |  Controller]    |   | [Public App]    |   | [Database]      |   |                        | | |
+|  |  | [MetalLB]       |   +-------^---------+   +-------^---------+   +------------^-----------+ | |
 |  |  +-----------------+           | (4. Routes Traffic) | (Cilium Policy Allows)   | (Isolated)  | |
 |  |                                |<--------------------|--------------------------|-------------| |
 |  |                                v                     |                                        | |
@@ -101,7 +100,6 @@ This plan outlines a gradual transition from a single Docker host to the new Kub
 4.  **Bootstrap the Cluster:** From your local machine, install the core components:
     *   **Cilium + Hubble**
     *   **MetalLB**
-    *   **cert-manager**
     *   **Sealed Secrets Controller**
     *   **Flux CD** (pointing to this repository)
 
