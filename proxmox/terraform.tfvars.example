@@ -1,6 +1,11 @@
-# This is an example file. Copy it to terraform.tfvars and fill in your secrets.
-# DO NOT commit terraform.tfvars to your Git repository.
+# Proxmox API Connection Details
+# proxmox_api_url          = "https://192.168.123.2:8006/api2/json"
+# proxmox_api_token_id     = "root@pam!terraform"
+# proxmox_api_token_secret = "YOUR_API_TOKEN_SECRET"
 
-# proxmox_api_url = "https://192.168.123.2:8006/api2/json"
-# proxmox_api_token_id = "root@pam!terraform"
-# proxmox_api_token_secret = "YOUR_API_TOKEN_SECRET_HERE"
+# Proxmox Node Details
+# proxmox_node = "pve"
+
+# Talos Configuration
+# talos_iso_path    = "local:iso/talos-amd64.iso"
+# talos_config_path = "./talos-config"

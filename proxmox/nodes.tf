@@ -1,10 +1,11 @@
-# k3s Control Plane Node
-resource "proxmox_vm_qemu" "k3s_control_01" {
+# Talos Control Plane Node
+resource "proxmox_vm_qemu" "talos_control_01" {
   # VM General Settings
-  name        = "k3s-control-01"
+  name        = "talos-control-01"
   target_node = var.proxmox_node
-  clone       = var.template_name
   vmid        = 101
+  os_type     = "other"
+  iso         = var.talos_iso_path
 
   # VM System Settings
   agent = 1
@@ -14,6 +15,7 @@ resource "proxmox_vm_qemu" "k3s_control_01" {
   sockets = 1
   memory  = 6144
   scsihw  = "virtio-scsi-pci"
+  boot    = "order=scsi0;ide2" # Boot from disk first, then CD-ROM (for install)
   disk {
     type    = "scsi"
     storage = "local-lvm"
@@ -26,18 +28,20 @@ resource "proxmox_vm_qemu" "k3s_control_01" {
     bridge = "vmbr0"
   }
 
-  # Cloud-Init Settings
-  ipconfig0  = "ip=192.168.123.10/24,gw=192.168.123.1"
-  nameserver = "192.168.123.1"
+  # Talos Machine Configuration (replaces Cloud-Init)
+  cloudinit {
+    user_data = file("${var.talos_config_path}/controlplane.yaml")
+  }
 }
 
-# k3s Trusted Worker Node
-resource "proxmox_vm_qemu" "k3s_worker_trusted" {
+# Talos Trusted Worker Node
+resource "proxmox_vm_qemu" "talos_worker_trusted" {
   # VM General Settings
-  name        = "k3s-worker-trusted"
+  name        = "talos-worker-trusted"
   target_node = var.proxmox_node
-  clone       = var.template_name
   vmid        = 201
+  os_type     = "other"
+  iso         = var.talos_iso_path
 
   # VM System Settings
   agent = 1
@@ -47,6 +51,7 @@ resource "proxmox_vm_qemu" "k3s_worker_trusted" {
   sockets = 1
   memory  = 10240
   scsihw  = "virtio-scsi-pci"
+  boot    = "order=scsi0;ide2"
   disk {
     type    = "scsi"
     storage = "local-lvm"
@@ -63,19 +68,20 @@ resource "proxmox_vm_qemu" "k3s_worker_trusted" {
     bridge = "vmbr0"
   }
 
-  # Cloud-Init Settings
-  ipconfig0  = "ip=10.10.20.11/24,gw=10.10.20.1"
-  ipconfig1  = "ip=192.168.123.21/24"
-  nameserver = "192.168.123.1"
+  # Talos Machine Configuration
+  cloudinit {
+    user_data = file("${var.talos_config_path}/worker-trusted.yaml")
+  }
 }
 
-# k3s DMZ Worker Node
-resource "proxmox_vm_qemu" "k3s_worker_dmz" {
+# Talos DMZ Worker Node
+resource "proxmox_vm_qemu" "talos_worker_dmz" {
   # VM General Settings
-  name        = "k3s-worker-dmz"
+  name        = "talos-worker-dmz"
   target_node = var.proxmox_node
-  clone       = var.template_name
   vmid        = 202
+  os_type     = "other"
+  iso         = var.talos_iso_path
 
   # VM System Settings
   agent = 1
@@ -85,6 +91,7 @@ resource "proxmox_vm_qemu" "k3s_worker_dmz" {
   sockets = 1
   memory  = 8192
   scsihw  = "virtio-scsi-pci"
+  boot    = "order=scsi0;ide2"
   disk {
     type    = "scsi"
     storage = "local-lvm"
@@ -101,19 +108,20 @@ resource "proxmox_vm_qemu" "k3s_worker_dmz" {
     bridge = "vmbr0"
   }
 
-  # Cloud-Init Settings
-  ipconfig0  = "ip=10.10.30.10/24,gw=10.10.30.1"
-  ipconfig1  = "ip=192.168.123.22/24"
-  nameserver = "192.168.123.1"
+  # Talos Machine Configuration
+  cloudinit {
+    user_data = file("${var.talos_config_path}/worker-dmz.yaml")
+  }
 }
 
-# k3s Untrusted Worker Node
-resource "proxmox_vm_qemu" "k3s_worker_untrusted" {
+# Talos Untrusted Worker Node
+resource "proxmox_vm_qemu" "talos_worker_untrusted" {
   # VM General Settings
-  name        = "k3s-worker-untrusted"
+  name        = "talos-worker-untrusted"
   target_node = var.proxmox_node
-  clone       = var.template_name
   vmid        = 203
+  os_type     = "other"
+  iso         = var.talos_iso_path
 
   # VM System Settings
   agent = 1
@@ -123,6 +131,7 @@ resource "proxmox_vm_qemu" "k3s_worker_untrusted" {
   sockets = 1
   memory  = 4096
   scsihw  = "virtio-scsi-pci"
+  boot    = "order=scsi0;ide2"
   disk {
     type    = "scsi"
     storage = "local-lvm"
@@ -139,8 +148,8 @@ resource "proxmox_vm_qemu" "k3s_worker_untrusted" {
     bridge = "vmbr0"
   }
 
-  # Cloud-Init Settings
-  ipconfig0  = "ip=10.10.40.10/24,gw=10.10.40.1"
-  ipconfig1  = "ip=192.168.123.23/24"
-  nameserver = "192.168.123.1"
+  # Talos Machine Configuration
+  cloudinit {
+    user_data = file("${var.talos_config_path}/worker-untrusted.yaml")
+  }
 }
