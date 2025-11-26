@@ -20,8 +20,13 @@ variable "proxmox_node" {
   default     = "pve" # Change this to your node's name
 }
 
-variable "template_name" {
+variable "talos_iso_path" {
   type        = string
-  description = "The name of the VM template to clone from."
-  default     = "ubuntu-k3s-template"
+  description = "The path in Proxmox storage to the Talos installer ISO (e.g., local:iso/talos-amd64.iso)."
+}
+
+variable "talos_config_path" {
+  type        = string
+  description = "The path to the directory containing the Talos machine config files."
+  default     = "./talos-config"
 }
