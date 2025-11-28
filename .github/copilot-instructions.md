@@ -11,13 +11,27 @@ You are an expert DevOps engineer responsible for maintaining a secure GitOps-dr
 ## Platform & Infrastructure Architecture
 
 - Hypervisor: The cluster runs on Proxmox VE.
-- Kubernetes Distribution: We use k3s for its lightweight and production-ready nature.
+- Kubernetes Distribution: We use Talos as lightweight and secure operating system for Kubernetes.
 - Networking (CNI): The cluster uses Cilium in eBPF mode.
 - All network policies must be defined using CiliumNetworkPolicy resources to leverage advanced features like L7 filtering.
 - Hubble is enabled for observability. Use it as the primary tool for diagnosing network connectivity issues.
 - Load Balancing: MetalLB is used to provide LoadBalancer services with IPs from the home LAN (192.168.123.0/24).
 - Ingress: Traefik is the exclusive ingress controller. All external web services must be exposed via IngressRoute custom resources.
 - *   **TLS:** **Traefik** manages all TLS certificates using its built-in ACME client and the `letsencrypt` certificate resolver.
+
+## Network Setup
+
+We will create four distinct, isolated networks using **Linux Bridges** on the Proxmox host. This approach acts as a "software VLAN" setup and does not require a managed switch:
+
+- `vmbr0`: **Management Network** (192.168.123.0/24) - Connects to your FritzBox LAN. Used for Proxmox management and Kubernetes API access.
+    - `192.168.123.8`: Proxmode Node (host)
+    - `192.168.123.20`: Kubernetes Control Plane VM (Talos)
+    - `192.168.123.21-29/32`: Kubernetes Worker Nodes (Talos)
+
+- `vmbr1`: **Trusted Network** (10.10.20.0/24) - For internal services like Home Assistant. Can initiate traffic to the home LAN.
+- `vmbr2`: **DMZ Network** (10.10.30.0/24) - For public-facing services like the Traefik ingress. Isolated from the home LAN.
+- `vmbr3`: **Untrusted Network** (10.10.40.0/24) - For experiments. Completely isolated with internet-only egress.
+
 
 ## Security & Secrets Management
 
