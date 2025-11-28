@@ -7,7 +7,7 @@ This repository contains the entire configuration for a secure, GitOps-driven Ku
 The entire platform is designed to be resilient, secure, and fully automated. All configurations, from infrastructure to applications, are managed as code in this Git repository.
 
 *   **Hypervisor:** Proxmox VE
-*   **Kubernetes:** k3s
+*   **Kubernetes:** Talos
 *   **Networking (CNI):** Cilium with eBPF + Hubble for observability
 *   **GitOps:** Flux CD
 *   **Ingress:** Traefik
@@ -78,6 +78,23 @@ The entire platform is designed to be resilient, secure, and fully automated. Al
 ```
 
 ---
+
+## Network Setup
+
+We will create four distinct, isolated networks using **Linux Bridges** on the Proxmox host. This approach acts as a "software VLAN" setup and does not require a managed switch:
+
+- `vmbr0`: **Management Network** (192.168.123.0/24) - Connects to your FritzBox LAN. Used for Proxmox management and Kubernetes API access.
+    - `192.168.123.8`: Proxmode Node (host)
+    - `192.168.123.20`: Kubernetes Control Plane VM (Talos)
+    - `192.168.123.21-29/32`: Kubernetes Worker Nodes (Talos)
+
+- `vmbr1`: **Trusted Network** (10.10.20.0/24) - For internal services like Home Assistant. Can initiate traffic to the home LAN.
+- `vmbr2`: **DMZ Network** (10.10.30.0/24) - For public-facing services like the Traefik ingress. Isolated from the home LAN.
+- `vmbr3`: **Untrusted Network** (10.10.40.0/24) - For experiments. Completely isolated with internet-only egress.
+
+Network configuration done in `/etc/network/interfaces` on Proxmox node. Configuration available [`proxmox/host/network-interfaces`](proxmox/host/network-interfaces).
+
+
 
 ## 2. Step-by-Step Migration Plan
 
