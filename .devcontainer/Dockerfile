@@ -11,6 +11,8 @@ RUN wget -O - https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /us
     && sudo apt update && sudo apt install terraform
 RUN echo "Terraform version:" && terraform -version
 
+RUN curl -sL https://talos.dev/install | sh
+
 # Install kubectl
 # RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" \
 #     && install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
