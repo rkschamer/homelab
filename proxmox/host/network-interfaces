@@ -1,0 +1,67 @@
+# content of /etc/network/interfaces
+
+auto lo
+iface lo inet loopback
+
+iface enp2s0 inet manual
+
+# Management bridge (connected to FritzBox LAN)
+auto vmbr0
+iface vmbr0 inet static
+        address 192.168.123.8/24
+        gateway 192.168.123.1
+        bridge-ports enp2s0
+        bridge-stp off
+        bridge-fd 0
+        # Allow return traffic for established connections from DMZ
+        post-up iptables -I FORWARD -i vmbr0 -o vmbr2 -m state --state RELATED,ESTABLISHED -j ACCEPT
+        post-down iptables -D FORWARD -i vmbr0 -o vmbr2 -m state --state RELATED,ESTABLISHED -j ACCEPT
+
+# Trusted network bridge (isolated)
+auto vmbr1
+iface vmbr1 inet static
+    address 10.10.20.1/24
+    bridge-ports none
+    bridge-stp off
+    bridge-fd 0
+    post-up   echo 1 > /proc/sys/net/ipv4/ip_forward
+    post-up   iptables -t nat -A POSTROUTING -s '10.10.20.0/24' -o vmbr0 -j MASQUERADE
+    post-down iptables -t nat -D POSTROUTING -s '10.10.20.0/24' -o vmbr0 -j MASQUERADE
+
+# DMZ bridge (isolated)
+auto vmbr2
+iface vmbr2 inet static
+    address 10.10.30.1/24
+    bridge-ports none
+    bridge-stp off
+    bridge-fd 0
+    post-up   echo 1 > /proc/sys/net/ipv4/ip_forward
+    post-up   iptables -t nat -A POSTROUTING -s '10.10.30.0/24' -o vmbr0 -j MASQUERADE
+    post-down iptables -t nat -D POSTROUTING -s '10.10.30.0/24' -o vmbr0 -j MASQUERADE
+    # Allow Traefik (10.10.30.10) to access Home Assistant (192.168.123.10:8123)
+    post-up iptables -I FORWARD -i vmbr2 -o vmbr0 -s 10.10.30.10 -d 192.168.123.10 -p tcp --dport 8123 -j ACCEPT
+    post-down iptables -D FORWARD -i vmbr2 -o vmbr0 -s 10.10.30.10 -d 192.168.123.10 -p tcp --dport 8123 -j ACCEPT
+    # Allow Traefik (10.10.30.10) to access Synology NAS (192.168.123.5:5001)
+    post-up iptables -I FORWARD -i vmbr2 -o vmbr0 -s 10.10.30.10 -d 192.168.123.5 -p tcp --dport 5001 -j ACCEPT
+    post-down iptables -D FORWARD -i vmbr2 -o vmbr0 -s 10.10.30.10 -d 192.168.123.5 -p tcp --dport 5001 -j ACCEPT
+    # Explicitly drop all other traffic from DMZ to trusted networks for security
+    post-up iptables -A FORWARD -i vmbr2 -o vmbr0 -j DROP
+    post-down iptables -D FORWARD -i vmbr2 -o vmbr0 -j DROP
+    post-up iptables -A FORWARD -i vmbr2 -o vmbr1 -j DROP
+    post-down iptables -D FORWARD -i vmbr2 -o vmbr1 -j DROP
+
+# Untrusted bridge (isolated, internet-only)
+auto vmbr3
+iface vmbr3 inet static
+    address 10.10.40.1/24
+    bridge-ports none
+    bridge-stp off
+    bridge-fd 0
+    post-up   echo 1 > /proc/sys/net/ipv4/ip_forward
+    post-up   iptables -t nat -A POSTROUTING -s '10.10.40.0/24' -o vmbr0 -j MASQUERADE
+    post-down iptables -t nat -D POSTROUTING -s '10.10.40.0/24' -o vmbr0 -j MASQUERADE
+    # Block access from untrusted to any internal network
+    post-up   iptables -I FORWARD -i vmbr3 -d '192.168.0.0/16' -j DROP
+    post-up   iptables -I FORWARD -i vmbr3 -d '10.0.0.0/8' -j DROP
+    post-down iptables -D FORWARD -i vmbr3 -d '192.168.0.0/16' -j DROP
+    post-down iptables -D FORWARD -i vmbr3 -d '10.0.0.0/8' -j DROP
