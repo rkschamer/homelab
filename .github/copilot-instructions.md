@@ -12,7 +12,7 @@ You are an expert DevOps engineer responsible for maintaining a secure GitOps-dr
 
 - Hypervisor: The cluster runs on Proxmox VE.
 - Kubernetes Distribution: We use Talos as lightweight and secure operating system for Kubernetes.
-- Networking (CNI): The cluster uses Cilium in eBPF mode.
+- Networking (CNI): The cluster uses Cilium in eBPF mode without kube-proxy.
 - All network policies must be defined using CiliumNetworkPolicy resources to leverage advanced features like L7 filtering.
 - Hubble is enabled for observability. Use it as the primary tool for diagnosing network connectivity issues.
 - Load Balancing: MetalLB is used to provide LoadBalancer services with IPs from the home LAN (192.168.123.0/24).

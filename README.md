@@ -51,7 +51,7 @@ The entire platform is designed to be resilient, secure, and fully automated. Al
 |                                    Proxmox VE Hypervisor Host                                      |
 |                                                                                                    |
 |  +-----------------------------------------------------------------------------------------------+ |
-|  |                                  Kubernetes Cluster (k3s)                                     | |
+|  |                                  Kubernetes Cluster (Talos)                                     | |
 |  |                                                                                               | |
 |  |  +------------------------------------------------------------------------------------------+ | |
 |  |  | Cilium CNI + Hubble + WireGuard (Network Fabric & Pod-to-Pod Encryption)                 | | |
@@ -86,7 +86,7 @@ We will create four distinct, isolated networks using **Linux Bridges** on the P
 - `vmbr0`: **Management Network** (192.168.123.0/24) - Connects to your FritzBox LAN. Used for Proxmox management and Kubernetes API access.
     - `192.168.123.8`: Proxmode Node (host)
     - `192.168.123.20`: Kubernetes Control Plane VM (Talos)
-    - `192.168.123.21-29/32`: Kubernetes Worker Nodes (Talos)
+    - `192.168.123.21-29/32`: MetalLB pool for Kubernetes Worker Nodes (Talos)
 
 - `vmbr1`: **Trusted Network** (10.10.20.0/24) - For internal services like Home Assistant. Can initiate traffic to the home LAN.
 - `vmbr2`: **DMZ Network** (10.10.30.0/24) - For public-facing services like the Traefik ingress. Isolated from the home LAN.
@@ -112,10 +112,11 @@ This plan outlines a gradual transition from a single Docker host to the new Kub
 *Goal: Build the new Kubernetes platform while the old Docker host continues to run all services.*
 
 1.  **Configure Proxmox Networking:** Create the Linux bridges (`vmbr0`, `vmbr1`, `vmbr2`, `vmbr3`) on the Proxmox host.
-2.  **Create VMs:** Create the Ubuntu cloud-init template and clone the four VMs (control plane, trusted, DMZ, untrusted).
-3.  **Install k3s Cluster:** Install k3s on the control plane **without the default CNI** (`--flannel-backend=none`) and join the worker nodes.
-4.  **Bootstrap the Cluster:** From your local machine, install the core components:
-    *   **Cilium + Hubble**
+2.  **Create VMs:** Create the virtual machines for the control plane and worker nodes.
+3.  **Generate Talos Configuration:** Use `talosctl gen config` to generate the machine configurations for your control plane and worker nodes.
+4.  **Install Talos Cluster:** Boot the VMs with the generated configurations to form the cluster.
+5.  **Bootstrap the Cluster:** From your local machine, install the core components via Helm and Flux:
+    *   **Cilium + Hubble** (in kube-proxy replacement mode)
     *   **MetalLB**
     *   **Sealed Secrets Controller**
     *   **Flux CD** (pointing to this repository)
@@ -144,7 +145,7 @@ For each application:
     *   Copy the data from the Docker volume into the new Kubernetes persistent volume using `kubectl cp`.
 4.  **Test & Cutover:**
     *   Verify the service is running correctly in Kubernetes.
-    *   **This is the cutover point.** Update your FritzBox port forwarding rules to point to the new Traefik IP (`192.168.123.100`).
+    *   **This is the cutover point.** Update your FritzBox port forwarding rules to point to the new Traefik IP (`192.168.123.21-29`).
     *   Confirm the service is accessible from the internet.
 5.  **Decommission Old Service:** Remove the service from your old `docker-compose.yml`.
 
