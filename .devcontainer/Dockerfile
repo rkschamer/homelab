@@ -3,8 +3,7 @@ FROM mcr.microsoft.com/devcontainers/base:ubuntu-24.04
 
 # Install system dependencies, git
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
-    && apt-get -y install --no-install-recommends curl wget git gnupg lsb-release software-properties-common openssl
-
+    && apt-get -y install --no-install-recommends curl wget git gnupg lsb-release software-properties-common openssl git-crypt
 # Terraform installation
 RUN wget -O - https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg \
     && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(grep -oP '(?<=UBUNTU_CODENAME=).*' /etc/os-release || lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list \
