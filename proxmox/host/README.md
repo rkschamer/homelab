@@ -1,5 +1,28 @@
-# content of /etc/network/interfaces
+# Modifications on PVE Node (Bare Metal)
 
+This contains the modification, which needed to be done on the PVE node and what is not covered by any automation.
+
+## Terraform User
+
+We use the [Proxmox Terraform provider](https://registry.terraform.io/providers/Telmate/proxmox/latest/docs) to create K8s node VMs.
+The documentation suggests to create a dedicated Terraform user, to avoid using cluster-wide admin users:
+
+```bash
+pveum role add terraform-role -privs "Datastore.AllocateSpace Datastore.AllocateTemplate Datastore.Audit Pool.Allocate Pool.Audit Sys.Audit Sys.Console Sys.Modify VM.Allocate VM.Audit VM.Clone VM.Config.CDROM VM.Config.Cloudinit VM.Config.CPU VM.Config.Disk VM.Config.HWType VM.Config.Memory VM.Config.Network VM.Config.Options VM.Migrate VM.PowerMgmt SDN.Use"
+pveum user add terraform@pve --password <password>
+pveum aclmod / -user terraform@pve -role terraform-role
+pveum user token add terraform-prov@pve mytoken
+```
+
+## Add Network Bridges to `/etc/network/interfaces`
+
+Network bridges are used to created separate networks for K8s node VMs.
+This approach acts as a "software VLAN" setup and does not require a managed switch.
+That's the main building block of the network isolation concept.
+
+`/etc/network/interfaces` content:
+
+```
 auto lo
 iface lo inet loopback
 
@@ -96,3 +119,4 @@ iface vmbr4 inet static
     post-down iptables -D FORWARD -d 10.10.50.0/24 -i vmbr1 -j DROP
     post-down iptables -D FORWARD -d 10.10.50.0/24 -i vmbr2 -j DROP
     post-down iptables -D FORWARD -d 10.10.50.0/24 -i vmbr3 -j DROP
+```
