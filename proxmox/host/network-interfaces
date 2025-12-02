@@ -65,3 +65,34 @@ iface vmbr3 inet static
     post-up   iptables -I FORWARD -i vmbr3 -d '10.0.0.0/8' -j DROP
     post-down iptables -D FORWARD -i vmbr3 -d '192.168.0.0/16' -j DROP
     post-down iptables -D FORWARD -i vmbr3 -d '10.0.0.0/8' -j DROP
+
+# Monitoring bridge (isolated, monitoring-outbound)
+auto vmbr4
+iface vmbr4 inet static
+    address 10.10.50.1/24
+    bridge-ports none
+    bridge-stp off
+    bridge-fd 0
+    post-up   echo 1 > /proc/sys/net/ipv4/ip_forward
+    post-up   iptables -t nat -A POSTROUTING -s '10.10.50.0/24' -o vmbr0 -j MASQUERADE
+    post-down iptables -t nat -D POSTROUTING -s '10.10.50.0/24' -o vmbr0 -j MASQUERADE
+    # Allow monitoring outbound to other networks
+    post-up   iptables -A FORWARD -i vmbr4 -o vmbr0 -j ACCEPT
+    post-up   iptables -A FORWARD -i vmbr4 -o vmbr1 -j ACCEPT
+    post-up   iptables -A FORWARD -i vmbr4 -o vmbr2 -j ACCEPT
+    post-up   iptables -A FORWARD -i vmbr4 -o vmbr3 -j ACCEPT
+    post-down iptables -D FORWARD -i vmbr4 -o vmbr0 -j ACCEPT
+    post-down iptables -D FORWARD -i vmbr4 -o vmbr1 -j ACCEPT
+    post-down iptables -D FORWARD -i vmbr4 -o vmbr2 -j ACCEPT
+    post-down iptables -D FORWARD -i vmbr4 -o vmbr3 -j ACCEPT
+    # Block any other networks from initiating traffic to monitoring, EXCEPT for Grafana from the management LAN
+    post-up   iptables -A FORWARD -i vmbr0 -o vmbr4 -p tcp --dport 3000 -d 10.10.50.0/24 -j ACCEPT
+    post-down iptables -D FORWARD -i vmbr0 -o vmbr4 -p tcp --dport 3000 -d 10.10.50.0/24 -j ACCEPT
+    post-up   iptables -A FORWARD -d 10.10.50.0/24 -i vmbr0 -j DROP
+    post-up   iptables -A FORWARD -d 10.10.50.0/24 -i vmbr1 -j DROP
+    post-up   iptables -A FORWARD -d 10.10.50.0/24 -i vmbr2 -j DROP
+    post-up   iptables -A FORWARD -d 10.10.50.0/24 -i vmbr3 -j DROP
+    post-down iptables -D FORWARD -d 10.10.50.0/24 -i vmbr0 -j DROP
+    post-down iptables -D FORWARD -d 10.10.50.0/24 -i vmbr1 -j DROP
+    post-down iptables -D FORWARD -d 10.10.50.0/24 -i vmbr2 -j DROP
+    post-down iptables -D FORWARD -d 10.10.50.0/24 -i vmbr3 -j DROP
