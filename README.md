@@ -114,6 +114,7 @@ This plan outlines a gradual transition from a single Docker host to the new Kub
 1.  **Configure Proxmox Networking:** Create the Linux bridges (`vmbr0`, `vmbr1`, `vmbr2`, `vmbr3`) on the Proxmox host.
 2.  **Create VMs:** Create the virtual machines for the control plane and worker nodes.
 3.  **Generate Talos Configuration:** Use `talosctl gen config` to generate the machine configurations for your control plane and worker nodes.
+  - Talos files are kept in this repository, but are encrypted with git-crypt
 4.  **Install Talos Cluster:** Boot the VMs with the generated configurations to form the cluster.
 5.  **Bootstrap the Cluster:** From your local machine, install the core components via Helm and Flux:
     *   **Cilium + Hubble** (in kube-proxy replacement mode)

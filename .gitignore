@@ -4,3 +4,11 @@
 *.tfstate.*
 terraform.tfvars
 *.tfvars
+
+# Talos configuration files
+**/private
+**/*private*
+**/*secret*
+**/*key*
+**/*token*
+**/*cred*
