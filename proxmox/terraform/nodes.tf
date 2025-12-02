@@ -115,41 +115,72 @@ resource "proxmox_vm_qemu" "talos_worker_dmz" {
 }
 
 # Talos Untrusted Worker Node
-resource "proxmox_vm_qemu" "talos_worker_untrusted" {
-  # VM General Settings
-  name        = "talos-worker-untrusted"
+# Control Plane Node
+resource "proxmox_vm_qemu" "control_plane" {
+  for_each = { for cp in var.control_plane_nodes : cp.name => cp }
+
+  name        = each.value.name
   target_node = var.proxmox_node
-  vmid        = 203
-  os_type     = "other"
-  iso         = var.talos_iso_path
 
-  # VM System Settings
-  agent = 1
+  iso = var.talos_iso_path
 
-  # VM Hardware Settings
-  cores   = 2
+  # VM settings
+  agent   = 1
+  os_type = "cloud-init"
+  cores   = each.value.cores
   sockets = 1
-  memory  = 4096
+  memory  = each.value.memory
   scsihw  = "virtio-scsi-pci"
-  boot    = "order=scsi0;ide2"
+
   disk {
     type    = "scsi"
     storage = "local-lvm"
-    size    = "32G"
+    size    = each.value.disk_size
   }
 
-  # VM Network Settings (Dual NIC)
   network {
-    model  = "virtio"
-    bridge = "vmbr3"
-  }
-  network {
-    model  = "virtio"
-    bridge = "vmbr0"
+    model   = "virtio"
+    bridge  = each.value.bridge
+    macaddr = each.value.mac_address
   }
 
-  # Talos Machine Configuration
+  # Cloud-init settings for Talos
   cloudinit {
-    user_data = file("${var.talos_config_path}/worker-untrusted.yaml")
+    user_data = file("${var.talos_config_path}/controlplane.yaml")
+  }
+}
+
+# Worker Nodes
+resource "proxmox_vm_qemu" "worker" {
+  for_each = { for worker in var.worker_nodes : worker.name => worker }
+
+  name        = each.value.name
+  target_node = var.proxmox_node
+
+  iso = var.talos_iso_path
+
+  # VM settings
+  agent   = 1
+  os_type = "cloud-init"
+  cores   = each.value.cores
+  sockets = 1
+  memory  = each.value.memory
+  scsihw  = "virtio-scsi-pci"
+
+  disk {
+    type    = "scsi"
+    storage = "local-lvm"
+    size    = each.value.disk_size
+  }
+
+  network {
+    model   = "virtio"
+    bridge  = each.value.bridge
+    macaddr = each.value.mac_address
+  }
+
+  # Cloud-init settings for Talos
+  cloudinit {
+    user_data = file("${var.talos_config_path}/worker.yaml")
   }
 }
