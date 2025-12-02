@@ -62,9 +62,10 @@ The entire platform is designed to be resilient, secure, and fully automated. Al
 |  |  | VM              |   | (Public Facing) |   | (Internal Apps)   |   | (Experiments)        | | |
 |  |  |-----------------|   |-----------------|   |-----------------|   |------------------------| | |
 |  |  | [FluxCD] <------(2. Syncs)------------|   | [Home Assistant]|   | [Temporary Test Pod]   | | |
-|  | [Sealed Secrets |   | [Traefik Ingress] |   | [Plex]          |   |                        | | |
-|  |  Controller]    |   | [Public App]    |   | [Database]      |   |                        | | |
-|  |  | [MetalLB]       |   +-------^---------+   +-------^---------+   +------------^-----------+ | |
+|  |  | [Sealed Secrets |   | [Traefik Ingress] |   | [Plex]          |   |                        | | |
+|  |  |  Controller]    |   | [Public App]    |   | [Database]      |   |                        | | |
+|  |  | [MetalLB]       |   | [Monitoring]    |   |                 |   |                        | | |
+|  |  | [Monitoring]    |   +-------^---------+   +-------^---------+   +------------^-----------+ | |
 |  |  +-----------------+           | (4. Routes Traffic) | (Cilium Policy Allows)   | (Isolated)  | |
 |  |                                |<--------------------|--------------------------|-------------| |
 |  |                                v                     |                                        | |
@@ -91,6 +92,7 @@ We will create four distinct, isolated networks using **Linux Bridges** on the P
 - `vmbr1`: **Trusted Network** (10.10.20.0/24) - For internal services like Home Assistant. Can initiate traffic to the home LAN.
 - `vmbr2`: **DMZ Network** (10.10.30.0/24) - For public-facing services like the Traefik ingress. Isolated from the home LAN.
 - `vmbr3`: **Untrusted Network** (10.10.40.0/24) - For experiments. Completely isolated with internet-only egress.
+- `vmbr4`: **Monitoring Network** (10.10.50.0/24) - For monitoring services. Can initiate traffic to all other networks, but no inbound traffic is allowed, except for Grafana access.
 
 Network configuration done in `/etc/network/interfaces` on Proxmox node. Configuration available [`proxmox/host/network-interfaces`](proxmox/host/network-interfaces).
 
@@ -111,7 +113,7 @@ This plan outlines a gradual transition from a single Docker host to the new Kub
 
 *Goal: Build the new Kubernetes platform while the old Docker host continues to run all services.*
 
-1.  **Configure Proxmox Networking:** Create the Linux bridges (`vmbr0`, `vmbr1`, `vmbr2`, `vmbr3`) on the Proxmox host.
+1.  **Configure Proxmox Networking:** Create the Linux bridges (`vmbr0`, `vmbr1`, `vmbr2`, `vmbr3`, `vmbr4`) on the Proxmox host.
 2.  **Create VMs:** Create the virtual machines for the control plane and worker nodes.
 3.  **Generate Talos Configuration:** Use `talosctl gen config` to generate the machine configurations for your control plane and worker nodes.
   - Talos files are kept in this repository, but are encrypted with git-crypt
