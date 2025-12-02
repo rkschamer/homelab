@@ -1,20 +1,28 @@
 # Use a Microsoft-provided base image with common tools
 FROM mcr.microsoft.com/devcontainers/base:ubuntu-24.04
 
+ARG KUBERNETES_VERSION="1.34"
+
 # Install system dependencies, git
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     && apt-get -y install --no-install-recommends curl wget git gnupg lsb-release software-properties-common openssl git-crypt
-# Terraform installation
+
+
+    # Terraform installation
 RUN wget -O - https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg \
     && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(grep -oP '(?<=UBUNTU_CODENAME=).*' /etc/os-release || lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list \
     && sudo apt update && sudo apt install terraform
 RUN echo "Terraform version:" && terraform -version
 
+# talosctl installation
 RUN curl -sL https://talos.dev/install | sh
 
 # Install kubectl
-# RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" \
-#     && install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+RUN apt-get update && apt-get install -y ca-certificates curl; \
+    curl -fsSL https://pkgs.k8s.io/core:/stable:/v${KUBERNETES_VERSION}/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg; \
+    echo "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v${KUBERNETES_VERSION}/deb/ /" | tee /etc/apt/sources.list.d/kubernetes.list; \
+    apt-get update; \
+    apt-get install -y kubectl
 
 # # Install Helm
 # RUN curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | tee /usr/share/keyrings/helm.gpg > /dev/null \
