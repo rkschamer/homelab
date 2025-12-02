@@ -2,8 +2,6 @@
 .terraform/
 *.tfstate
 *.tfstate.*
-terraform.tfvars
-*.tfvars
 
 # Talos configuration files
 **/private
