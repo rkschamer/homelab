@@ -18,7 +18,8 @@
 				"ms-azuretools.vscode-docker",
 				"hashicorp.terraform",
 				"github.vscode-github-actions",
-				"fluxcd.flux-vscode"
+				"fluxcd.flux-vscode",
+				"eamodio.gitlens"
 			]
 		}
 	},
