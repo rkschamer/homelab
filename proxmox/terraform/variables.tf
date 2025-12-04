@@ -37,6 +37,7 @@ variable "nodes" {
   type = list(object({
     name           = string
     node_type      = string # "control_plane" or "worker"
+    vm_id          = number
     ip_address     = string
     disk_size      = string
     memory         = number
