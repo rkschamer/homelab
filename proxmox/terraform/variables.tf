@@ -26,39 +26,24 @@ variable "talos_template_name" {
   description = "The name of the Talos VM template to clone."
 }
 
-variable "gateway" {
-  type        = string
-  description = "The gateway IP address for the VMs."
-}
-
 variable "talos_config_path" {
   type        = string
   description = "The path to the directory containing the Talos machine config files."
   default     = "../homelab-cluster/talos"
 }
 
-variable "control_plane_nodes" {
-  description = "A list of control plane node configurations."
+variable "nodes" {
+  description = "A list of all node configurations (control plane and workers)."
   type = list(object({
     name           = string
+    node_type      = string # "control_plane" or "worker"
     ip_address     = string
     disk_size      = string
     memory         = number
     cores          = number
     network_bridge = string
-  }))
-  default = []
-}
-
-variable "worker_nodes" {
-  description = "A list of worker node configurations."
-  type = list(object({
-    name       = string
-    ip_address = string
-    disk_size  = string
-    memory     = number
-    cores      = number
-    network_bridge = string
+    gateway        = string
+    config_file    = string
   }))
   default = []
 }
