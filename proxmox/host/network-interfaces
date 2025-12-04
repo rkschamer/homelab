@@ -1,0 +1,96 @@
+# /etc/network/interfaces configuration for Proxmox VE
+# Multi-zone Kubernetes cluster with network segmentation
+
+# Loopback interface
+auto lo
+iface lo inet loopback
+
+# Physical interface connected to FritzBox
+auto eno1
+iface eno1 inet manual
+
+# vmbr0: Management Network (192.168.123.0/24)
+# Connected to FritzBox LAN - Used for Proxmox management and Kubernetes control plane
+auto vmbr0
+iface vmbr0 inet static
+    address 192.168.123.8/24
+    gateway 192.168.123.1
+    bridge-ports eno1
+    bridge-stp off
+    bridge-fd 0
+    # Enable IP forwarding for routing between networks
+    post-up echo 1 > /proc/sys/net/ipv4/ip_forward
+
+# vmbr1: Trusted Network (10.10.20.0/24)
+# Internal services network - Can initiate traffic to home LAN
+auto vmbr1
+iface vmbr1 inet static
+    address 10.10.20.1/24
+    bridge-ports none
+    bridge-stp off
+    bridge-fd 0
+    # NAT for internet access
+    post-up iptables -t nat -A POSTROUTING -s 10.10.20.0/24 -o vmbr0 -j MASQUERADE
+    post-down iptables -t nat -D POSTROUTING -s 10.10.20.0/24 -o vmbr0 -j MASQUERADE
+    # Allow forwarding to management network
+    post-up iptables -A FORWARD -i vmbr1 -o vmbr0 -j ACCEPT
+    post-up iptables -A FORWARD -i vmbr0 -o vmbr1 -m state --state RELATED,ESTABLISHED -j ACCEPT
+    post-down iptables -D FORWARD -i vmbr1 -o vmbr0 -j ACCEPT
+    post-down iptables -D FORWARD -i vmbr0 -o vmbr1 -m state --state RELATED,ESTABLISHED -j ACCEPT
+
+# vmbr2: DMZ Network (10.10.30.0/24)
+# Public-facing services network - Isolated from home LAN
+auto vmbr2
+iface vmbr2 inet static
+    address 10.10.30.1/24
+    bridge-ports none
+    bridge-stp off
+    bridge-fd 0
+    # NAT for internet access
+    post-up iptables -t nat -A POSTROUTING -s 10.10.30.0/24 -o vmbr0 -j MASQUERADE
+    post-down iptables -t nat -D POSTROUTING -s 10.10.30.0/24 -o vmbr0 -j MASQUERADE
+    # Allow forwarding to management network only (for k8s API)
+    post-up iptables -A FORWARD -i vmbr2 -o vmbr0 -d 192.168.123.20 -j ACCEPT
+    post-up iptables -A FORWARD -i vmbr0 -o vmbr2 -m state --state RELATED,ESTABLISHED -j ACCEPT
+    post-down iptables -D FORWARD -i vmbr2 -o vmbr0 -d 192.168.123.20 -j ACCEPT
+    post-down iptables -D FORWARD -i vmbr0 -o vmbr2 -m state --state RELATED,ESTABLISHED -j ACCEPT
+    # Block access to home LAN
+    post-up iptables -A FORWARD -i vmbr2 -o vmbr0 -d 192.168.123.0/24 -j DROP
+    post-down iptables -D FORWARD -i vmbr2 -o vmbr0 -d 192.168.123.0/24 -j DROP
+
+# vmbr3: Untrusted Network (10.10.40.0/24)
+# Experiments network - Completely isolated with internet-only egress
+auto vmbr3
+iface vmbr3 inet static
+    address 10.10.40.1/24
+    bridge-ports none
+    bridge-stp off
+    bridge-fd 0
+    # NAT for internet access only
+    post-up iptables -t nat -A POSTROUTING -s 10.10.40.0/24 -o vmbr0 -j MASQUERADE
+    post-down iptables -t nat -D POSTROUTING -s 10.10.40.0/24 -o vmbr0 -j MASQUERADE
+    # Allow forwarding to management network only (for k8s API)
+    post-up iptables -A FORWARD -i vmbr3 -o vmbr0 -d 192.168.123.20 -j ACCEPT
+    post-up iptables -A FORWARD -i vmbr0 -o vmbr3 -m state --state RELATED,ESTABLISHED -j ACCEPT
+    post-down iptables -D FORWARD -i vmbr3 -o vmbr0 -d 192.168.123.20 -j ACCEPT
+    post-down iptables -D FORWARD -i vmbr0 -o vmbr3 -m state --state RELATED,ESTABLISHED -j ACCEPT
+    # Block all other access to home LAN
+    post-up iptables -A FORWARD -i vmbr3 -o vmbr0 -d 192.168.123.0/24 -j DROP
+    post-down iptables -D FORWARD -i vmbr3 -o vmbr0 -d 192.168.123.0/24 -j DROP
+
+# vmbr4: Monitoring Network (10.10.50.0/24)
+# Monitoring services network - Can initiate to all networks, but no inbound except Grafana
+auto vmbr4
+iface vmbr4 inet static
+    address 10.10.50.1/24
+    bridge-ports none
+    bridge-stp off
+    bridge-fd 0
+    # NAT for internet access
+    post-up iptables -t nat -A POSTROUTING -s 10.10.50.0/24 -o vmbr0 -j MASQUERADE
+    post-down iptables -t nat -D POSTROUTING -s 10.10.50.0/24 -o vmbr0 -j MASQUERADE
+    # Allow monitoring to reach all networks (outbound)
+    post-up iptables -A FORWARD -i vmbr4 -j ACCEPT
+    post-up iptables -A FORWARD -o vmbr4 -m state --state RELATED,ESTABLISHED -j ACCEPT
+    post-down iptables -D FORWARD -i vmbr4 -j ACCEPT
+    post-down iptables -D FORWARD -o vmbr4 -m state --state RELATED,ESTABLISHED -j ACCEPT
