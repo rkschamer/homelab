@@ -110,7 +110,65 @@ We will create five distinct, isolated networks using **Linux Bridges** on the P
 
 Network configuration done in `/etc/network/interfaces` on Proxmox node. Configuration available [`proxmox/host/network-interfaces`](proxmox/host/network-interfaces).
 
+## Cluster Setup
 
+### Create VM Template
+
+The used VM template is manually created, since it pretty complex to use Terraform for this. To do this, a VM needs to be created, booted from iso first, installs Talso and then change the boot priority to boot from disk the next time.
+Instead the created VM template serves as "golden image", which is used to clone the actual nodes.
+
+#### 1. Create Temporary VM
+
+```bash
+# 1. Create the VM with basic specs
+#    We'll use vmbr0 for now; it doesn't matter much for the template itself.
+qm create 9000 --name "talos-template" --memory 2048 --cores 2 --net0 virtio,bridge=vmbr0
+
+# 2. Create a virtual disk for the OS installation
+qm set 9000 --scsihw virtio-scsi-pci --scsi0 local-lvm,size=32G
+
+# 3. Attach the Talos installer ISO
+qm set 9000 --ide2 local:iso/talos-metal-amd64.iso,media=cdrom
+
+# 4. Set the VM to boot from the ISO first
+qm set 9000 --boot order=ide2
+
+# 5. Add serial console settings (recommended for Talos)
+qm set 9000 --serial0 socket --vga serial0
+
+# 6. Start VM
+qm start 9000
+```
+
+#### 2. Install Talos
+
+The installation process will run, and the VM will automatically reboot itself.
+
+```bash
+talosctl apply-config --insecure --nodes <VM_IP_ADDRESS> --file ./proxmox/homelab-cluster/talos/controlplane.yaml
+```
+
+#### 3. Finalize and Convert to Template
+
+After the VM reboots, the installation is complete. Now, you'll clean it up and convert it into a read-only template.
+
+```bash
+# 1. Wait for the installation to finish and the VM to reboot, then shut it down.
+qm shutdown 9000
+
+# 2. Detach the installer ISO. It's no longer needed.
+qm set 9000 --ide2 none
+
+# 3. Change the boot order to boot from the main disk (scsi0) from now on.
+qm set 9000 --boot order=scsi0
+
+# 4. (Optional but Recommended) Reset cloud-init data, just in case.
+#    This ensures clones get a clean slate.
+qm set 9000 --cicustom ""
+
+# 5. Convert the VM into a template. This makes it a read-only, clonable image.
+qm template 9000
+```
 
 ## 2. Step-by-Step Migration Plan
 
