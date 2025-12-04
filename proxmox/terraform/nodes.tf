@@ -5,6 +5,7 @@ resource "proxmox_vm_qemu" "nodes" {
   name        = each.value.name
   target_node = var.proxmox_node
   clone       = var.talos_template_name
+  vmid        = each.value.vm_id
 
   # VM settings
   agent   = 1
