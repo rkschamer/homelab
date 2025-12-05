@@ -119,13 +119,15 @@ Instead the created VM template serves as "golden image", which is used to clone
 
 #### 1. Create Temporary VM
 
+This VM also can be created using the Proxmox Web UI.
+
 ```bash
 # 1. Create the VM with basic specs
 #    We'll use vmbr0 for now; it doesn't matter much for the template itself.
 qm create 9000 --name "talos-template" --memory 2048 --cores 2 --net0 virtio,bridge=vmbr0
 
 # 2. Create a virtual disk for the OS installation
-qm set 9000 --scsihw virtio-scsi-pci --scsi0 local-lvm,size=32G
+qm set 9000 --scsihw virtio-scsi-pci --scsi0 local-zfs:vm-9000-disk-0,iothread=1,size=32G,ssd=1
 
 # 3. Attach the Talos installer ISO
 qm set 9000 --ide2 local:iso/talos-metal-amd64.iso,media=cdrom
