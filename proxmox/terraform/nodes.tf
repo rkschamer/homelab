@@ -7,30 +7,45 @@ resource "proxmox_vm_qemu" "nodes" {
   clone       = var.talos_template_name
   vmid        = each.value.vm_id
 
-  # VM settings
-  agent   = 1
-  os_type = "cloud-init"
-  memory  = each.value.memory
+  # Full clone is required for independent VMs
+  full_clone = true
+
+  # VM settings - Talos doesn't run QEMU guest agent by default
+  agent              = 0
+  memory             = each.value.memory
+  start_at_node_boot = true
 
   cpu {
     sockets = 1
     cores   = each.value.cores
   }
 
-  disk {
-    slot    = "scsi0"
-    storage = "local-lvm"
-    size    = each.value.disk_size
+  # Disk configuration
+  disks {
+    scsi {
+      scsi0 {
+        disk {
+          storage = "local-zfs"
+          size    = each.value.disk_size
+        }
+      }
+    }
   }
 
+  # Network configuration with static IP
   network {
     id     = 0
     model  = "virtio"
     bridge = each.value.network_bridge
   }
 
+  # Static IP configuration
   ipconfig0 = "ip=${each.value.ip_address}/24,gw=${each.value.gateway}"
 
-  # Cloud-init settings for Talos
-  cicustom = "user=${var.talos_config_path}/${each.value.config_file}"
+  # Increase timeouts for VM operations
+  timeouts {
+    create = "10m"
+    update = "5m"
+    delete = "5m"
+  }
 }
