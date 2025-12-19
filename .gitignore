@@ -1,5 +1,6 @@
 # Terraform files
 .terraform/
+*.tfstate.backup
 
 # Talos configuration files
 **/private
