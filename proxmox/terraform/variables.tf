@@ -21,30 +21,44 @@ variable "proxmox_node" {
   default     = "proxmox" # Change this to your node's name
 }
 
-variable "talos_template_name" {
+variable "talos_version" {
   type        = string
-  description = "The name of the Talos VM template to clone."
+  description = "The version of Talos to deploy."
+  default     = "v1.11.6"
+
 }
 
-variable "talos_config_path" {
+variable "cluster_name" {
   type        = string
-  description = "The path to the directory containing the Talos machine config files."
-  default     = "../homelab-cluster/talos"
+  description = "The name of the Talos cluster."
+  default     = "homelab"
 }
 
-variable "nodes" {
-  description = "A list of all node configurations (control plane and workers)."
+variable "control_plane_ip" {
+  type        = string
+  description = "IP address of the control plane node."
+  default     = "192.168.123.20"
+}
+
+variable "control_plane_vmid" {
+  type        = number
+  description = "VM ID for the control plane node."
+  default     = 200
+}
+
+variable "worker_nodes" {
+  description = "List of worker node configurations."
   type = list(object({
     name           = string
-    node_type      = string # "control_plane" or "worker"
-    vm_id          = number
+    vmid           = number
     ip_address     = string
-    disk_size      = string
+    disk_size_gb   = number
     memory         = number
     cores          = number
     network_bridge = string
+    network_zone   = string
     gateway        = string
-    config_file    = string
+    subnet_prefix  = number
   }))
   default = []
 }
