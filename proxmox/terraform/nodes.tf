@@ -24,10 +24,12 @@ resource "proxmox_virtual_environment_vm" "control_plane" {
     bridge = "vmbr0" # Management Network
   }
 
+  cdrom {
+    file_id = proxmox_virtual_environment_download_file.talos_iso.id
+  }
+
   disk {
     datastore_id = "local-zfs"
-    file_id      = proxmox_virtual_environment_download_file.talos_metal_image.id
-    file_format  = "raw"
     interface    = "virtio0"
     size         = 32
   }
@@ -69,11 +71,13 @@ resource "proxmox_virtual_environment_vm" "workers" {
     bridge = each.value.network_bridge
   }
 
+  cdrom {
+    file_id = proxmox_virtual_environment_download_file.talos_iso.id
+  }
+
   disk {
     datastore_id = "local-zfs"
     interface    = "virtio0"
-    file_id      = proxmox_virtual_environment_download_file.talos_metal_image.id
-    file_format  = "raw"
     size         = each.value.disk_size_gb
   }
 

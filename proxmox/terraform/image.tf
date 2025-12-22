@@ -21,16 +21,14 @@ resource "talos_image_factory_schematic" "this" {
   )
 }
 
-resource "proxmox_virtual_environment_download_file" "talos_metal_image" {
-  depends_on                  = [talos_image_factory_schematic.this]
-  content_type            = "iso"
-  datastore_id            = "local"
-  node_name               = var.proxmox_node
-
-  file_name               = "talos-${var.talos_version}-metal-amd64.img"
-  url                     = "https://factory.talos.dev/image/${talos_image_factory_schematic.this.id}/${var.talos_version}/metal-amd64.raw.zst"
-  decompression_algorithm = "zst"
-  overwrite               = false
+resource "proxmox_virtual_environment_download_file" "talos_iso" {
+  depends_on       = [talos_image_factory_schematic.this]
+  content_type     = "iso"
+  datastore_id     = "local"
+  node_name        = var.proxmox_node
+  file_name        = "talos-${var.talos_version}-metal-amd64.iso"
+  url              = "https://factory.talos.dev/image/${talos_image_factory_schematic.this.id}/${var.talos_version}/metal-amd64.iso"
+  overwrite        = false
 }
 
 output "schematic_id" {
