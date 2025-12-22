@@ -17,7 +17,7 @@ resource "proxmox_virtual_environment_vm" "control_plane" {
   }
 
   agent {
-    enabled = false # Talos doesn't run QEMU guest agent by default
+    enabled = true
   }
 
   network_device {
@@ -62,7 +62,7 @@ resource "proxmox_virtual_environment_vm" "workers" {
   }
 
   agent {
-    enabled = false # Talos doesn't run QEMU guest agent by default
+    enabled = true
   }
 
   network_device {
