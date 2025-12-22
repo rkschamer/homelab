@@ -1,51 +1,83 @@
-# Talos Cluster Nodes (Control Plane + Workers)
-resource "proxmox_vm_qemu" "nodes" {
-  for_each = { for node in var.nodes : node.name => node }
-
-  name        = each.value.name
-  target_node = var.proxmox_node
-  clone       = var.talos_template_name
-  vmid        = each.value.vm_id
-
-  # Full clone is required for independent VMs
-  full_clone = true
-
-  # VM settings - Talos doesn't run QEMU guest agent by default
-  agent              = 0
-  memory             = each.value.memory
-  start_at_node_boot = true
+# Talos Control Plane Node
+resource "proxmox_virtual_environment_vm" "control_plane" {
+  name        = "talos-control-plane-1"
+  description = "Managed by Terraform"
+  tags        = ["terraform", "talos", "control-plane"]
+  node_name   = var.proxmox_node
+  vm_id       = var.control_plane_vmid
+  on_boot     = true
 
   cpu {
-    sockets = 1
-    cores   = each.value.cores
+    cores = 2
+    type  = "host"
   }
 
-  # Disk configuration
-  disks {
-    scsi {
-      scsi0 {
-        disk {
-          storage = "local-zfs"
-          size    = each.value.disk_size
-        }
-      }
-    }
+  memory {
+    dedicated = 2048
   }
 
-  # Network configuration with static IP
-  network {
-    id     = 0
-    model  = "virtio"
+  agent {
+    enabled = false # Talos doesn't run QEMU guest agent by default
+  }
+
+  network_device {
+    bridge = "vmbr0" # Management Network
+  }
+
+  disk {
+    datastore_id = "local-zfs"
+    file_id      = proxmox_virtual_environment_download_file.talos_metal_image.id
+    file_format  = "raw"
+    interface    = "virtio0"
+    size         = 32
+  }
+
+  operating_system {
+    type = "l26" # Linux Kernel 2.6 - 5.X
+  }
+
+  # Talos doesn't use cloud-init - IP configuration is in Talos YAML files
+}
+
+# Talos Worker Nodes
+resource "proxmox_virtual_environment_vm" "workers" {
+  for_each = { for node in var.worker_nodes : node.name => node }
+
+  name        = each.value.name
+  description = "Managed by Terraform"
+  tags        = ["terraform", "talos", "worker", each.value.network_zone]
+  node_name   = var.proxmox_node
+  vm_id       = each.value.vmid
+  on_boot     = true
+
+  cpu {
+    cores = each.value.cores
+    # this would allow VM hotplug, which is currently not needed
+    #type  = "x86-64-v2-AES"
+    type = "host"
+  }
+
+  memory {
+    dedicated = each.value.memory
+  }
+
+  agent {
+    enabled = false # Talos doesn't run QEMU guest agent by default
+  }
+
+  network_device {
     bridge = each.value.network_bridge
   }
 
-  # Static IP configuration
-  ipconfig0 = "ip=${each.value.ip_address}/24,gw=${each.value.gateway}"
+  disk {
+    datastore_id = "local-zfs"
+    interface    = "virtio0"
+    file_id      = proxmox_virtual_environment_download_file.talos_metal_image.id
+    file_format  = "raw"
+    size         = each.value.disk_size_gb
+  }
 
-  # Increase timeouts for VM operations
-  timeouts {
-    create = "10m"
-    update = "5m"
-    delete = "5m"
+  operating_system {
+    type = "l26" # Linux Kernel 2.6 - 5.X
   }
 }
