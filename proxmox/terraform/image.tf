@@ -30,9 +30,6 @@ resource "proxmox_virtual_environment_download_file" "talos_iso" {
   url              = "https://factory.talos.dev/image/${talos_image_factory_schematic.this.id}/${var.talos_version}/metal-amd64.iso"
   overwrite        = false
 
-  lifecycle {
-    prevent_destroy = true
-  }
 }
 
 output "schematic_id" {

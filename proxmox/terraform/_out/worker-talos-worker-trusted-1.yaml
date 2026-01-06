@@ -1,0 +1,64 @@
+"cluster":
+  "ca":
+    "crt": "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJpakNDQVMrZ0F3SUJBZ0lRY3B3VzBpNWM4RW5DTkgzWmhJN2gvVEFLQmdncWhrak9QUVFEQWpBVk1STXcKRVFZRFZRUUtFd3ByZFdKbGNtNWxkR1Z6TUI0WERUSTJNREV3TmpFM016ZzFObG9YRFRNMk1ERXdOREUzTXpnMQpObG93RlRFVE1CRUdBMVVFQ2hNS2EzVmlaWEp1WlhSbGN6QlpNQk1HQnlxR1NNNDlBZ0VHQ0NxR1NNNDlBd0VICkEwSUFCTlJxeE01eVkxRmhja0Y1clpWZmhqVEpDdExpWU5iUWswVTAyNWZzZWVneHZ5ZW12RU5mS2w0eE44LzkKRVRMUnFmOTR1dnFjb0FIY0lqMW1hYTFGOXJlallUQmZNQTRHQTFVZER3RUIvd1FFQXdJQ2hEQWRCZ05WSFNVRQpGakFVQmdnckJnRUZCUWNEQVFZSUt3WUJCUVVIQXdJd0R3WURWUjBUQVFIL0JBVXdBd0VCL3pBZEJnTlZIUTRFCkZnUVUxUzNXLzhSaWoxdDdUdjJIeDc4Q0pBbTVJOEl3Q2dZSUtvWkl6ajBFQXdJRFNRQXdSZ0loQVBZNnF2UDEKR3lFVWYrOXkzZVpZZUs1SVhRKzg4TUI5SDI5amdNR05BTEFFQWlFQXV1ZlRyS0RNMmpuNU8zR1NrdFFtTXhIMgpoVWdzSVFWaDZMZWdhUVYrM3pRPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg=="
+    "key": ""
+  "clusterName": "homelab"
+  "controlPlane":
+    "endpoint": "https://192.168.123.20:6443"
+  "discovery":
+    "enabled": true
+    "registries":
+      "kubernetes":
+        "disabled": true
+      "service": {}
+  "id": "rVRnTiVFZM5u868EjFTj-kcC5BmUtgs9rVFn79iEVUk="
+  "network":
+    "dnsDomain": "cluster.local"
+    "podSubnets":
+    - "10.244.0.0/16"
+    "serviceSubnets":
+    - "10.96.0.0/12"
+  "secret": "8slW21/YTGo9FmoIjlRtg9dfRvR6XFpO+R9e6Xtxcyo="
+  "token": "rtfy8x.adwwbywrt68irygu"
+"debug": false
+"machine":
+  "ca":
+    "crt": "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJQakNCOGFBREFnRUNBaEFEQVNLTXBTTksvamgyS3RlTlh0Sm1NQVVHQXl0bGNEQVFNUTR3REFZRFZRUUsKRXdWMFlXeHZjekFlRncweU5qQXhNRFl4TnpNNE5UWmFGdzB6TmpBeE1EUXhOek00TlRaYU1CQXhEakFNQmdOVgpCQW9UQlhSaGJHOXpNQ293QlFZREsyVndBeUVBK05QdCs2MFJUWHBRdVlMUHlGeGNwS2FtUTZSOU9YbFJPdHh4Cmw1VEROQjJqWVRCZk1BNEdBMVVkRHdFQi93UUVBd0lDaERBZEJnTlZIU1VFRmpBVUJnZ3JCZ0VGQlFjREFRWUkKS3dZQkJRVUhBd0l3RHdZRFZSMFRBUUgvQkFVd0F3RUIvekFkQmdOVkhRNEVGZ1FVeGVaSEIwZFZkOEFCNHZDVAo3aHBobjNaa2I3VXdCUVlESzJWd0EwRUFScjB2eWxjbWlmRkMwNDVUN1FsMnhVUmtVM29xQ0lCK0xTSTBuK1FiCnlFUnErSFM0bmlyK3M0SmNlWnZrZFdqTjZXV09qMEdIWWRhQ0o4UGhTTDRBQlE9PQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg=="
+    "key": ""
+  "certSANs": []
+  "features":
+    "apidCheckExtKeyUsage": true
+    "diskQuotaSupport": true
+    "hostDNS":
+      "enabled": true
+      "forwardKubeDNSToHost": true
+    "kubePrism":
+      "enabled": true
+      "port": 7445
+    "rbac": true
+    "stableHostname": true
+  "install":
+    "disk": "/dev/sda"
+    "image": "ghcr.io/siderolabs/installer:v1.11.0"
+    "wipe": false
+  "kubelet":
+    "defaultRuntimeSeccompProfileEnabled": true
+    "disableManifestsDirectory": true
+    "image": "ghcr.io/siderolabs/kubelet:v1.34.0"
+  "network":
+    "interfaces":
+    - "addresses":
+      - "address": "10.10.20.10/24"
+      "dhcp": false
+      "interface": "eth0"
+      "routes":
+      - "destination": "0.0.0.0/0"
+        "gateway": "10.10.20.1"
+    "nameservers":
+      "servers":
+      - "8.8.8.8"
+      - "1.1.1.1"
+  "token": "65shyv.7mxqnxiuz506gvgv"
+  "type": "worker"
+"persist": true
+"version": "v1alpha1"
