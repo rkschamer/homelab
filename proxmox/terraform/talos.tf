@@ -66,7 +66,29 @@ resource "local_file" "worker_config" {
             install = merge(
               local.worker_config_patched.machine.install,
               { disk = "/dev/sda" }
-            )
+            ),
+            network = {
+              interfaces = [
+                {
+                  interface = "eth0"
+                  dhcp      = false
+                  addresses = [
+                    {
+                      address = "${each.value.ip_address}/${each.value.subnet_prefix}"
+                    }
+                  ]
+                  routes = [
+                    {
+                      destination = "0.0.0.0/0"
+                      gateway     = each.value.gateway
+                    }
+                  ]
+                }
+              ]
+              nameservers = {
+                servers = ["8.8.8.8", "1.1.1.1"]
+              }
+            }
           }
         )
       }
