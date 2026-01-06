@@ -10,3 +10,12 @@ git config --global pull.rebase true
 git config --global init.defaultBranch main
 git config --global safe.directory /workspaces/homelab
 echo "Git configuration complete."
+
+echo "Configuring shell aliases..."
+cat >> /home/vscode/.bash_aliases << 'EOF'
+
+# User-defined aliases
+alias k='kubectl'
+alias tf='terraform'
+EOF
+echo "Shell aliases configured."
