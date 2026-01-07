@@ -32,7 +32,7 @@ locals {
 
 # Save control plane configuration to file
 resource "local_file" "controlplane_config" {
-  filename = "${path.module}/_out/controlplane.yaml"
+  filename = "${path.module}/talos/controlplane.yaml"
   content = yamlencode(
     merge(
       local.controlplane_config_patched,
@@ -42,7 +42,11 @@ resource "local_file" "controlplane_config" {
           {
             install = merge(
               local.controlplane_config_patched.machine.install,
-              { disk = "/dev/vda" }
+              {
+                disk  = "/dev/vda"
+                image = "ghcr.io/siderolabs/installer:latest" # Allows for supplying the image used to perform the installation.
+                wipe  = false                                 # Indicates if the installation disk should be wiped at installation time.
+              }
             )
           }
         )
@@ -55,7 +59,7 @@ resource "local_file" "controlplane_config" {
 resource "local_file" "worker_config" {
   for_each = { for node in var.worker_nodes : node.name => node }
 
-  filename = "${path.module}/_out/worker-${each.value.name}.yaml"
+  filename = "${path.module}/talos/worker-${each.value.name}.yaml"
   content = yamlencode(
     merge(
       local.worker_config_patched,
@@ -65,29 +69,15 @@ resource "local_file" "worker_config" {
           {
             install = merge(
               local.worker_config_patched.machine.install,
-              { disk = "/dev/vda" }
+              {
+                disk  = "/dev/vda"
+                image = "ghcr.io/siderolabs/installer:latest" # Allows for supplying the image used to perform the installation.
+                wipe  = false                                 # Indicates if the installation disk should be wiped at installation time.
+              }
             ),
             network = {
-              interfaces = [
-                {
-                  interface = "eth0"
-                  dhcp      = false
-                  addresses = [
-                    {
-                      address = "${each.value.ip_address}/${each.value.subnet_prefix}"
-                    }
-                  ]
-                  routes = [
-                    {
-                      destination = "0.0.0.0/0"
-                      gateway     = each.value.gateway
-                    }
-                  ]
-                }
-              ]
-              nameservers = {
-                servers = ["8.8.8.8", "1.1.1.1"]
-              }
+              nameservers = ["8.8.8.8", "1.1.1.1"]
+
             }
           }
         )
