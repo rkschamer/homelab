@@ -112,65 +112,107 @@ Network configuration done in `/etc/network/interfaces` on Proxmox node. Configu
 
 ## Cluster Setup
 
-### Create VM Template
+The cluster is provisioned entirely using **Terraform** with the official **Talos** and **Proxmox** providers. This approach eliminates manual VM creation steps and generates all necessary Talos configurations automatically.
 
-The used VM template is manually created, since it pretty complex to use Terraform for this. To do this, a VM needs to be created, booted from iso first, installs Talso and then change the boot priority to boot from disk the next time.
-Instead the created VM template serves as "golden image", which is used to clone the actual nodes.
+### Prerequisites
 
-#### 1. Create Temporary VM
+1.  **Terraform:** Ensure Terraform is installed on your machine.
+2.  **Talos Tools:** Install `talosctl` and `talhelper` for cluster management.
+3.  **Proxmox API Access:** Ensure you have API credentials configured with appropriate permissions.
+4.  **Talos ISO:** Download the Talos installer ISO and upload it to your Proxmox storage.
 
-This VM also can be created using the Proxmox Web UI.
+### Setup Process
 
-```bash
-# 1. Create the VM with basic specs
-#    We'll use vmbr0 for now; it doesn't matter much for the template itself.
-qm create 9000 --name "talos-template" --memory 2048 --cores 2 --net0 virtio,bridge=vmbr0
+#### 1. Configure Terraform Variables
 
-# 2. Create a virtual disk for the OS installation
-qm set 9000 --scsihw virtio-scsi-pci --scsi0 local-zfs:vm-9000-disk-0,iothread=1,size=32G,ssd=1
+Create or edit [`proxmox/terraform/terraform.tfvars`](proxmox/terraform/terraform.tfvars) with your environment-specific values:
 
-# 3. Attach the Talos installer ISO
-qm set 9000 --ide2 local:iso/talos-metal-amd64.iso,media=cdrom
+```hcl
+proxmox_api_url           = "https://<PROXMOX_IP>:8006/api2/json"
+proxmox_api_token_id      = "<TOKEN_ID>"
+proxmox_api_token_secret  = "<TOKEN_SECRET>"
+proxmox_node              = "pve"
+cluster_name              = "homelab"
+control_plane_ip          = "192.168.123.20"
+control_plane_vmid        = 100
 
-# 4. Set the VM to boot from the ISO first
-qm set 9000 --boot order=ide2
-
-# 5. Add serial console settings (recommended for Talos)
-qm set 9000 --serial0 socket --vga serial0
-
-# 6. Start VM
-qm start 9000
+worker_nodes = [
+  {
+    name            = "talos-worker-dmz-1"
+    vmid            = 101
+    network_bridge  = "vmbr2"
+    network_zone    = "dmz"
+    cores           = 2
+    memory          = 2048
+    disk_size_gb    = 32
+  },
+  {
+    name            = "talos-worker-trusted-1"
+    vmid            = 102
+    network_bridge  = "vmbr1"
+    network_zone    = "trusted"
+    cores           = 2
+    memory          = 2048
+    disk_size_gb    = 32
+  },
+  # ... additional worker nodes
+]
 ```
 
-#### 2. Install Talos
+#### 2. Initialize and Apply Terraform
 
-The installation process will run, and the VM will automatically reboot itself.
-
-```bash
-talosctl apply-config --insecure --nodes <VM_IP_ADDRESS> --file ./proxmox/homelab-cluster/talos/controlplane.yaml
-```
-
-#### 3. Finalize and Convert to Template
-
-After the VM reboots, the installation is complete. Now, you'll clean it up and convert it into a read-only template.
+From the [`proxmox/terraform/`](proxmox/terraform/) directory:
 
 ```bash
-# 1. Wait for the installation to finish and the VM to reboot, then shut it down.
-qm shutdown 9000
+# Initialize Terraform
+terraform init
 
-# 2. Detach the installer ISO. It's no longer needed.
-qm set 9000 --ide2 none
+# Review planned infrastructure
+terraform plan
 
-# 3. Change the boot order to boot from the main disk (scsi0) from now on.
-qm set 9000 --boot order=scsi0
-
-# 4. (Optional but Recommended) Reset cloud-init data, just in case.
-#    This ensures clones get a clean slate.
-qm set 9000 --cicustom ""
-
-# 5. Convert the VM into a template. This makes it a read-only, clonable image.
-qm template 9000
+# Provision all VMs and generate Talos configurations
+terraform apply
 ```
+
+Terraform will:
+- Download the Talos ISO to Proxmox storage
+- Create the control plane VM and all worker nodes
+- Generate Talos machine configurations for all nodes (saved in `proxmox/terraform/talos/`)
+- Create the `talosconfig` file for cluster access
+
+#### 3. Apply Talos Configuration to Nodes
+
+Once the VMs are created and booted:
+
+```bash
+# Apply control plane configuration (from the terraform directory)
+talosctl apply-config --insecure --nodes 192.168.123.20 --file ./talos/controlplane.yaml
+
+# Apply worker node configurations
+talosctl apply-config --insecure --nodes 192.168.123.21 --file ./talos/worker-talos-worker-dmz-1.yaml
+talosctl apply-config --insecure --nodes 192.168.123.22 --file ./talos/worker-talos-worker-trusted-1.yaml
+# ... repeat for additional workers
+```
+
+The nodes will install Talos and reboot automatically.
+
+#### 4. Verify Cluster Readiness
+
+```bash
+# Export the generated talosconfig
+export TALOSCONFIG=./proxmox/terraform/talos/talosconfig
+
+# Wait for the control plane to be ready
+talosctl health
+
+# Retrieve kubeconfig
+talosctl kubeconfig -n 192.168.123.20 > ~/.kube/config
+
+# Verify cluster connectivity
+kubectl get nodes
+```
+
+Your Talos Kubernetes cluster is now ready for bootstrap with Flux and core platform components.
 
 ## 2. Step-by-Step Migration Plan
 
