@@ -42,7 +42,7 @@ resource "local_file" "controlplane_config" {
           {
             install = merge(
               local.controlplane_config_patched.machine.install,
-              { disk = "/dev/sda" }
+              { disk = "/dev/vda" }
             )
           }
         )
@@ -65,7 +65,7 @@ resource "local_file" "worker_config" {
           {
             install = merge(
               local.worker_config_patched.machine.install,
-              { disk = "/dev/sda" }
+              { disk = "/dev/vda" }
             ),
             network = {
               interfaces = [
