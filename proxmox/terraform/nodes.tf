@@ -38,6 +38,10 @@ resource "proxmox_virtual_environment_vm" "control_plane" {
     type = "l26" # Linux Kernel 2.6 - 5.X
   }
 
+  lifecycle {
+    ignore_changes = [cdrom]
+  }
+
   # Talos doesn't use cloud-init - IP configuration is in Talos YAML files
 }
 
@@ -89,5 +93,11 @@ resource "proxmox_virtual_environment_vm" "workers" {
 
   operating_system {
     type = "l26" # Linux Kernel 2.6 - 5.X
+  }
+
+  # ignore changes to cdrom to prevent reinstallation on config updates
+  # otherwise, an update in Talos version would reset the CD-ROM drive
+  lifecycle {
+    ignore_changes = [cdrom]
   }
 }

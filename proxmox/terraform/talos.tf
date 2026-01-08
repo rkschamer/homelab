@@ -44,8 +44,8 @@ resource "local_file" "controlplane_config" {
               local.controlplane_config_patched.machine.install,
               {
                 disk  = "/dev/vda"
-                image = "ghcr.io/siderolabs/installer:latest" # Allows for supplying the image used to perform the installation.
-                wipe  = false                                 # Indicates if the installation disk should be wiped at installation time.
+                image = "factory.talos.dev/installer/${talos_image_factory_schematic.this.id}:${var.talos_version}" # Custom image with qemu-guest-agent from Image Factory
+                wipe  = false                                                                                            # Indicates if the installation disk should be wiped at installation time.
               }
             )
           }
@@ -71,13 +71,12 @@ resource "local_file" "worker_config" {
               local.worker_config_patched.machine.install,
               {
                 disk  = "/dev/vda"
-                image = "ghcr.io/siderolabs/installer:latest" # Allows for supplying the image used to perform the installation.
-                wipe  = false                                 # Indicates if the installation disk should be wiped at installation time.
+                image = "factory.talos.dev/installer/${talos_image_factory_schematic.this.id}:${var.talos_version}" # Custom image with qemu-guest-agent from Image Factory
+                wipe  = false                                                                                        # Indicates if the installation disk should be wiped at installation time.
               }
             ),
             network = {
               nameservers = ["8.8.8.8", "1.1.1.1"]
-
             }
           }
         )
