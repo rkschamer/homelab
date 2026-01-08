@@ -113,13 +113,13 @@ Endpoint: <DHCP_IP>
 Configure `talosctl` and apply the control plane config:
 
 ```bash
-export TALOSCONFIG="$(pwd)/_out/talosconfig"
+export TALOSCONFIG="$(pwd)/talos/talosconfig"
 export CONTROL_PLANE_IP=<DHCP_IP_from_console>
 
 talosctl config endpoint $CONTROL_PLANE_IP
 talosctl config node $CONTROL_PLANE_IP
 
-talosctl apply-config --insecure --nodes $CONTROL_PLANE_IP --file _out/controlplane.yaml
+talosctl apply-config --insecure --nodes $CONTROL_PLANE_IP --file talos/controlplane.yaml
 ```
 
 The `--insecure` flag is used because the node hasn't fully joined the cluster yet. Once applied, Talos will:

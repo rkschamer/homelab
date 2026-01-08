@@ -37,6 +37,12 @@ resource "local_file" "controlplane_config" {
     merge(
       local.controlplane_config_patched,
       {
+        cluster = merge(
+          local.controlplane_config_patched.cluster,
+          {
+            proxy = null # Disable kube-proxy since Cilium eBPF mode handles service load balancing
+          }
+        ),
         machine = merge(
           local.controlplane_config_patched.machine,
           {
