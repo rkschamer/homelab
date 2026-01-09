@@ -32,7 +32,7 @@ locals {
 
 # Save control plane configuration to file
 resource "local_file" "controlplane_config" {
-  filename = "${path.module}/talos/controlplane.yaml"
+  filename = "${path.module}/../talos/controlplane.yaml"
   content = yamlencode(
     merge(
       local.controlplane_config_patched,
@@ -51,7 +51,7 @@ resource "local_file" "controlplane_config" {
               {
                 disk  = "/dev/vda"
                 image = "factory.talos.dev/installer/${talos_image_factory_schematic.this.id}:${var.talos_version}" # Custom image with qemu-guest-agent from Image Factory
-                wipe  = false                                                                                            # Indicates if the installation disk should be wiped at installation time.
+                wipe  = false                                                                                       # Indicates if the installation disk should be wiped at installation time.
               }
             )
           }
@@ -65,7 +65,7 @@ resource "local_file" "controlplane_config" {
 resource "local_file" "worker_config" {
   for_each = { for node in var.worker_nodes : node.name => node }
 
-  filename = "${path.module}/talos/worker-${each.value.name}.yaml"
+  filename = "${path.module}/../talos/worker-${each.value.name}.yaml"
   content = yamlencode(
     merge(
       local.worker_config_patched,
