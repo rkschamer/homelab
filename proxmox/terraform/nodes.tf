@@ -20,8 +20,29 @@ resource "proxmox_virtual_environment_vm" "control_plane" {
     enabled = true
   }
 
+  # Management Network (192.168.123.0/24)
   network_device {
-    bridge = "vmbr0" # Management Network
+    bridge = "vmbr0"
+  }
+
+  # Trusted Network (10.10.20.0/24)
+  network_device {
+    bridge = "vmbr1"
+  }
+
+  # DMZ Network (10.10.30.0/24)
+  network_device {
+    bridge = "vmbr2"
+  }
+
+  # Untrusted Network (10.10.40.0/24)
+  network_device {
+    bridge = "vmbr3"
+  }
+
+  # Monitoring Network (10.10.50.0/24)
+  network_device {
+    bridge = "vmbr4"
   }
 
   cdrom {
