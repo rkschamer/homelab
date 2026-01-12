@@ -34,16 +34,22 @@ variable "cluster_name" {
   default     = "homelab"
 }
 
-variable "control_plane_ip" {
-  type        = string
-  description = "IP address of the control plane node."
-  default     = "192.168.123.20"
-}
-
-variable "control_plane_vmid" {
-  type        = number
-  description = "VM ID for the control plane node."
-  default     = 200
+variable "control_plane" {
+  description = "List of control plane node configurations."
+  type = list(object({
+    name           = string
+    vmid           = number
+    ip_address     = string
+    disk_size_gb   = number
+    memory         = number
+    cores          = number
+    network_devices = list(object({
+      bridge      = string
+      mac_address = string
+    }))
+    gateway       = string
+    subnet_prefix = number
+  }))
 }
 
 variable "worker_nodes" {
@@ -55,10 +61,13 @@ variable "worker_nodes" {
     disk_size_gb   = number
     memory         = number
     cores          = number
-    network_bridge = string
-    network_zone   = string
-    gateway        = string
-    subnet_prefix  = number
+    network_devices = list(object({
+      bridge      = string
+      mac_address = string
+    }))
+    network_zone  = string
+    gateway       = string
+    subnet_prefix = number
   }))
   default = []
 }
