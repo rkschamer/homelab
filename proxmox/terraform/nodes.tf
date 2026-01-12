@@ -1,48 +1,34 @@
-# Talos Control Plane Node
+# Talos Control Plane Nodes
 resource "proxmox_virtual_environment_vm" "control_plane" {
-  name        = "talos-control-plane-1"
+  for_each = { for node in var.control_plane : node.name => node }
+
+  name        = each.value.name
   description = "Managed by Terraform"
   tags        = ["terraform", "talos", "control-plane"]
   node_name   = var.proxmox_node
-  vm_id       = var.control_plane_vmid
+  vm_id       = each.value.vmid
   on_boot     = true
 
   cpu {
-    cores = 2
+    cores = each.value.cores
     type  = "host"
   }
 
   memory {
-    dedicated = 2048
+    dedicated = each.value.memory
   }
 
   agent {
     enabled = true
   }
 
-  # Management Network (192.168.123.0/24)
-  network_device {
-    bridge = "vmbr0"
-  }
-
-  # Trusted Network (10.10.20.0/24)
-  network_device {
-    bridge = "vmbr1"
-  }
-
-  # DMZ Network (10.10.30.0/24)
-  network_device {
-    bridge = "vmbr2"
-  }
-
-  # Untrusted Network (10.10.40.0/24)
-  network_device {
-    bridge = "vmbr3"
-  }
-
-  # Monitoring Network (10.10.50.0/24)
-  network_device {
-    bridge = "vmbr4"
+  # Network devices from configuration
+  dynamic "network_device" {
+    for_each = each.value.network_devices
+    content {
+      bridge      = network_device.value.bridge
+      mac_address = network_device.value.mac_address
+    }
   }
 
   cdrom {
@@ -52,7 +38,7 @@ resource "proxmox_virtual_environment_vm" "control_plane" {
   disk {
     datastore_id = "local-zfs"
     interface    = "virtio0"
-    size         = 32
+    size         = each.value.disk_size_gb
   }
 
   operating_system {
@@ -97,9 +83,13 @@ resource "proxmox_virtual_environment_vm" "workers" {
     bridge = "vmbr0"
   }
 
-  # Production network (isolated)
-  network_device {
-    bridge = each.value.network_bridge
+  # Production networks from configuration
+  dynamic "network_device" {
+    for_each = each.value.network_devices
+    content {
+      bridge      = network_device.value.bridge
+      mac_address = network_device.value.mac_address
+    }
   }
 
   cdrom {
