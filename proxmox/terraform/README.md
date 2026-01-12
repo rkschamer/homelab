@@ -41,10 +41,12 @@ This Terraform configuration deploys a Talos Kubernetes cluster on Proxmox VE us
 ├── terraform.tfvars     # API credentials and cluster config
 ├── patches/
 │   └── install-disk-and-hostname.yaml.tpl  # Config patch template
-└── _out/                # Generated configs (created on `terraform apply`)
-    ├── controlplane.yaml
-    ├── worker-*.yaml
-    └── talosconfig
+└── talos/
+    ├── gen/               # Generated configs (created on `terraform apply`)
+    │   ├── controlplane.yaml
+    │   ├── worker-*.yaml
+    │   └── talosconfig
+    └── ...
 ```
 
 ## Quick Start
@@ -92,10 +94,29 @@ terraform apply
 This will:
 - Download the Talos ISO with custom extensions (QEMU guest agent, AMD GPU support, etc.)
 - Create VMs with CDROM boot from ISO
-- Generate machine configurations and save to `_out/`
+- Generate machine configurations and save to `talos/gen/`
 - Output paths to generated config files
 
-### 3. Boot Control Plane from ISO
+⚠️ **Important**: After `terraform apply` completes, **remove the ISO from the CDROM of each node** in Proxmox before booting. Otherwise, nodes will keep booting into the Talos maintenance mode instead of the installed system. In the Proxmox UI:
+1. Select each VM (control plane + workers)
+2. Go to **Hardware** tab
+3. Double-click the CDROM device
+4. Select **Do not use any media** or remove the ISO
+5. Confirm
+
+Then proceed with configuring the nodes.
+
+### 3. Generated Configuration Files
+
+After `terraform apply`, the `talos/gen/` directory contains generated machine configurations:
+
+- **controlplane.yaml**: Talos machine config for the control plane
+- **worker-*.yaml**: Talos machine configs for each worker (one per file)
+- **talosconfig**: Talos client configuration (contains cluster credentials)
+
+**Important**: These configs are generated from Talos defaults and include standard patches (disk device, custom container image). Review and customize them before applying if needed.
+
+### 4. Boot Control Plane from ISO
 
 The VM will automatically boot from the ISO and enter **maintenance mode**. You'll see in the Proxmox console:
 
@@ -108,28 +129,43 @@ Endpoint: <DHCP_IP>
 
 **Note the DHCP IP displayed in the console.**
 
-### 4. Apply Configuration to Control Plane
+### 5. Customize Configuration (Optional)
+
+Before applying configs, you can modify them as needed:
+
+```bash
+# Edit the generated config to add custom patches, networking, etc.
+vim talos/gen/controlplane.yaml
+
+# Common customizations:
+# - Add extra kernel parameters
+# - Configure additional network interfaces
+# - Enable/disable specific components
+# - Add custom extensions
+```
+
+### 6. Apply Configuration to Control Plane
 
 Configure `talosctl` and apply the control plane config:
 
 ```bash
-export TALOSCONFIG="$(pwd)/talos/talosconfig"
+export TALOSCONFIG="$(pwd)/talos/gen/talosconfig"
 export CONTROL_PLANE_IP=<DHCP_IP_from_console>
 
 talosctl config endpoint $CONTROL_PLANE_IP
 talosctl config node $CONTROL_PLANE_IP
 
-talosctl apply-config --insecure --nodes $CONTROL_PLANE_IP --file talos/controlplane.yaml
+talosctl apply-config --insecure --nodes $CONTROL_PLANE_IP --file talos/gen/controlplane.yaml
 ```
 
 The `--insecure` flag is used because the node hasn't fully joined the cluster yet. Once applied, Talos will:
-- Install to disk (`/dev/sda`)
+- Install to disk (`/dev/vda`)
 - Reboot automatically
 - Start the Kubernetes control plane
 
 Monitor progress in the Proxmox console. The node will reboot and stabilize.
 
-### 5. Bootstrap the Cluster
+### 7. Bootstrap the Cluster
 
 Once the control plane is stable (check Proxmox console), bootstrap etcd:
 
@@ -139,17 +175,17 @@ talosctl bootstrap
 
 This initializes the Kubernetes API. Wait 30-60 seconds for it to become ready.
 
-### 6. Retrieve Kubeconfig
+### 8. Retrieve Kubeconfig
 
 ```bash
 talosctl kubeconfig .
-export KUBECONFIG="$(pwd)/kubeconfig"
+export KUBECONFIG="$(pwd)/talos/gen/kubeconfig"
 kubectl get nodes
 ```
 
 You should see the control plane node listed.
 
-### 7. Configure Worker Nodes
+### 9. Configure Worker Nodes
 
 For each worker node, repeat the process:
 
@@ -157,13 +193,13 @@ For each worker node, repeat the process:
 2. **Apply the worker config**:
    ```bash
    export WORKER_IP=<DHCP_IP_from_console>
-   talosctl apply-config --insecure --nodes $WORKER_IP --file _out/worker-<name>.yaml
+   talosctl apply-config --insecure --nodes $WORKER_IP --file talos/gen/worker-<name>.yaml
    ```
 3. **Wait for installation and reboot** (~30-60 seconds)
 
 Workers automatically register with the cluster once configured.
 
-### 8. Verify All Nodes
+### 10. Verify All Nodes
 
 ```bash
 kubectl get nodes
@@ -198,13 +234,19 @@ If `terraform destroy` exits with code 1:
 
 ## Configuration Files Generated
 
-After `terraform apply`, the `_out/` directory contains:
+After `terraform apply`, the `talos/gen/` directory contains:
 
-- **controlplane.yaml**: Machine config for the control plane node
-- **worker-*.yaml**: Machine configs for each worker node (one per file)
-- **talosconfig**: Talos client config (sensitive, used by `talosctl`)
+- **controlplane.yaml**: Machine config for the control plane node (generated from `talos.tf`)
+- **worker-*.yaml**: Machine configs for each worker node (one per file, generated from `talos.tf`)
+- **talosconfig**: Talos client config (sensitive, used by `talosctl` to authenticate)
 
-These are generated from the Talos machine configuration data sources, with patches applied for disk and hostname settings.
+**Generation Process**:
+1. Terraform generates base machine configs using the Talos provider
+2. Standard patches are applied (disk device, container image URL)
+3. Configs are saved as clean, readable YAML files in `_out/`
+4. You can review and customize before manual application via `talosctl`
+
+This semi-automated approach gives you full control over node configuration while eliminating most manual setup work.
 
 ## Network Architecture
 
