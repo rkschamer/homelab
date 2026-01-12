@@ -29,95 +29,76 @@ locals {
   controlplane_config_patched = yamldecode(data.talos_machine_configuration.controlplane.machine_configuration)
   worker_config_patched       = yamldecode(data.talos_machine_configuration.worker.machine_configuration)
 
-  # Read external Kubernetes manifests to embed
-  manifests_dir = "${path.module}/talos/manifests"
-  manifest_files = try(
-    [for file in fileset(local.manifests_dir, "*.yaml") : file],
-    []
-  )
+  # Base manifests directory
+  manifests_base_dir = "${path.module}/talos/manifests"
+}
 
-  # Embed manifests into cluster config
-  controlplane_with_manifests = merge(
-    local.controlplane_config_patched,
-    {
-      cluster = merge(
-        local.controlplane_config_patched.cluster,
-        {
-          inlineManifests = concat(
-            try(local.controlplane_config_patched.cluster.inlineManifests, []),
-            [
-              for manifest_file in local.manifest_files : {
-                name    = basename(manifest_file)
-                content = file("${local.manifests_dir}/${manifest_file}")
-              }
-            ]
-          )
-        }
-      )
-    }
-  )
+# Read manifests for each control plane node
+locals {
+  controlplane_manifests = {
+    for node in var.control_plane : node.name => try(
+      [for file in fileset("${local.manifests_base_dir}/${node.name}", "*.yaml") : file],
+      []
+    )
+  }
+
+  # Debug: Show what manifests were found
+  debug_manifests_dir          = local.manifests_base_dir
+  debug_controlplane_manifests = local.controlplane_manifests
 }
 
 # Save control plane configurations to files
 resource "local_file" "controlplane_config" {
   for_each = { for node in var.control_plane : node.name => node }
 
-  filename = "${path.module}/talos/out/configs/${each.value.name}.yaml"
-  content = yamlencode(
-    merge(
-      local.controlplane_with_manifests,
-      {
-        cluster = merge(
-          local.controlplane_with_manifests.cluster,
-          {
-            proxy = null # Disable kube-proxy since Cilium eBPF mode handles service load balancing
-          }
-        ),
-        machine = merge(
-          local.controlplane_with_manifests.machine,
-          {
-            hostname = each.value.name
-            install = merge(
-              local.controlplane_with_manifests.machine.install,
-              {
-                disk  = "/dev/vda"
-                image = "factory.talos.dev/installer/${talos_image_factory_schematic.this.id}:${var.talos_version}" # Custom image with qemu-guest-agent from Image Factory
-                wipe  = false                                                                                       # Indicates if the installation disk should be wiped at installation time.
-              }
-            ),
-            network = {
-              hostname  = each.value.name
-              interfaces = [
-                {
-                  interface = "eth0"
-                  dhcp      = false
-                  addresses = [
-                    {
-                      address = "${each.value.ip_address}/${each.value.subnet_prefix}"
-                    }
-                  ]
-                  routes = [
-                    {
-                      destination = "0.0.0.0/0"
-                      gateway     = each.value.gateway
-                    }
-                  ]
-                }
-              ]
-              nameservers = ["8.8.8.8", "1.1.1.1"]
+  filename = "${path.module}/talos/gen/${each.value.name}.yaml"
+  content = join("---\n", concat(
+    [yamlencode(
+      merge(
+        local.controlplane_config_patched,
+        {
+          cluster = merge(
+            local.controlplane_config_patched.cluster,
+            {
+              proxy = null # Disable kube-proxy since Cilium eBPF mode handles service load balancing
             }
-          }
-        )
-      }
-    )
-  )
+          ),
+          machine = merge(
+            local.controlplane_config_patched.machine,
+            {
+              install = merge(
+                local.controlplane_config_patched.machine.install,
+                {
+                  disk  = "/dev/vda"
+                  image = "factory.talos.dev/installer/${talos_image_factory_schematic.this.id}:${var.talos_version}" # Custom image with qemu-guest-agent from Image Factory
+                  wipe  = false                                                                                       # Indicates if the installation disk should be wiped at installation time.
+                }
+              )
+            },
+            {
+              features = merge(
+                local.controlplane_config_patched.machine.features,
+                {
+                  stableHostname = false
+                }
+              )
+            }
+          )
+        },
+      )
+    )],
+    [
+      for manifest_file in local.controlplane_manifests[each.value.name] :
+      file("${local.manifests_base_dir}/${each.value.name}/${manifest_file}")
+    ]
+  ))
 }
 
 # Save worker node configurations to files
 resource "local_file" "worker_config" {
   for_each = { for node in var.worker_nodes : node.name => node }
 
-  filename = "${path.module}/talos/out/configs/${each.value.name}.yaml"
+  filename = "${path.module}/talos/gen/${each.value.name}.yaml"
   content = yamlencode(
     merge(
       local.worker_config_patched,
@@ -130,11 +111,11 @@ resource "local_file" "worker_config" {
               {
                 disk  = "/dev/vda"
                 image = "factory.talos.dev/installer/${talos_image_factory_schematic.this.id}:${var.talos_version}" # Custom image with qemu-guest-agent from Image Factory
-                wipe  = false                                                                                        # Indicates if the installation disk should be wiped at installation time.
+                wipe  = false                                                                                       # Indicates if the installation disk should be wiped at installation time.
               }
             ),
             network = {
-              hostname  = each.value.name
+              hostname = each.value.name
               interfaces = [
                 {
                   interface = "eth0"
@@ -155,8 +136,8 @@ resource "local_file" "worker_config" {
               nameservers = ["8.8.8.8", "1.1.1.1"]
             },
             labels = {
-              "workload-type"  = each.value.network_zone
-              "network-zone"   = each.value.network_zone
+              "workload-type" = each.value.network_zone
+              "network-zone"  = each.value.network_zone
             }
           }
         )
@@ -167,7 +148,7 @@ resource "local_file" "worker_config" {
 
 # Save talosconfig to file for reference
 resource "local_file" "talosconfig" {
-  filename = "${path.module}/../talos/talosconfig"
+  filename = "${path.module}/talos/gen/talosconfig"
   content  = data.talos_client_configuration.this.talos_config
 }
 
