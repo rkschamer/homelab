@@ -28,6 +28,34 @@ data "talos_machine_configuration" "worker" {
 locals {
   controlplane_config_patched = yamldecode(data.talos_machine_configuration.controlplane.machine_configuration)
   worker_config_patched       = yamldecode(data.talos_machine_configuration.worker.machine_configuration)
+
+  # Read external Kubernetes manifests to embed
+  manifests_dir = "${path.module}/talos/manifests"
+  manifest_files = try(
+    [for file in fileset(local.manifests_dir, "*.yaml") : file],
+    []
+  )
+
+  # Embed manifests into cluster config
+  controlplane_with_manifests = merge(
+    local.controlplane_config_patched,
+    {
+      cluster = merge(
+        local.controlplane_config_patched.cluster,
+        {
+          inlineManifests = concat(
+            try(local.controlplane_config_patched.cluster.inlineManifests, []),
+            [
+              for manifest_file in local.manifest_files : {
+                name    = basename(manifest_file)
+                content = file("${local.manifests_dir}/${manifest_file}")
+              }
+            ]
+          )
+        }
+      )
+    }
+  )
 }
 
 # Save control plane configuration to file
@@ -35,19 +63,19 @@ resource "local_file" "controlplane_config" {
   filename = "${path.module}/../talos/controlplane.yaml"
   content = yamlencode(
     merge(
-      local.controlplane_config_patched,
+      local.controlplane_with_manifests,
       {
         cluster = merge(
-          local.controlplane_config_patched.cluster,
+          local.controlplane_with_manifests.cluster,
           {
             proxy = null # Disable kube-proxy since Cilium eBPF mode handles service load balancing
           }
         ),
         machine = merge(
-          local.controlplane_config_patched.machine,
+          local.controlplane_with_manifests.machine,
           {
             install = merge(
-              local.controlplane_config_patched.machine.install,
+              local.controlplane_with_manifests.machine.install,
               {
                 disk  = "/dev/vda"
                 image = "factory.talos.dev/installer/${talos_image_factory_schematic.this.id}:${var.talos_version}" # Custom image with qemu-guest-agent from Image Factory
@@ -93,7 +121,7 @@ resource "local_file" "worker_config" {
 
 # Save talosconfig to file for reference
 resource "local_file" "talosconfig" {
-  filename = "${path.module}/_out/talosconfig"
+  filename = "${path.module}/../talos/talosconfig"
   content  = data.talos_client_configuration.this.talos_config
 }
 
