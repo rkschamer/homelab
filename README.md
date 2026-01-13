@@ -234,11 +234,76 @@ This plan outlines a gradual transition from a single Docker host to the new Kub
 3.  **Generate Talos Configuration:** Use `talosctl gen config` to generate the machine configurations for your control plane and worker nodes.
   - Talos files are kept in this repository, but are encrypted with git-crypt
 4.  **Install Talos Cluster:** Boot the VMs with the generated configurations to form the cluster.
-5.  **Bootstrap the Cluster:** From your local machine, install the core components via Helm and Flux:
-    *   **Cilium + Hubble** (in kube-proxy replacement mode)
-    *   **MetalLB**
+5.  **Bootstrap the Cluster:** From your local machine, install the core components via Helm:
+    *   **Cilium + Hubble** (in eBPF mode, kube-proxy replacement)
+    *   **MetalLB** (Layer 2 mode)
     *   **Sealed Secrets Controller**
-    *   **Flux CD** (pointing to this repository)
+    *   **Flux CD** (pointing to this repository) - *will manage all application deployments going forward*
+
+#### 5.1 Install Cilium and Hubble
+
+Cilium is the CNI (Container Network Interface) that replaces kube-proxy and provides advanced networking and security policies.
+
+**Prerequisites:**
+- `helm` CLI installed locally
+- `kubectl` configured to access your cluster
+- `cilium-cli` installed (optional but recommended for verification)
+
+**Install Cilium with Hubble:**
+
+```bash
+# Add Cilium Helm repository
+helm repo add cilium https://helm.cilium.io
+helm repo update
+
+# Create cilium namespace
+kubectl create namespace cilium
+
+# Install Cilium with eBPF mode and Hubble
+helm install cilium cilium/cilium \
+  --namespace cilium \
+  --set kubeProxyReplacement=true \
+  --set ebpf.enabled=true \
+  --set hubble.enabled=true \
+  --set hubble.metrics.enabled=true \
+  --set hubble.relay.enabled=true \
+  --set hubble.ui.enabled=true \
+  --set l7Proxy=true \
+  --set policyEnforcementMode=default \
+  --set routingMode=native \
+  --set endpointRoutes.enabled=true \
+  --wait
+```
+
+**Key configuration options:**
+- `kubeProxyReplacement=true`: Cilium replaces kube-proxy for service load balancing
+- `ebpf.enabled=true`: Use eBPF for efficient networking and packet processing
+- `hubble.enabled=true`: Enable Hubble for network visibility and observability
+- `hubble.ui.enabled=true`: Deploy Hubble UI for visual network debugging
+- `policyEnforcementMode=default`: Enforce CiliumNetworkPolicy by default (deny unless explicitly allowed)
+- `l7Proxy=true`: Enable Layer 7 (application-level) visibility for debugging
+
+**Verify Installation:**
+
+```bash
+# Check Cilium pods are running
+kubectl get pods -n cilium
+
+# Verify Cilium agent status
+kubectl exec -n cilium -t ds/cilium -- cilium status
+
+# Check that kube-proxy is not running
+kubectl get daemonset -n kube-system kube-proxy
+
+# Port-forward to Hubble UI (optional)
+kubectl port-forward -n cilium svc/hubble-ui 8081:80
+# Then visit http://localhost:8081 in your browser
+```
+
+**Next Steps:**
+After Cilium is running, proceed to install MetalLB and other core components. Network policies can be defined later as applications are deployed.
+
+For detailed installation instructions, troubleshooting, and network policy examples, see [docs/CILIUM_HUBBLE_SETUP.md](docs/CILIUM_HUBBLE_SETUP.md).
 
 ### **Phase 2: Deploy Core Services via GitOps (No Downtime)**
 
