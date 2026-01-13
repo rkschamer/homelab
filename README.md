@@ -182,35 +182,157 @@ Terraform will:
 
 #### 3. Apply Talos Configuration to Nodes
 
-Once the VMs are created and booted:
+Worker nodes are attached **only to their workload networks** (vmbr1-4), not the management network. To reach them for configuration during bootstrap, the control plane acts as an SSH bastion. **No manual routing configuration is needed.**
+
+**Step 3a: Boot Control Plane and Verify Access**
+
+Start the control plane VM and verify SSH connectivity:
 
 ```bash
-# Apply control plane configuration (from the terraform directory)
-talosctl apply-config --insecure --nodes 192.168.123.20 --file ./talos/controlplane.yaml
+# Start control plane VM
+qm start 200
 
-# Apply worker node configurations
-talosctl apply-config --insecure --nodes 192.168.123.21 --file ./talos/worker-talos-worker-dmz-1.yaml
-talosctl apply-config --insecure --nodes 192.168.123.22 --file ./talos/worker-talos-worker-trusted-1.yaml
-# ... repeat for additional workers
+# Wait 2-3 minutes for boot, then verify SSH access
+ssh talosctl@192.168.123.20
+# Accept the host key when prompted
+exit
+
+# Start worker VMs
+qm start 220 221 222 223
 ```
 
-The nodes will install Talos and reboot automatically.
+**Step 3b: Set Worker Static IPs via Proxmox Console**
+
+Since workload networks (vmbr1-4) have no DHCP servers, manually set static IPs via Proxmox console for each worker:
+
+1. In Proxmox web UI, select the worker VM (e.g., `talos-worker-dmz-1`)
+2. Go to **Console** tab
+3. Watch the Talos boot sequence
+4. When boot menu appears, press **'c'** for console/dashboard access
+5. Configure network interface with static IP:
+
+   | Worker | IP Address | Gateway |
+   |--------|-----------|---------|
+   | talos-worker-trusted-1 | 10.10.20.21/24 | 10.10.20.1 |
+   | talos-worker-dmz-1 | 10.10.30.21/24 | 10.10.30.1 |
+   | talos-worker-untrusted-1 | 10.10.40.21/24 | 10.10.40.1 |
+   | talos-worker-monitoring-1 | 10.10.50.21/24 | 10.10.50.1 |
+
+6. Save and boot the worker
+7. Verify console shows: `Endpoint: 10.10.x.21`
+
+**Step 3c: Configure talosctl to Use Control Plane as Bastion**
+
+```bash
+# Set TALOSCONFIG environment variable
+export TALOSCONFIG=$(pwd)/proxmox/terraform/talos/gen/talosconfig
+
+# Configure talosctl to use control plane as proxy node
+talosctl config endpoint 192.168.123.20
+talosctl config node 192.168.123.20
+```
+
+Example console output:
+```
+Welcome to Talos!
+Run "talosctl apply-config" to configure the node
+
+Endpoint: 10.10.30.21
+```
+
+**Step 3c: Apply Talos Configurations**
+
+Now you can reach workers on their workload network IPs and apply the machine configuration:
+
+```bash
+# Set TALOSCONFIG environment variable
+export TALOSCONFIG=$(pwd)/proxmox/terraform/talos/gen/talosconfig
+
+# Set config endpoint to control plane (on management network)
+talosctl config endpoint 192.168.123.20
+talosctl config node 192.168.123.20
+
+# Apply control plane configuration
+talosctl apply-config --insecure --nodes 192.168.123.20 --file ./talos/gen/talos-controlplane-1.yaml
+
+# Wait for control plane to be ready (~2-3 minutes)
+sleep 120
+
+# Apply worker configurations using their workload network IPs
+# (Replace with actual IPs from Proxmox console)
+talosctl apply-config --insecure --nodes 10.10.20.21 --file ./talos/gen/talos-worker-trusted-1.yaml
+talosctl apply-config --insecure --nodes 10.10.30.21 --file ./talos/gen/talos-worker-dmz-1.yaml
+talosctl apply-config --insecure --nodes 10.10.40.21 --file ./talos/gen/talos-worker-untrusted-1.yaml
+talosctl apply-config --insecure --nodes 10.10.50.21 --file ./talos/gen/talos-worker-monitoring-1.yaml
+```
+
+**Important:** The `--insecure` flag is used because nodes haven't joined the cluster yet and don't have valid certificates.
+
+Nodes will install to disk and reboot automatically. This takes 1-2 minutes per node.
 
 #### 4. Verify Cluster Readiness
 
 ```bash
 # Export the generated talosconfig
-export TALOSCONFIG=./proxmox/terraform/talos/talosconfig
+export TALOSCONFIG=./proxmox/terraform/talos/gen/talosconfig
 
-# Wait for the control plane to be ready
+# Wait for the control plane to be ready (may take 3-5 minutes)
 talosctl health
 
 # Retrieve kubeconfig
 talosctl kubeconfig -n 192.168.123.20 > ~/.kube/config
+export KUBECONFIG=$(pwd)/.kube/config
 
 # Verify cluster connectivity
 kubectl get nodes
+# Expected output:
+# NAME                    STATUS   ROLES           AGE    VERSION
+# talos-controlplane-1    Ready    control-plane   2m     v1.x.x
+# talos-worker-trusted-1  Ready    <none>          1m     v1.x.x
+# talos-worker-dmz-1      Ready    <none>          1m     v1.x.x
+# ... etc
 ```
+
+**Note on node status:**
+- Nodes may show `NotReady` initially while CNI (Cilium) is being deployed
+- Wait 2-3 minutes for all pods to be ready
+- Once CNI is running, all nodes should show `Ready`
+
+#### 5. Understand Network Connectivity After Bootstrap
+
+After all nodes are installed and rebooted:
+
+1. **Control Plane (192.168.123.20)**
+   - Connected to vmbr0 (management network)
+   - Reachable from your admin machine on home LAN
+   - Runs Kubernetes API and MetalLB speaker
+
+2. **Worker Nodes (isolated networks)**
+   - Connected ONLY to their workload networks (10.10.x.x/24)
+   - Reachable via static routes from your admin machine
+   - Use static routes in LinkConfig to reach control plane (192.168.123.20)
+   - Use static routes to reach management network (192.168.123.0/24) for backend services
+
+3. **From Proxmox Host**
+   - Acts as router between all networks
+   - IP forwarding is enabled
+   - Each bridge has a gateway IP (10.10.20.1, 10.10.30.1, etc.)
+
+This architecture ensures:
+- Workers are isolated at the VM network level
+- But can still reach control plane and backend services via routing
+- Pod-level isolation is enforced by Cilium
+
+Your admin machine routes mean:
+```
+Your Machine (192.168.123.x)
+         ↓
+   Proxmox Host (192.168.123.8 / 10.10.x.1)
+         ↓
+   Worker Node (10.10.x.21)
+```
+
+**For detailed step-by-step bootstrap instructions with command examples and troubleshooting, see [docs/BOOTSTRAP_GUIDE.md](docs/BOOTSTRAP_GUIDE.md).**
 
 Your Talos Kubernetes cluster is now ready for bootstrap with Flux and core platform components.
 
