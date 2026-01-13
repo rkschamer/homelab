@@ -1,0 +1,23 @@
+apiVersion: net.talos.dev/v1alpha1
+kind: LinkConfig
+metadata:
+  name: eth0
+spec:
+  name: eth0
+  up: true
+  addresses:
+    - address: 10.10.50.21/24
+  routes:
+    - destination: 0.0.0.0/0
+      gateway: 10.10.50.1
+    - destination: 192.168.123.0/24
+      gateway: 10.10.50.1
+---
+apiVersion: net.talos.dev/v1alpha1
+kind: ResolverConfig
+metadata:
+  name: resolvers
+spec:
+  servers:
+    - 8.8.8.8
+    - 1.1.1.1

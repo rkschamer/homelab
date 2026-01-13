@@ -43,7 +43,7 @@ The entire platform is designed to be resilient, secure, and fully automated. Al
                                                  v
 +----------------------------------------------------------------------------------------------------+
 |                                FritzBox Router (192.168.123.1)                                     |
-|                           (Port Forwards 80/443 to 192.168.123.100)                                |
+|                           (Port Forwards 80/443 to 192.168.123.21-29)                              |
 +----------------------------------------------------------------------------------------------------+
                                                  |
                                                  v
@@ -64,13 +64,13 @@ The entire platform is designed to be resilient, secure, and fully automated. Al
 |  |  | [FluxCD] <------(2. Syncs)------------|   | [Home Assistant]|   | [Temporary Test Pod]   | | |
 |  |  | [Sealed Secrets |   | [Traefik Ingress] |   | [Plex]          |   |                        | | |
 |  |  |  Controller]    |   | [Public App]    |   | [Database]      |   |                        | | |
-|  |  | [MetalLB]       |   | [Monitoring]    |   |                 |   |                        | | |
-|  |  | [Monitoring]    |   +-------^---------+   +-------^---------+   +------------^-----------+ | |
+|  |  | [MetalLB Speaker] |   | [Monitoring]    |   |                 |   |                        | | |
+|  |  | (Layer 2 Mode)  |   |                 |   |                 |   |                        | | |
 |  |  +-----------------+           | (4. Routes Traffic) | (Cilium Policy Allows)   | (Isolated)  | |
 |  |                                |<--------------------|--------------------------|-------------| |
 |  |                                v                     |                                        | |
 |  |  +--------------------------------------------------+---------------------------------------+ | |
-|  |  | MetalLB Virtual IP: 192.168.123.100 (Handled by Traefik) <---(3. Forwards Traffic)--------| | |
+|  |  | MetalLB Pool: 192.168.123.21-29 (Advertised by Control Plane Speaker) <---(3. Routes to Traefik on DMZ)| | |
 |  |  +------------------------------------------------------------------------------------------+ | |
 |  |                                                                                               | |
 |  +-----------------------------------------------------------------------------------------------+ |
@@ -84,11 +84,11 @@ The entire platform is designed to be resilient, secure, and fully automated. Al
 
 We will create five distinct, isolated networks using **Linux Bridges** on the Proxmox host. This approach acts as a "software VLAN" setup and does not require a managed switch:
 
-- `vmbr0`: **Management Network** (192.168.123.0/24) - Connects to your FritzBox LAN. Used for Proxmox management and Kubernetes API access.
+- `vmbr0`: **Management Network** (192.168.123.0/24) - Connects to your FritzBox LAN. Used for Proxmox management, Kubernetes API access, and MetalLB speaker.
     - `192.168.123.1`: FritzBox Router (gateway)
     - `192.168.123.8`: Proxmox Node (host)
-    - `192.168.123.20`: Kubernetes Control Plane VM (Talos)
-    - `192.168.123.21-29`: MetalLB IP pool for LoadBalancer services (e.g., Traefik ingress)
+    - `192.168.123.20`: Kubernetes Control Plane VM (Talos) - **Runs MetalLB speaker in Layer 2 mode**
+    - `192.168.123.21-29`: MetalLB IP pool for LoadBalancer services (e.g., Traefik ingress) - **Advertised by control plane speaker**
 
 - `vmbr1`: **Trusted Network** (10.10.20.0/24) - For internal services like Home Assistant. Can initiate traffic to the home LAN.
     - `10.10.20.1`: Gateway (Proxmox host acting as router)
@@ -244,9 +244,13 @@ This plan outlines a gradual transition from a single Docker host to the new Kub
 
 *Goal: Use Flux to deploy platform services to the new cluster.*
 
-1.  **Deploy Traefik:** Add the `HelmRelease` for Traefik to this repository. Configure it to run on the DMZ node and use the MetalLB virtual IP.
-2.  **Deploy Monitoring:** Add the `kube-prometheus-stack` Helm chart to this repository.
-3.  **Prepare for Cutover:** Before changing your main router settings, use a test domain or edit your local `/etc/hosts` file to point your service domains to the new Traefik IP (`192.168.123.100`) for verification.
+1.  **Deploy MetalLB:** Configure MetalLB to run on the control plane in **Layer 2 mode** with an IP pool from `192.168.123.21-29`. The control plane's MetalLB speaker will advertise these IPs to the FritzBox network.
+2.  **Deploy Traefik:** Add the `HelmRelease` for Traefik to this repository. Configure it to run on the DMZ worker nodes and use a LoadBalancer service to get an IP from the MetalLB pool.
+   - Traefik will receive an IP from `192.168.123.21-29` (via the control plane speaker)
+   - External traffic reaches Traefik through the management network (192.168.123.x)
+   - Traefik can route to internal services on 192.168.123.0/24 and forward to pods on Kubernetes networks
+3.  **Deploy Monitoring:** Add the `kube-prometheus-stack` Helm chart to this repository.
+4.  **Prepare for Cutover:** Before changing your main router settings, use a test domain or edit your local `/etc/hosts` file to point your service domains to the new Traefik IP (from the `192.168.123.21-29` pool) for verification.
 
 ### **Phase 3: Migrate Applications One by One (Minimal Downtime per Service)**
 
@@ -264,7 +268,7 @@ For each application:
     *   Copy the data from the Docker volume into the new Kubernetes persistent volume using `kubectl cp`.
 4.  **Test & Cutover:**
     *   Verify the service is running correctly in Kubernetes.
-    *   **This is the cutover point.** Update your FritzBox port forwarding rules to point to the new Traefik IP (`192.168.123.21-29`).
+    *   **This is the cutover point.** Update your FritzBox port forwarding rules to point to the MetalLB IP from the pool (`192.168.123.21-29`).
     *   Confirm the service is accessible from the internet.
 5.  **Decommission Old Service:** Remove the service from your old `docker-compose.yml`.
 
