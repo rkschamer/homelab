@@ -5,7 +5,3 @@ name: ens18
 apiVersion: v1alpha1
 kind: DHCPv6Config
 name: ens18
----
-apiVersion: v1alpha1
-kind: HostnameConfig
-hostname: talos-controlplane-1
