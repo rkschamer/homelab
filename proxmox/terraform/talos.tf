@@ -116,24 +116,6 @@ resource "local_file" "worker_config" {
             ),
             network = {
               hostname = each.value.name
-              interfaces = [
-                {
-                  interface = "eth0"
-                  dhcp      = false
-                  addresses = [
-                    {
-                      address = "${each.value.ip_address}/${each.value.subnet_prefix}"
-                    }
-                  ]
-                  routes = [
-                    {
-                      destination = "0.0.0.0/0"
-                      gateway     = each.value.gateway
-                    }
-                  ]
-                }
-              ]
-              nameservers = ["8.8.8.8", "1.1.1.1"]
             },
             labels = {
               "workload-type" = each.value.network_zone

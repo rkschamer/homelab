@@ -65,18 +65,35 @@ cluster_name              = "homelab"
 control_plane_ip          = "192.168.123.20"
 control_plane_vmid        = 200
 
+# Worker Nodes Configuration
 worker_nodes = [
   {
+    name           = "worker-trusted"
+    vmid           = 220
+    ip_address     = "10.10.20.21"
+    disk_size_gb   = 64
+    memory         = 4096
+    cores          = 4
+    network_devices = [
+      { bridge = "vmbr1", mac_address = "52:54:00:01:00:01" }  # Trusted network only
+    ]
+    network_zone  = "trusted"
+    gateway       = "10.10.20.1"
+    subnet_prefix = 24
+  },
+  {
     name           = "worker-dmz"
-    vmid           = 201
+    vmid           = 221
     ip_address     = "10.10.30.21"
     disk_size_gb   = 64
     memory         = 4096
     cores          = 4
-    network_bridge = "vmbr2"  # DMZ network
-    network_zone   = "dmz"
-    gateway        = "10.10.30.1"
-    subnet_prefix  = 24
+    network_devices = [
+      { bridge = "vmbr2", mac_address = "52:54:00:02:00:01" }  # DMZ network only
+    ]
+    network_zone  = "dmz"
+    gateway       = "10.10.30.1"
+    subnet_prefix = 24
   },
   # ... additional worker nodes
 ]
@@ -134,7 +151,7 @@ Endpoint: <DHCP_IP>
 Before applying configs, you can modify them as needed:
 
 ```bash
-# Edit the generated config to add custom patches, networking, etc.
+# Edit the generated config to add custom patches
 vim talos/gen/controlplane.yaml
 
 # Common customizations:
@@ -142,6 +159,14 @@ vim talos/gen/controlplane.yaml
 # - Configure additional network interfaces
 # - Enable/disable specific components
 # - Add custom extensions
+
+# Edit LinkConfig manifests for worker network setup
+vim talos/manifests/talos-worker-dmz-1/linkconfig.yaml
+# Adjust:
+# - IP addresses and subnets
+# - Gateway addresses
+# - DNS servers
+# - Static routes
 ```
 
 ### 6. Apply Configuration to Control Plane
@@ -232,6 +257,40 @@ If `terraform destroy` exits with code 1:
 - Manually delete VMs from Proxmox UI if needed
 - Cleanup state: `terraform destroy -force`
 
+### Workers cannot reach control plane
+
+If workers fail to join the cluster and appear stuck in maintenance mode:
+
+1. **Verify Proxmox host routing**:
+   ```bash
+   sysctl net.ipv4.ip_forward
+   ip route show  # Should show all vmbr bridges with their networks
+   ```
+
+2. **Check worker node logs** (from the Proxmox console in maintenance mode):
+   ```bash
+   # After booting ISO, check network connectivity
+   ip route  # Should show 192.168.123.0/24 → <gateway> (e.g., 10.10.30.1)
+   ping 192.168.123.20  # Should reach control plane
+   ```
+
+3. **Verify static routes in generated Talos config**:
+   ```bash
+   grep -A 10 "routes:" talos/gen/worker-*.yaml
+   ```
+
+4. **Ensure Proxmox bridge gateways are configured**:
+   - Each bridge (vmbr1-4) needs a gateway IP in `/etc/network/interfaces`
+   - Check with: `ip addr show` on Proxmox host
+
+### Networking misconfiguration
+
+If pods cannot communicate between zones:
+
+1. **Check CiliumNetworkPolicy rules** are properly applied: `kubectl get cnp -A`
+2. **Verify worker node network_zone labels**: `kubectl get nodes --show-labels`
+3. **Use Hubble for network diagnosis**: `hubble observe` can show which policies are blocking traffic
+
 ## Configuration Files Generated
 
 After `terraform apply`, the `talos/gen/` directory contains:
@@ -250,13 +309,115 @@ This semi-automated approach gives you full control over node configuration whil
 
 ## Network Architecture
 
-- **vmbr0** (Management): 192.168.123.0/24 - Home LAN access
+### Workload Isolation via Static Routes
+
+To achieve true network isolation while maintaining cluster connectivity, workers are deployed on isolated networks and use static routes to reach the control plane:
+
+- **vmbr0** (Management): 192.168.123.0/24 - **Control plane only**. Not connected to worker nodes directly.
 - **vmbr1** (Trusted): 10.10.20.0/24 - Internal services (e.g., Home Assistant)
 - **vmbr2** (DMZ): 10.10.30.0/24 - Public-facing services (Traefik, Ingress)
 - **vmbr3** (Untrusted): 10.10.40.0/24 - Experiments (isolated, internet-only)
 - **vmbr4** (Monitoring): 10.10.50.0/24 - Monitoring stack
 
-Workers are assigned to networks via the `network_bridge` variable.
+**Network Connectivity**:
+- Control plane: Attached to all bridges (vmbr0-4) for access to all zones
+- Worker nodes: Attached **only** to their designated workload network (vmbr1-4)
+- Cross-network routing: Proxmox host configured to route 192.168.123.0/24 between bridges
+- Each worker adds a static route to 192.168.123.0/24 via its gateway (Proxmox host IP on the bridge)
+
+This approach ensures:
+1. **True isolation at the VM network level**: Workers cannot reach the management network directly
+2. **Cluster functionality**: Workers can reach the control plane via static routing through the Proxmox host
+3. **Pod-level policy enforcement**: `CiliumNetworkPolicy` further restricts pod-to-pod traffic across zones
+
+## Proxmox Host Routing Configuration
+
+Since worker nodes are isolated to their workload networks, the Proxmox host must be configured to route traffic between bridges. This allows workers to reach the control plane (192.168.123.0/24) via the default gateway on their respective bridges.
+
+**For detailed networking setup instructions**, see [NETWORK_SETUP.md](../host/NETWORK_SETUP.md) for:
+- Bridge configuration in `/etc/network/interfaces`
+- IP forwarding and routing setup
+- Firewall rules (if applicable)
+- Connectivity verification steps
+
+**Quick summary**:
+
+**On the Proxmox host**, ensure IP forwarding is enabled:
+
+```bash
+sysctl -w net.ipv4.ip_forward=1
+echo "net.ipv4.ip_forward=1" | tee -a /etc/sysctl.conf
+```
+
+**Network bridge configuration** (in `/etc/network/interfaces`):
+Each bridge (vmbr1-4) should have its gateway IP assigned so it can route traffic between networks.
+
+Example for the DMZ bridge (vmbr2):
+```
+auto vmbr2
+iface vmbr2 inet static
+    address 10.10.30.1
+    netmask 255.255.255.0
+    bridge_ports none
+    bridge_stp off
+    bridge_fd 0
+```
+
+Worker nodes use this gateway (10.10.30.1 for DMZ) as the next hop to reach 192.168.123.0/24.
+
+## Talos Network Configuration (LinkConfig)
+
+Worker nodes use [Talos LinkConfig](https://docs.siderolabs.com/talos/v1.12/reference/configuration/network/linkconfig) documents to configure network interfaces and routes.
+
+**LinkConfig manifests** are stored in `talos/manifests/<node-name>/linkconfig.yaml` and are automatically included in the generated machine configuration when you run `terraform apply`.
+
+**Example LinkConfig for a DMZ worker** (stored in `talos/manifests/talos-worker-dmz-1/linkconfig.yaml`):
+
+```yaml
+apiVersion: net.talos.dev/v1alpha1
+kind: LinkConfig
+metadata:
+  name: eth0
+spec:
+  name: eth0
+  up: true
+  addresses:
+    - address: 10.10.30.21/24
+  routes:
+    - destination: 0.0.0.0/0
+      gateway: 10.10.30.1
+    - destination: 192.168.123.0/24
+      gateway: 10.10.30.1
+---
+apiVersion: net.talos.dev/v1alpha1
+kind: ResolverConfig
+metadata:
+  name: resolvers
+spec:
+  servers:
+    - 8.8.8.8
+    - 1.1.1.1
+```
+
+**Key LinkConfig fields**:
+- `name`: Interface name (e.g., eth0)
+- `up`: Bring the interface up on boot
+- `addresses`: Static IP addresses to assign (CIDR notation)
+- `routes`: Static routes with destination and gateway
+
+**Network isolation approach**:
+1. Each worker node is attached to **only one workload network** (vmbr1-4)
+2. The `LinkConfig` configures `eth0` with a static IP on that network
+3. Two routes are defined:
+   - Default route: `0.0.0.0/0` → workload gateway (e.g., 10.10.30.1)
+   - Control plane route: `192.168.123.0/24` → same gateway (allows reaching control plane via Proxmox host routing)
+4. The Proxmox host forwards traffic between bridges, enabling this routing scheme
+
+**Customizing LinkConfig for your network**:
+- Update IP addresses to match your configuration
+- Adjust gateway IPs if different from the default
+- Modify DNS servers in ResolverConfig if needed
+- Add additional routes as required
 
 ## Extending the Configuration
 
@@ -268,21 +429,23 @@ Edit `terraform.tfvars` and add to the `worker_nodes` list:
 worker_nodes = [
   # ... existing workers
   {
-    name           = "worker-new"
-    vmid           = 203
-    ip_address     = "10.10.20.25"
+    name           = "worker-monitoring"
+    vmid           = 223
+    ip_address     = "10.10.50.25"
     disk_size_gb   = 64
     memory         = 8192
     cores          = 4
-    network_bridge = "vmbr1"  # Trusted network
-    network_zone   = "trusted"
-    gateway        = "10.10.20.1"
+    network_devices = [
+      { bridge = "vmbr4", mac_address = "52:54:00:04:00:01" }  # Monitoring network only
+    ]
+    network_zone   = "monitoring"
+    gateway        = "10.10.50.1"
     subnet_prefix  = 24
   },
 ]
 ```
 
-Then rerun `terraform apply` and follow step 7 to configure the new worker.
+Then rerun `terraform apply` and follow the configuration steps. The generated Talos config will automatically include the static route to 192.168.123.0/24 for control plane communication.
 
 ### Customize Talos Extensions
 

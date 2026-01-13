@@ -78,12 +78,7 @@ resource "proxmox_virtual_environment_vm" "workers" {
     enabled = true
   }
 
-  # Temporary management network for initial configuration
-  network_device {
-    bridge = "vmbr0"
-  }
-
-  # Production networks from configuration
+  # Production networks only - workers isolated to their designated networks
   dynamic "network_device" {
     for_each = each.value.network_devices
     content {
