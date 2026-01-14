@@ -5,8 +5,6 @@ up: true
 addresses:
   - address: 10.10.40.21/24
 routes:
-  - destination: 0.0.0.0/0
-    gateway: 10.10.40.1
   - destination: 192.168.123.0/24
     gateway: 10.10.40.1
 ---
