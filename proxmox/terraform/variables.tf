@@ -57,7 +57,6 @@ variable "worker_nodes" {
   type = list(object({
     name         = string
     vmid         = number
-    ip_address   = string
     disk_size_gb = number
     memory       = number
     cores        = number
