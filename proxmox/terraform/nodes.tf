@@ -76,6 +76,9 @@ resource "proxmox_virtual_environment_vm" "workers" {
 
   agent {
     enabled = true
+    # they're isolated to workload networks, which are not reachable by the management network
+    # since terraform would wait for an IP for 15m (default), we set a relatively short timeout
+    timeout = "10s"
   }
 
   # Production networks only - workers isolated to their designated networks
