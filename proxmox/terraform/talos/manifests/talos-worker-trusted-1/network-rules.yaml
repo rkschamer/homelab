@@ -1,0 +1,47 @@
+apiVersion: v1alpha1
+kind: NetworkDefaultActionConfig
+ingress: block # Default action for all not explicitly configured ingress traffic: accept or block.
+---
+apiVersion: v1alpha1
+kind: NetworkRuleConfig
+name: allow-kube-apiserver
+portSelector:
+  ports:
+    - 6443 # api-server
+    - 7445 # kubePrism
+  protocol: tcp
+ingress:
+  - subnet: 192.168.123.20/32
+---
+apiVersion: v1alpha1
+kind: NetworkRuleConfig
+name: allow-talos-apid
+portSelector:
+  ports:
+    - 50000
+  protocol: tcp
+ingress:
+  - subnet: 192.168.123.20/32
+---
+# allow traffic from the DMZ worker node to reach untrusted workloads
+# required for Traefik to route traffic to untrusted workloads
+apiVersion: v1alpha1
+kind: NetworkRuleConfig
+name: allow-from-dmz
+portSelector:
+  ports:
+    - 80
+    - 443
+    - 8000-9000
+  protocol: tcp
+ingress:
+  - subnet: 10.10.30.0/24
+---
+# allow traffic from the home LAN to reach trusted workloads
+apiVersion: v1alpha1
+kind: NetworkRuleConfig
+name: allow-home-lan
+portSelector:
+  protocol: tcp
+ingress:
+  - subnet: 192.168.123.0/24

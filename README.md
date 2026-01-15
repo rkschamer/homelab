@@ -91,19 +91,19 @@ We will create five distinct, isolated networks using **Linux Bridges** on the P
     - `192.168.123.21-29`: MetalLB IP pool for LoadBalancer services (e.g., Traefik ingress) - **Advertised by control plane speaker**
 
 - `vmbr1`: **Trusted Network** (10.10.20.0/24) - For internal services like Home Assistant. Can initiate traffic to the home LAN.
-    - `10.10.20.1`: Gateway (Proxmox host acting as router)
+    - `10.10.20.2`: Gateway (to control plane VM acting as a router)
     - `10.10.20.21`: Trusted Worker Node (Talos)
 
 - `vmbr2`: **DMZ Network** (10.10.30.0/24) - For public-facing services like the Traefik ingress. Isolated from the home LAN.
-    - `10.10.30.1`: Gateway (Proxmox host acting as router)
+    - `10.10.30.2`: Gateway (to control plane VM acting as a router)
     - `10.10.30.21`: DMZ Worker Node (Talos)
 
 - `vmbr3`: **Untrusted Network** (10.10.40.0/24) - For experiments. Completely isolated with internet-only egress.
-    - `10.10.40.1`: Gateway (Proxmox host acting as router)
+    - `10.10.40.2`: Gateway (to control plane VM acting as a router)
     - `10.10.40.21`: Untrusted Worker Node (Talos)
 
 - `vmbr4`: **Monitoring Network** (10.10.50.0/24) - For monitoring services. Can initiate traffic to all other networks, but no inbound traffic is allowed, except for Grafana access.
-    - `10.10.50.1`: Gateway (Proxmox host acting as router)
+    - `10.10.50.2`: Gateway (to control plane VM acting as a router)
     - `10.10.50.21`: Monitoring Worker Node (Talos)
 
 **Network Routing:** The Proxmox host acts as a router between all networks and provides internet access via NAT. Worker nodes in isolated networks can reach the control plane in the management network through static routes.

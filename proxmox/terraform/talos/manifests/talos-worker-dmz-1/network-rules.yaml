@@ -1,0 +1,34 @@
+apiVersion: v1alpha1
+kind: NetworkDefaultActionConfig
+ingress: block # Default action for all not explicitly configured ingress traffic: accept or block.
+---
+apiVersion: v1alpha1
+kind: NetworkRuleConfig
+name: allow-kube-apiserver
+portSelector:
+  ports:
+    - 6443 # api-server
+    - 7445 # kubePrism
+  protocol: tcp
+ingress:
+  - subnet: 192.168.123.20/32
+---
+apiVersion: v1alpha1
+kind: NetworkRuleConfig
+name: allow-talos-apid
+portSelector:
+  ports:
+    - 50000
+  protocol: tcp
+ingress:
+  - subnet: 192.168.123.20/32
+---
+apiVersion: v1alpha1
+kind: NetworkRuleConfig
+name: allow-home-lan
+portSelector:
+  ports:
+    - 1-65535
+  protocol: tcp
+ingress:
+  - subnet: 192.168.123.0/24
