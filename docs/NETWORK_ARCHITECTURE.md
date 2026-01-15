@@ -27,14 +27,14 @@ This homelab uses a **bastion node pattern** where the control plane node acts a
     │  IP Forwarding: ENABLED                                         │
     │                                                                  │
     │  ens18 (mgmt): 192.168.123.20/24                                │
-    │  ens19 (trusted): 10.10.20.1/24                                 │
-    │  ens20 (dmz): 10.10.30.1/24                                     │
-    │  ens21 (untrusted): 10.10.40.1/24                               │
-    │  ens22 (monitoring): 10.10.50.1/24                              │
+    │  ens19 (trusted): 10.10.20.2/24                                 │
+    │  ens20 (dmz): 10.10.30.2/24                                     │
+    │  ens21 (untrusted): 10.10.40.2/24                               │
+    │  ens22 (monitoring): 10.10.50.2/24                              │
     └──┬──────────────┬──────────────┬──────────────┬──────────────┘
        │              │              │              │
     ens19         ens20          ens21          ens22
- 10.10.20.1   10.10.30.1     10.10.40.1     10.10.50.1
+ 10.10.20.2   10.10.30.2     10.10.40.2     10.10.50.2
   (bridge)     (bridge)       (bridge)       (bridge)
        │              │              │              │
        │              │              │              │

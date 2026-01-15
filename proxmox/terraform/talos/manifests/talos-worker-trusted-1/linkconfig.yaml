@@ -6,7 +6,7 @@ addresses:
   - address: 10.10.20.21/24
 routes:
   - destination: 192.168.123.0/24
-    gateway: 10.10.20.1
+    gateway: 10.10.20.2
 ---
 apiVersion: v1alpha1
 kind: ResolverConfig
