@@ -127,10 +127,10 @@ This document provides a comprehensive checklist and quick reference for the ent
   - [ ] Open Proxmox web UI → select worker → Console tab
   - [ ] When Talos boots, press 'c' for dashboard/console access
   - [ ] Set static IP per the table in Step 3a:
-    - Trusted: 10.10.20.21/24 gateway 10.10.20.1
-    - DMZ: 10.10.30.21/24 gateway 10.10.30.1
-    - Untrusted: 10.10.40.21/24 gateway 10.10.40.1
-    - Monitoring: 10.10.50.21/24 gateway 10.10.50.1
+    - Trusted: 10.10.20.21/24 gateway 10.10.20.2
+    - DMZ: 10.10.30.21/24 gateway 10.10.30.2
+    - Untrusted: 10.10.40.21/24 gateway 10.10.40.2
+    - Monitoring: 10.10.50.21/24 gateway 10.10.50.2
   - [ ] Boot worker and verify console shows "Endpoint: 10.10.x.21"
 
 #### Step 3: Apply Talos Configuration
