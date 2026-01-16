@@ -18,7 +18,28 @@ This repository is specifically designed for my homelab setup and is not intende
 
 However, you can use this repository as a reference for building your own setup.
 
-## Overview
+## Decrypt Configs
+
+Some configurations contain secrets (e.g., `terraform.tfvars`, kubeconfig files) and for convenience are kept in the repository but encrypted with **git-crypt**. You need to initialize and unlock git-crypt before you can access these files.
+
+If you have the encryption key (stored in Vaultwarden or your password manager):
+
+```bash
+# Place the key file in a secure location
+# Then unlock the repository
+git-crypt unlock /path/to/encryption-key
+```
+
+**🛑 Remember to add all secrets that you need to protect to `.gitattributes` before committing!**
+
+### Important Security Notes
+
+- **Never commit the encryption key to Git.** Store it securely in Vaultwarden or offline.
+- **Only authorized users should have the key.** Each person needing access must obtain it separately.
+- **Encrypted files in Git are binary.** They cannot be viewed without the key, even in the Git history.
+- **Sealed Secrets private keys are NOT managed by git-crypt.** Export and store them separately (see Sealed Secrets backup procedure in [Talos Installation](docs/talos-installation.md#backup-the-sealed-secrets-private-key)).
+
+
 
 ```
                               Internet
