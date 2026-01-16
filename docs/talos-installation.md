@@ -88,30 +88,22 @@ Bootstrap Flow:
   kubectl get nodes
   ```
 
-## Step 3: Install Cilium and Bootstrap Flux
+## Step 3: Bootstrap the Cluster to enable GitOps
 
-Once all nodes are `Ready`:
+Normally the setup is designed to follow GitOps prinicple. However a few things need to be installed manually to get this to work.
+All these commands are scripted in [../proxmox/terraform/talos/bootstrap/bootstrap.sh](../proxmox/terraform/talos/bootstrap/bootstrap.sh) and here only kept for explanation.
 
 ### Install Cilium CNI and Hubble
 
 ```bash
-helm repo add cilium https://helm.cilium.io
-helm repo update
+cilium install \
+  --datapath-mode ebpf \
+  --enable-hubble \
+  --enable-host-firewall \
+  --enable-hubble-ui
 
-helm install cilium cilium/cilium \
-  --namespace cilium \
-  --create-namespace \
-  --set kubeProxyReplacement=true \
-  --set ebpf.enabled=true \
-  --set hubble.enabled=true \
-  --set hubble.ui.enabled=true \
-  --wait
-
-# Verify
-kubectl get pods -n cilium
+cilium status --wait
 ```
-
-For detailed instructions, see [CILIUM_HUBBLE_SETUP.md](../docs/CILIUM_HUBBLE_SETUP.md).
 
 ### Install MetalLB
 
@@ -164,6 +156,47 @@ helm install sealed-secrets sealed-secrets/sealed-secrets \
   --wait
 ```
 
+#### Backup the Sealed Secrets Private Key
+
+After Sealed Secrets is deployed, the controller generates a private key that is used to encrypt all secrets. **This key must be backed up and stored securely** in case you need to recreate the cluster. Without it, you won't be able to decrypt existing sealed secrets.
+
+**Export the private key:**
+
+```bash
+# Export the private key to a file
+kubectl get secret -n kube-system sealed-secrets-keys -o jsonpath='{.data.tls\.key}' | base64 -d > sealed-secrets-private.key
+
+# Also export the certificate for reference
+kubectl get secret -n kube-system sealed-secrets-keys -o jsonpath='{.data.tls\.crt}' | base64 -d > sealed-secrets-cert.crt
+
+# Alternatively, export the entire secret as YAML for storage
+kubectl get secret -n kube-system sealed-secrets-keys -o yaml > sealed-secrets-secret-backup.yaml
+```
+
+**Store these files securely** in your password manager (e.g., Vaultwarden) or offline backup storage. Do NOT commit these files to the Git repository.
+
+#### Restore the Sealed Secrets Private Key
+
+When setting up a new cluster, restore the backed-up private key **before deploying Sealed Secrets** so that existing encrypted secrets can be decrypted.
+
+**Option 1: Restore from backed-up files (before bootstrap)**
+
+```bash
+# Create the secret from the exported files
+kubectl create secret tls sealed-secrets-keys \
+  --cert=sealed-secrets-cert.crt \
+  --key=sealed-secrets-private.key \
+  -n kube-system
+```
+
+**Option 2: Apply the backed-up YAML**
+
+```bash
+kubectl apply -f sealed-secrets-secret-backup.yaml
+```
+
+**Important**: The secret must exist in the `kube-system` namespace with the name `sealed-secrets-keys` before Sealed Secrets HelmRelease is deployed. Once the secret exists, Flux will deploy Sealed Secrets and it will use the existing key instead of generating a new one.
+
 ## Step 4: Verify End-to-End Connectivity
 
 Verify that worker nodes can reach backend services:
@@ -181,104 +214,3 @@ exit
 # Clean up
 kubectl delete pod test-pod
 ```
-
-## Troubleshooting
-
-### Admin machine cannot reach worker networks
-
-```bash
-# Check routes on admin machine
-ip route show | grep 10.10
-
-# Check Proxmox host has IP forwarding enabled
-ssh root@192.168.123.8 sysctl net.ipv4.ip_forward
-# Should return: net.ipv4.ip_forward = 1
-
-# Check Proxmox bridge gateways
-ssh root@192.168.123.8 ip addr show | grep 10.10
-# Should show: inet 10.10.20.1/24 dev vmbr1, etc.
-```
-
-### talosctl cannot reach worker nodes
-
-```bash
-# Verify admin machine has routes
-ip route show
-
-# Test connectivity to worker IP
-ping 10.10.30.21
-
-- Verify if the worker received a DHCP address
-# Check the Proxmox console for the worker VM
-# Should display "Endpoint: 10.10.30.x"
-
-# If no IP address is assigned, verify the Proxmox host DHCP configuration
-# (Your DHCP server or Proxmox dnsmasq should be providing addresses)
-```
-
-### Nodes remain in NotReady state
-
-```bash
-# Verify the CNI (Cilium) is deployed
-kubectl get pods -n cilium
-
-# Check node conditions
-kubectl describe node talos-worker-dmz-1
-
-# Review kubelet logs
-talosctl logs -k kubelet -n 10.10.30.21
-```
-
-## Architecture Diagram After Bootstrap
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│ Admin Machine (192.168.123.x)                                   │
-│ Routes: 10.10.x.0/24 → 192.168.123.8                            │
-└──────────────────────┬──────────────────────────────────────────┘
-                       │ SSH / talosctl / kubectl
-                       ↓
-┌─────────────────────────────────────────────────────────────────┐
-│ Proxmox Host (192.168.123.8)                                    │
-│ ┌─────────────────────────────────────────────────────────────┐ │
-│ │ Kubernetes Cluster (Talos)                                  │ │
-│ │                                                             │ │
-│ │ vmbr0 (Management 192.168.123.0/24):                       │ │
-│ │ └─ talos-controlplane-1 (192.168.123.20)                   │ │
-│ │    ├─ Cilium + Hubble                                      │ │
-│ │    ├─ MetalLB Speaker (advertises 192.168.123.21-29)       │ │
-│ │    └─ Sealed Secrets                                       │ │
-│ │                                                             │ │
-│ │ vmbr1 (Trusted 10.10.20.0/24):                             │ │
-│ │ └─ talos-worker-trusted-1 (10.10.20.21)                    │ │
-│ │                                                             │ │
-│ │ vmbr2 (DMZ 10.10.30.0/24):                                 │ │
-│ │ └─ talos-worker-dmz-1 (10.10.30.21)                        │ │
-│ │    └─ [Traefik will run here]                              │ │
-│ │                                                             │ │
-│ │ vmbr3 (Untrusted 10.10.40.0/24):                           │ │
-│ │ └─ talos-worker-untrusted-1 (10.10.40.21)                  │ │
-│ │                                                             │ │
-│ │ vmbr4 (Monitoring 10.10.50.0/24):                          │ │
-│ │ └─ talos-worker-monitoring-1 (10.10.50.21)                 │ │
-│ │                                                             │ │
-│ │ Cilium CNI: Replaces kube-proxy, handles pod networking    │ │
-│ └─────────────────────────────────────────────────────────────┘ │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-## Next Steps
-
-After bootstrap is complete:
-
-1. **[Install Cilium & Hubble](../docs/CILIUM_HUBBLE_SETUP.md)** - CNI and observability
-2. **Install Flux CD** - GitOps for application deployment
-3. **Deploy Traefik** - Ingress controller for external traffic
-4. **Deploy applications** - Use Flux to manage all deployments
-
-## References
-
-- [Talos Documentation](https://www.talos.dev/)
-- [Proxmox Network Setup](../proxmox/host/README.md)
-- [LinkConfig Documentation](https://docs.siderolabs.com/talos/v1.12/reference/configuration/network/linkconfig)
-- [Cilium and Hubble Installation](../docs/CILIUM_HUBBLE_SETUP.md)
