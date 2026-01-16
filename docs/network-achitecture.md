@@ -4,6 +4,8 @@
 
 This homelab uses a **bastion node pattern** where the control plane node acts as a router and bastion host, enabling management access to isolated worker networks from the home network.
 
+The entire cluster relies on **five isolated networks** created using Linux bridges on the Proxmox host, acting as a "software VLAN" setup that does not require a managed switch.
+
 ### Network Topology
 
 ```
@@ -21,17 +23,17 @@ This homelab uses a **bastion node pattern** where the control plane node acts a
     │                     │  - 10.10.50.0/24 → 192.168.123.20
     └──────┬──────────────┘
            │ ens18: 192.168.123.20/24
-    ┌──────▼──────────────────────────────────────────────────────────┐
-    │  Control Plane Node (Bastion)                                   │
-    │  192.168.123.20                                                 │
-    │  IP Forwarding: ENABLED                                         │
-    │                                                                  │
-    │  ens18 (mgmt): 192.168.123.20/24                                │
-    │  ens19 (trusted): 10.10.20.2/24                                 │
-    │  ens20 (dmz): 10.10.30.2/24                                     │
-    │  ens21 (untrusted): 10.10.40.2/24                               │
-    │  ens22 (monitoring): 10.10.50.2/24                              │
-    └──┬──────────────┬──────────────┬──────────────┬──────────────┘
+    ┌──────▼──────────────────────────────────────────┐
+    │  Control Plane Node (Bastion)                   │
+    │  192.168.123.20                                 │
+    │  IP Forwarding: ENABLED                         │
+    │                                                 │
+    │  ens18 (mgmt): 192.168.123.20/24                │
+    │  ens19 (trusted): 10.10.20.2/24                 │
+    │  ens20 (dmz): 10.10.30.2/24                     │
+    │  ens21 (untrusted): 10.10.40.2/24               │
+    │  ens22 (monitoring): 10.10.50.2/24              │
+    └──┬──────────────┬──────────────┬──────────────┬─┘
        │              │              │              │
     ens19         ens20          ens21          ens22
  10.10.20.2   10.10.30.2     10.10.40.2     10.10.50.2
@@ -44,6 +46,7 @@ This homelab uses a **bastion node pattern** where the control plane node acts a
     │.21  │       │.21  │       │.21  │       │.21  │
     └─────┘       └─────┘       └─────┘       └─────┘
 ```
+
 
 ## Routing Concepts
 
@@ -96,6 +99,187 @@ Your Machine (192.168.123.x)
 - Fritzbox static routes ensure packets reach control plane from management network
 
 ---
+
+## Network Setup Details
+
+We create five distinct, isolated networks using **Linux Bridges** on the Proxmox host:
+
+### vmbr0: Management Network (192.168.123.0/24)
+
+**Purpose:** Connects to your home LAN (FritzBox). Used for Proxmox management, Kubernetes API access, and MetalLB LoadBalancer pool.
+
+**Configuration:**
+- Gateway IP on Proxmox host: 192.168.123.8
+- Proxmox node: 192.168.123.8
+- Control Plane VM (Talos): 192.168.123.20
+- MetalLB IP pool: 192.168.123.21-29 (advertised by control plane MetalLB speaker)
+- FritzBox router: 192.168.123.1
+- FritzBox forwards external ports 80/443 to 192.168.123.21-29
+
+**Network Path:**
+```
+Internet ← FritzBox (80/443→192.168.123.21-29) ← vmbr0 ← MetalLB/Traefik
+```
+
+### vmbr1: Trusted Network (10.10.20.0/24)
+
+**Purpose:** For internal, trusted services like Home Assistant, file servers, databases. Can initiate traffic to the home LAN.
+
+**Configuration:**
+- Gateway IP on Proxmox host: 10.10.20.1
+- Control Plane interface: 10.10.20.2 (acts as gateway for workers)
+- Trusted Worker Node (Talos): 10.10.20.21
+- All nodes can reach: 192.168.123.0/24 (management) and internet
+
+**Security Model:**
+- Workers isolated from home LAN at VM level
+- Pod-level isolation enforced by Cilium network policies
+- Can communicate with management network and internet
+
+### vmbr2: DMZ Network (10.10.30.0/24)
+
+**Purpose:** For public-facing services like reverse proxies, web servers, API gateways. Isolated from the home LAN.
+
+**Configuration:**
+- Gateway IP on Proxmox host: 10.10.30.1
+- Control Plane interface: 10.10.30.2 (acts as gateway for workers)
+- DMZ Worker Node (Talos): 10.10.30.21
+- Traffic from internet routes through MetalLB pool to Traefik on this network
+- Can reach control plane (192.168.123.20) and trusted network (10.10.20.0/24)
+- **Cannot** directly access home LAN (192.168.123.0/24)
+
+**Security Model:**
+- Completely isolated from home LAN at VM level
+- Pods must explicitly request access to trusted network via Cilium policies
+- Cannot reach home machines accidentally due to network isolation
+
+### vmbr3: Untrusted Network (10.10.40.0/24)
+
+**Purpose:** For experiments, testing, and untrusted workloads. Completely isolated with internet-only egress.
+
+**Configuration:**
+- Gateway IP on Proxmox host: 10.10.40.1
+- Control Plane interface: 10.10.40.2 (acts as gateway for workers)
+- Untrusted Worker Node (Talos): 10.10.40.21
+- Can reach: Control plane (for cluster management) and internet
+- **Cannot** reach: Home LAN (192.168.123.0/24) or trusted network (10.10.20.0/24)
+
+**Security Model:**
+- Strict network isolation at both VM and pod level
+- Untrusted workloads cannot compromise home network
+- Useful for development, testing, and sandboxing
+
+### vmbr4: Monitoring Network (10.10.50.0/24)
+
+**Purpose:** For monitoring and observability services (Prometheus, Grafana, etc.). Can observe all networks but is isolated from general workloads.
+
+**Configuration:**
+- Gateway IP on Proxmox host: 10.10.50.1
+- Control Plane interface: 10.10.50.2 (acts as gateway for workers)
+- Monitoring Worker Node (Talos): 10.10.50.21
+- Can initiate connections to: All other networks and internet
+- **Cannot receive** unsolicited inbound traffic from other networks
+
+**Security Model:**
+- One-directional access: monitoring pulls metrics from other networks
+- Other networks don't push data to monitoring network
+- Only exception: external monitoring systems can access Grafana dashboard explicitly
+
+## Network Routing Architecture
+
+### Proxmox Host as Router
+
+The Proxmox host acts as a **software router** between all networks:
+
+```
+Proxmox Host (192.168.123.8)
+├─ vmbr0 (192.168.123.8/24)    ← Management network
+├─ vmbr1 (10.10.20.1/24)       ← Trusted worker network
+├─ vmbr2 (10.10.30.1/24)       ← DMZ worker network
+├─ vmbr3 (10.10.40.1/24)       ← Untrusted worker network
+└─ vmbr4 (10.10.50.1/24)       ← Monitoring network
+
+IP Forwarding: ENABLED
+```
+
+**Configuration file:** See `proxmox/host/network-interfaces` for exact Linux bridge setup.
+
+### Static Routes on Admin Machine
+
+Your admin machine needs static routes to reach isolated worker networks:
+
+```bash
+# From admin machine on home LAN
+ip route add 10.10.20.0/24 via 192.168.123.20  # Trusted network via control plane
+ip route add 10.10.30.0/24 via 192.168.123.20  # DMZ network via control plane
+ip route add 10.10.40.0/24 via 192.168.123.20  # Untrusted network via control plane
+ip route add 10.10.50.0/24 via 192.168.123.20  # Monitoring network via control plane
+```
+
+Or configure in your home router (FritzBox):
+- Destination: 10.10.20.0/24 → Gateway: 192.168.123.20
+- Destination: 10.10.30.0/24 → Gateway: 192.168.123.20
+- Destination: 10.10.40.0/24 → Gateway: 192.168.123.20
+- Destination: 10.10.50.0/24 → Gateway: 192.168.123.20
+
+### Control Plane Routing
+
+The control plane node has connections to **all five networks** and routes traffic between them:
+
+```
+Control Plane Node (192.168.123.20)
+├─ ens18: 192.168.123.20/24  (vmbr0 - management)
+├─ ens19: 10.10.20.2/24      (vmbr1 - trusted)
+├─ ens20: 10.10.30.2/24      (vmbr2 - dmz)
+├─ ens21: 10.10.40.2/24      (vmbr3 - untrusted)
+└─ ens22: 10.10.50.2/24      (vmbr4 - monitoring)
+
+All interfaces with IP forwarding enabled
+```
+
+Worker nodes on isolated networks use the control plane's interface IP (e.g., 10.10.20.2) as their default gateway.
+
+### Traffic Flow Examples
+
+#### Example 1: Admin Machine → DMZ Worker Pod
+
+```
+Admin (192.168.123.x on home LAN)
+  ↓ (destination 10.10.30.21)
+Home Router (FritzBox)
+  ↓ (uses static route: 10.10.30.0/24 → 192.168.123.20)
+Proxmox Host (router, forwards to vmbr2)
+  ↓
+Control Plane (ens20: 10.10.30.2)
+  ↓ (forwards to ens20)
+DMZ Worker (10.10.30.21)
+```
+
+#### Example 2: Trusted Pod → DMZ Pod (via Kubernetes)
+
+```
+Trusted Pod (10.10.20.x)
+  ↓ (destination: DMZ service IP on Kubernetes network)
+Control Plane (has Cilium routing for Kubernetes networks)
+  ↓ (Cilium routes to DMZ worker)
+DMZ Worker (10.10.30.x)
+  ↓
+DMZ Pod
+```
+
+#### Example 3: External Internet → Traefik (via MetalLB)
+
+```
+External User on Internet
+  ↓ (destination 192.168.123.21-29, ports 80/443)
+FritzBox Router
+  ↓ (forwards to 192.168.123.21-29 on vmbr0)
+MetalLB Pool (advertised by control plane speaker)
+  ↓
+Traefik Pod (on DMZ worker)
+  ↓ (routes to backend service on DMZ or trusted network)
+Backend Pod
+```
 
 ## Detailed Node Configuration
 
