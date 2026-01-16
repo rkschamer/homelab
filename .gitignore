@@ -2,10 +2,4 @@
 .terraform/
 *.tfstate.backup
 
-# Talos configuration files
-**/private
-**/*private*
-**/*secret*
-**/*key*
-**/*token*
-**/*cred*
+*.key
