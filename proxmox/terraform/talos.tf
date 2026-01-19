@@ -65,7 +65,19 @@ resource "local_file" "controlplane_config" {
           cluster = merge(
             local.controlplane_config_patched.cluster,
             {
-              proxy = null # Disable kube-proxy since Cilium eBPF mode handles service load balancing
+              // For Cilium: disable kube-proxy
+              // see https://docs.siderolabs.com/kubernetes-guides/cni/deploying-cilium
+              proxy = {
+                disabled = true
+              },
+              network = merge(
+                local.controlplane_config_patched.cluster.network,
+                {
+                  cni = {
+                    name = "none"
+                  }
+                }
+              )
             }
           ),
           machine = merge(
