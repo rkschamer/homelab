@@ -52,6 +52,9 @@ cat >> /home/vscode/.bashrc << 'EOF'
 HISTSIZE=100000
 HISTFILESIZE=100000
 
+# kubectl editor configuration
+export KUBE_EDITOR="code --wait"
+
 # CLI tool completions
 for completion_file in /home/vscode/.bash_completion.d/*; do
     [ -f "$completion_file" ] && source "$completion_file"
