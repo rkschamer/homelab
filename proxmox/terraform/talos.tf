@@ -99,6 +99,18 @@ resource "local_file" "controlplane_config" {
                 local.controlplane_config_patched.machine.features,
                 {
                   stableHostname = false
+                  hostDNS = {
+                    enabled              = true
+                    // When forwardKubeDNSToHost is enabled, Talos Linux allocates IP address 169.254.116.108 for the host DNS server,
+                    // and kube-dns service is configured to use this IP address as the upstream DNS server
+                    // https://docs.siderolabs.com/talos/v1.12/networking/host-dns
+                    forwardKubeDNSToHost = true
+                    // Host DNS can be configured to resolve Talos cluster member names to IP addresses, so that the
+                    // host can communicate with the cluster members by name
+                    // https://docs.siderolabs.com/talos/v1.12/networking/host-dns#resolving-talos-cluster-member-names
+                    resolveMemberNames   = true
+
+                  }
                 }
               )
             }
