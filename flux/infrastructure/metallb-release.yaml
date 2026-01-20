@@ -45,21 +45,21 @@ spec:
 apiVersion: metallb.io/v1beta1
 kind: IPAddressPool
 metadata:
-  name: default
+  name: traefik
   namespace: metallb-system
 spec:
   addresses:
-  - 192.168.123.21-192.168.123.29
+  - 192.168.123.21/32
 
 ---
 apiVersion: metallb.io/v1beta1
 kind: L2Advertisement
 metadata:
-  name: default
+  name: traefik
   namespace: metallb-system
 spec:
   ipAddressPools:
-  - default
+  - traefik
   nodeSelectors:
   - matchLabels:
       kubernetes.io/hostname: talos-controlplane-1
