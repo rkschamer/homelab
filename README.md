@@ -39,7 +39,7 @@ git-crypt unlock /path/to/encryption-key
 - **Encrypted files in Git are binary.** They cannot be viewed without the key, even in the Git history.
 - **Sealed Secrets private keys are NOT managed by git-crypt.** Export and store them separately (see Sealed Secrets backup procedure in [Talos Installation](docs/talos-installation.md#backup-the-sealed-secrets-private-key)).
 
-
+## Architecture Overview
 
 ```
                               Internet
