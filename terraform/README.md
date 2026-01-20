@@ -102,7 +102,7 @@ worker_nodes = [
 ### 2. Initialize and Apply Terraform
 
 ```bash
-cd proxmox/terraform
+cd terraform
 terraform init
 terraform plan
 terraform apply

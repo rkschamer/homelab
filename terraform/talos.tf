@@ -30,7 +30,7 @@ locals {
   worker_config_patched       = yamldecode(data.talos_machine_configuration.worker.machine_configuration)
 
   # Base manifests directory
-  manifests_base_dir = "${path.module}/talos/manifests"
+  manifests_base_dir = "${path.module}/../talos/manifests"
 }
 
 # Read manifests for each control plane and worker node
@@ -56,7 +56,7 @@ locals {
 resource "local_file" "controlplane_config" {
   for_each = { for node in var.control_plane : node.name => node }
 
-  filename = "${path.module}/talos/gen/${each.value.name}.yaml"
+  filename = "${path.module}/../talos/gen/${each.value.name}.yaml"
   content = join("---\n", concat(
     [yamlencode(
       merge(
@@ -129,7 +129,7 @@ resource "local_file" "controlplane_config" {
 resource "local_file" "worker_config" {
   for_each = { for node in var.worker_nodes : node.name => node }
 
-  filename = "${path.module}/talos/gen/${each.value.name}.yaml"
+  filename = "${path.module}/../talos/gen/${each.value.name}.yaml"
   content = join("---\n", concat(
     [yamlencode(
       merge(
@@ -166,7 +166,7 @@ resource "local_file" "worker_config" {
 
 # Save talosconfig to file for reference
 resource "local_file" "talosconfig" {
-  filename = "${path.module}/talos/gen/talosconfig"
+  filename = "${path.module}/../talosconfig"
   content  = data.talos_client_configuration.this.talos_config
 }
 

@@ -202,7 +202,7 @@ Proxmox Host (192.168.123.8)
 IP Forwarding: ENABLED
 ```
 
-**Configuration file:** See `proxmox/host/network-interfaces` for exact Linux bridge setup.
+**Configuration file:** See Proxmox host `/etc/network/interfaces` for exact Linux bridge setup.
 
 ### Static Routes on Admin Machine
 

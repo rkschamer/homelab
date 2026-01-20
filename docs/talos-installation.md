@@ -27,7 +27,7 @@ Bootstrap Flow:
 
 ## Step 1: `terraform apply`
 
-- Navigate to [`proxmox/terraform/`](../proxmox/terraform/) and run `terraform apply`.
+- Navigate to [`terraform/`](../terraform/) and run `terraform apply`.
 - Proxmox will create VMs and boot from the Talos ISO
 - **⚠️ Caution**: Remove the ISO from the VMs via the Proxmox UI after booting is complete
 - There is a static DHCP lease for `talos-controlplane-1` that assigns 192.168.123.20
@@ -45,7 +45,7 @@ Bootstrap Flow:
 
 ## Step 2: `talosctl apply-config`
 
-- Navigate to `proxmox/talos/gen`, which contains the generated Talos configuration for each node
+- Navigate to `talos/gen`, which contains the generated Talos configuration for each node
 - Set the TALOSCONFIG environment variable: `export TALOSCONFIG=$(pwd)/talosconfig`
 - Apply the configuration to `talos-controlplane-1`:
 
@@ -91,7 +91,7 @@ Bootstrap Flow:
 ## Step 3: Bootstrap the Cluster to enable GitOps
 
 Normally the setup is designed to follow GitOps prinicple. However a few things need to be installed manually to get this to work.
-All these commands are scripted in [../proxmox/terraform/talos/bootstrap/bootstrap.sh](../proxmox/terraform/talos/bootstrap/bootstrap.sh) and here only kept for explanation.
+All these commands are scripted in [../talos/bootstrap/bootstrap.sh](../talos/bootstrap/bootstrap.sh) and here only kept for explanation.
 
 ### Install Cilium CNI and Hubble
 
