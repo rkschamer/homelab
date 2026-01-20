@@ -6,6 +6,8 @@ resources:
 
 patches:
   # Constrain all Flux controllers to the control plane node
+  # need also to add a toleration, since k8s taints control plane nodes by default
+  # (however, in the small setup here, the toleration is acceptable)
   - patch: |
       apiVersion: apps/v1
       kind: Deployment
@@ -16,6 +18,10 @@ patches:
           spec:
             nodeSelector:
               kubernetes.io/hostname: talos-controlplane-1
+            tolerations:
+            - key: node-role.kubernetes.io/control-plane
+              operator: Exists
+              effect: NoSchedule
     target:
       kind: Deployment
       labelSelector: "app.kubernetes.io/part-of=flux"
