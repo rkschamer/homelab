@@ -1,67 +1,97 @@
-# GitOps Instructions for Kubernetes Homelab
+# GitHub Copilot Instructions for Homelab DevOps
 
-You are an expert DevOps engineer responsible for maintaining a secure GitOps-driven Kubernetes homelab. Your primary goal is to ensure all configurations are managed as Infrastructure as Code (IaC) and adhere to CNCF best practices.
+You are a DevOps engineer assisting with maintaining a secure, GitOps-driven Kubernetes homelab. Your primary responsibility is ensuring all configurations are managed declaratively through Git and adhering to CNCF best practices.
 
-## Core Philosophy: Git is the Single Source of Truth
+## CLI Configuration - IMPORTANT
 
-- GitOps First: All cluster configurations—including applications, network policies, and infrastructure components—are managed declaratively through a Git repository and synchronized by Flux CD.
-- No Manual Changes: Avoid using kubectl apply or helm install for permanent changes. Instead, generate the appropriate YAML manifests (HelmRelease, Kustomization, SealedSecret, etc.) and commit them to the Git repository.
-- Declarative Over Imperative: Always define the desired state in YAML files rather than scripting a series of commands.
+Before executing any `kubectl` or `talosctl` commands, you MUST set the required environment variables:
 
-## Platform & Infrastructure Architecture
+```bash
+export KUBECONFIG="$(pwd)/kubeconfig.yaml"
+export TALOSCONFIG="$(pwd)/talosconfig"
+```
 
-- Hypervisor: The cluster runs on Proxmox VE.
-- Kubernetes Distribution: We use Talos as lightweight and secure operating system for Kubernetes.
-- Networking (CNI): The cluster uses Cilium in eBPF mode without kube-proxy.
-- All network policies must be defined using CiliumNetworkPolicy resources to leverage advanced features like L7 filtering.
-- Hubble is enabled for observability. Use it as the primary tool for diagnosing network connectivity issues.
-- Load Balancing: MetalLB is used to provide LoadBalancer services with IPs from the home LAN (192.168.123.0/24).
-- Ingress: Traefik is the exclusive ingress controller. All external web services must be exposed via IngressRoute custom resources.
-- *   **TLS:** **Traefik** manages all TLS certificates using its built-in ACME client and the `letsencrypt` certificate resolver.
+**All terminal commands for cluster operations MUST include these exports or execute commands within a shell session where these are already set.**
 
-## Network Setup
+## Core Principles
 
-We will create four distinct, isolated networks using **Linux Bridges** on the Proxmox host. This approach acts as a "software VLAN" setup and does not require a managed switch:
+1. **GitOps First:** Git is the single source of truth. All permanent changes must be committed as YAML manifests (HelmRelease, Kustomization, SealedSecret, etc.), not applied imperatively.
+2. **No Manual Changes:** Avoid `kubectl apply` or `helm install` for permanent deployments. Use Flux CD instead.
+3. **Infrastructure as Code:** All infrastructure and application configurations are versioned in Git.
 
-- `vmbr0`: **Management Network** (192.168.123.0/24) - Connects to your FritzBox LAN. Used for Proxmox management and Kubernetes API access.
-    - `192.168.123.8`: Proxmode Node (host)
-    - `192.168.123.20`: Kubernetes Control Plane VM (Talos)
-    - `192.168.123.21-29/32`: Kubernetes Worker Nodes (Talos)
+## Platform & Stack
 
-- `vmbr1`: **Trusted Network** (10.10.20.0/24) - For internal services like Home Assistant. Can initiate traffic to the home LAN.
-- `vmbr2`: **DMZ Network** (10.10.30.0/24) - For public-facing services like the Traefik ingress. Isolated from the home LAN.
-- `vmbr3`: **Untrusted Network** (10.10.40.0/24) - For experiments. Completely isolated with internet-only egress.
-- `vmbr4`: **Monitoring Network** (10.10.50.0/24) - For monitoring services. Can initiate traffic to all other networks, but no inbound traffic is allowed, except for Grafana access.
+- **Hypervisor:** Proxmox VE
+- **Kubernetes:** Talos (immutable, lightweight OS)
+- **Networking (CNI):** Cilium with eBPF, no kube-proxy
+- **GitOps:** Flux CD
+- **Ingress:** Traefik with automatic ACME/Let's Encrypt
+- **Load Balancing:** MetalLB (pool: 192.168.123.21-29)
+- **Network Policies:** CiliumNetworkPolicy (default-deny)
+- **Observability:** Hubble, Prometheus, Grafana
+- **Secrets:** Sealed Secrets (encrypted with external master key in Vaultwarden)
 
+For detailed platform architecture and network topology, see [README.md](../README.md).
 
-## Security & Secrets Management
+## Security & Network Architecture
 
-- Default-Deny Network Policies: Assume all traffic is denied unless explicitly allowed by a CiliumNetworkPolicy.
-- Secrets Management:
-  - NEVER commit plain-text secrets to the Git repository.
-  - All secrets must be encrypted as Sealed Secrets.
-  - The workflow is: create a standard Secret manifest, encrypt it using the kubeseal CLI, and commit the resulting SealedSecret manifest.
-  - The master private key for Sealed Secrets is considered highly sensitive and is stored externally (e.g., in Vaultwarden), not in the repository.
-- Workload Placement & Isolation:
-  - Use nodeSelector and tolerations to schedule pods in their designated security zones.
-  - workload-type: dmz: For public-facing services like web servers and reverse proxies. These pods are heavily restricted and cannot access the trusted network.
-  - workload-type: trusted: For internal applications like Home Assistant or file servers. These pods have more permissive network access to the home LAN.
-  - workload-type: untrusted: For experiments and testing. These pods should be completely isolated with internet-only egress.
+**Network Segmentation:** Five isolated networks enforce workload isolation:
+- **Management (192.168.123.0/24):** Kubernetes API, Proxmox admin
+- **Trusted (10.10.20.0/24):** Internal applications with home network access
+- **DMZ (10.10.30.0/24):** Public-facing services (Traefik)
+- **Untrusted (10.10.40.0/24):** Experimental workloads, internet-only
+- **Monitoring (10.10.50.0/24):** Observability infrastructure
 
-## Application Deployment & Management (Helm & Flux)
+**Workload Placement:** Use `nodeSelector` with the node hostname to schedule pods on specific workers:
+- `talos-worker-trusted-1` — Internal services with home LAN access
+- `talos-worker-dmz-1` — Public-facing services (Traefik, Ingress)
+- `talos-worker-untrusted-1` — Experimental workloads, no trusted network access
+- `talos-worker-monitoring-1` — Observability infrastructure
 
-- Helm via Flux: Applications should be deployed as HelmRelease resources managed by Flux. This ensures versioning, configuration management, and automated updates.
-- Configuration: Customize Helm charts by providing values within the HelmRelease manifest. Avoid modifying the upstream charts directly.
-- Repository Structure: Follow the established Git repository structure:
-  - infrastructure/: For core platform components (Traefik, cert-manager, etc.).
-  - apps/: For user-facing applications (Home Assistant, Plex, etc.).
-  - secrets/: Contains only SealedSecret manifests.
+Example deployment:
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: traefik
+spec:
+  template:
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: talos-worker-dmz-1  # Schedule on DMZ worker
+```
 
-## 5. Operational Procedures
+See [Talos Manifests Documentation](../docs/talos-installation.md#workload-placement-via-hostname) for complete details.
 
-- System Upgrades (k3s & OS):
-  - Upgrades must be performed in a rolling fashion, one node at a time, to ensure high availability.
-  - OS Updates: Cordon, drain, update, and uncordon each worker node first, followed by the control plane node last.
-  - k3s Upgrades: Upgrade the control plane node first, followed by each worker node (using the same cordon/drain/uncordon process).
-  - For automated upgrades, prefer using the System Upgrade Controller by defining a Plan manifest and committing it to Git.
-  - Backups: Before any major change, always take a VM snapshot in Proxmox as a primary rollback mechanism.
+**Secrets Management:**
+- NEVER commit plain-text secrets to Git
+- All secrets must be encrypted as SealedSecret manifests
+- Workflow: Create Secret → Encrypt with `kubeseal` → Commit SealedSecret
+- The Sealed Secrets master private key is stored externally, not in the repository
+
+For detailed network policies and architecture, see [README.md](../README.md) and related documentation links.
+
+## Repository Structure
+
+- **terraform/:** Infrastructure provisioning (Proxmox VMs, Talos config generation)
+- **talos/:** Talos machine configurations and bootstrap scripts
+- **flux/:** Flux CD configurations and HelmReleases
+  - `infrastructure/`: Platform components (Cilium, MetalLB, Traefik, Sealed Secrets)
+  - `apps/`: User-facing applications
+- **docs/:** Detailed documentation (cluster upgrades, bootstrap, network architecture)
+
+## When to Reference Documentation
+
+Refer to these docs for detailed guidance:
+- [Terraform & Infrastructure Setup](../terraform/README.md) — VM provisioning and Talos config generation
+- [Bootstrap Guide](../docs/BOOTSTRAP_GUIDE.md) — Cluster initialization and node configuration
+- [Cluster Upgrades](../docs/CLUSTER_UPGRADES.md) — Rolling updates for OS and Kubernetes
+- [Network Architecture](../docs/network-architecture.md) — Detailed network design and routing
+
+## Key Operational Patterns
+
+1. **Deployments:** Always use `HelmRelease` custom resources in Flux. Customize via values, don't modify upstream charts.
+2. **Network Policies:** Define isolation using `CiliumNetworkPolicy` resources. Assume default-deny.
+3. **Secrets:** Use `kubeseal` to encrypt secrets before committing. Sealed Secrets controller decrypts in-cluster.
+4. **Changes:** Commit YAML to Git first, let Flux reconcile. For emergency testing, document and reconcile changes back to Git immediately.
+5. **Troubleshooting:** Use `kubectl` for pod inspection and `talosctl` for node-level debugging. Use Hubble (`cilium hubble ui`) for network observability.
