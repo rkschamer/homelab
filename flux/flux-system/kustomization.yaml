@@ -7,9 +7,15 @@ resources:
 patches:
   # Constrain all Flux controllers to the control plane node
   - patch: |
-      - op: add
-        path: /spec/template/spec/nodeSelector/kubernetes.io~1hostname
-        value: talos-controlplane-1
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: all
+      spec:
+        template:
+          spec:
+            nodeSelector:
+              kubernetes.io/hostname: talos-controlplane-1
     target:
       kind: Deployment
       labelSelector: "app.kubernetes.io/part-of=flux"
