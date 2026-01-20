@@ -20,7 +20,7 @@ Talos is an immutable Linux distribution, so OS updates are applied via the talo
 
 ```bash
 # Export talosconfig for cluster access
-export TALOSCONFIG=$(pwd)/proxmox/terraform/talos/gen/talosconfig
+export TALOSCONFIG=$(pwd)/talos/gen/talosconfig
 
 # Verify current version
 talosctl version

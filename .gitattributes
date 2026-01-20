@@ -3,3 +3,6 @@
 *.tfstate filter=git-crypt diff=git-crypt
 # Terraform plan output files need to be encrypted as well
 /**/talos/gen/** filter=git-crypt diff=git-crypt
+
+/**/kubeconfig* filter=git-crypt diff=git-crypt
+/**/talosconfig* filter=git-crypt diff=git-crypt

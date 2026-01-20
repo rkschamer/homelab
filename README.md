@@ -109,7 +109,7 @@ This Terraform configuration deploys a Talos Kubernetes cluster on Proxmox VE us
 
 ---
 
-### 🔗 [Terraform & Infrastructure Setup](proxmox/terraform/README.md)
+### 🔗 [Terraform & Infrastructure Setup](terraform/README.md)
 
 **Overview:** Comprehensive guide for provisioning the entire Kubernetes cluster on Proxmox using Terraform. Covers infrastructure as code, VM creation, and Talos configuration generation.
 
@@ -212,7 +212,7 @@ This Terraform configuration deploys a Talos Kubernetes cluster on Proxmox VE us
 
 1. **Prepare Infrastructure:** Follow [Network Architecture](docs/NETWORK_ARCHITECTURE.md) to understand the network design. Use [Setup Checklist](SETUP_CHECKLIST.md) to verify all prerequisites.
 
-2. **Provision Cluster:** Use [Terraform & Infrastructure Setup](proxmox/terraform/README.md) to provision all VMs and generate Talos configurations.
+2. **Provision Cluster:** Use [Terraform & Infrastructure Setup](terraform/README.md) to provision all VMs and generate Talos configurations.
 
 3. **Bootstrap Cluster:** Follow [Bootstrap Guide](docs/BOOTSTRAP_GUIDE.md) to apply Talos configs and form the Kubernetes cluster.
 
@@ -250,19 +250,17 @@ All configurations in this repository follow GitOps best practices:
 │   ├── CILIUM_HUBBLE_SETUP.md        # CNI and observability installation
 │   ├── MIGRATION_GUIDE.md            # Docker to Kubernetes migration plan
 │   └── CLUSTER_UPGRADES.md           # Upgrade and maintenance procedures
-├── proxmox/
-│   ├── host/
-│   │   ├── network-interfaces        # Proxmox host network configuration
-│   │   └── README.md
-│   └── terraform/
-│       ├── *.tf                      # Terraform manifests
-│       ├── terraform.tfvars          # Configuration (contains secrets)
-│       ├── terraform.tfstate         # State file (contains sensitive data)
-│       ├── talos/
-│       │   ├── gen/                  # Generated Talos configs and kubeconfig
-│       │   ├── manifests/            # LinkConfig manifests for workers
-│       │   └── bootstrap/
-│       └── README.md                 # Detailed Terraform documentation
+├── terraform/
+│   ├── *.tf                          # Terraform manifests
+│   ├── terraform.tfvars              # Configuration (contains secrets)
+│   ├── terraform.tfstate             # State file (contains sensitive data)
+│   ├── patches/
+│   │   └── install-disk-and-hostname.yaml.tpl
+│   └── README.md                     # Detailed Terraform documentation
+├── talos/
+│   ├── gen/                          # Generated Talos configs and kubeconfig
+│   ├── manifests/                    # LinkConfig manifests for workers
+│   └── bootstrap/
 ├── flux/
 │   ├── flux-system/                  # Flux system components
 │   ├── infrastructure/               # Core platform services (MetalLB, Traefik, etc.)
