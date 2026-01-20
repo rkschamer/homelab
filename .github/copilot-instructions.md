@@ -84,9 +84,8 @@ For detailed network policies and architecture, see [README.md](../README.md) an
 
 Refer to these docs for detailed guidance:
 - [Terraform & Infrastructure Setup](../terraform/README.md) — VM provisioning and Talos config generation
-- [Bootstrap Guide](../docs/BOOTSTRAP_GUIDE.md) — Cluster initialization and node configuration
-- [Cluster Upgrades](../docs/CLUSTER_UPGRADES.md) — Rolling updates for OS and Kubernetes
-- [Network Architecture](../docs/network-architecture.md) — Detailed network design and routing
+- [Network Architecture](../docs/network-achitecture.md) — Detailed network design and routing
+- [Talos Installation & Configuration](../docs/talos-installation.md) — Talos OS setup and machine config
 
 ## Key Operational Patterns
 
