@@ -93,6 +93,36 @@ Bootstrap Flow:
 Normally the setup is designed to follow GitOps prinicple. However a few things need to be installed manually to get this to work.
 All these commands are scripted in [../talos/bootstrap/bootstrap.sh](../talos/bootstrap/bootstrap.sh) and here only kept for explanation.
 
+# Workload Placement via Hostname
+
+Use `nodeSelector` with the node hostname to schedule pods on specific workers.
+
+**Available Nodes:**
+
+| Node Hostname | Network | Use Case |
+|---------------|---------|----------|
+| talos-worker-trusted-1 | Trusted (10.10.20.0/24) | Internal services (Home Assistant, file servers) with home LAN access |
+| talos-worker-dmz-1 | DMZ (10.10.30.0/24) | Public-facing services (Traefik, Ingress) isolated from home network |
+| talos-worker-untrusted-1 | Untrusted (10.10.40.0/24) | Experimental workloads with no trusted network access |
+| talos-worker-monitoring-1 | Monitoring (10.10.50.0/24) | Observability infrastructure |
+
+**Using Hostname in Pod Deployments:**
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-app
+spec:
+  template:
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: talos-worker-dmz-1  # Schedule on DMZ worker
+      # ... pod spec
+```
+
+
+
 ### Install Cilium CNI and Hubble
 
 ```bash
