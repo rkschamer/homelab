@@ -7,5 +7,5 @@ metadata:
 
 resources:
   - cilium-config.yaml
-  - metallb-release.yaml
-  - sealed-secrets-release.yaml
+#  - metallb-release.yaml
+#  - sealed-secrets-release.yaml
