@@ -18,7 +18,8 @@ cilium install \
     --set hubble.relay.enabled=true \
     --set gatewayAPI.enabled=true \
     --set gatewayAPI.enableAlpn=true \
-    --set gatewayAPI.enableAppProtocol=true
+    --set gatewayAPI.enableAppProtocol=true \
+    --set hostFirewall.enabled=true
 
 echo "Cilium installation completed."
 echo "Waiting for Cilium to be fully ready..."
