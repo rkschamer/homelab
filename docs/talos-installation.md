@@ -101,10 +101,10 @@ Use `nodeSelector` with the node hostname to schedule pods on specific workers.
 
 | Node Hostname | Network | Use Case |
 |---------------|---------|----------|
-| talos-worker-trusted-1 | Trusted (10.10.20.0/24) | Internal services (Home Assistant, file servers) with home LAN access |
-| talos-worker-dmz-1 | DMZ (10.10.30.0/24) | Public-facing services (Traefik, Ingress) isolated from home network |
+| talos-worker-trusted-1 | Trusted (10.10.20.0/24) | Internal services (Home Assistant, NAS, file servers) with home LAN access |
+| talos-worker-dmz-1 | DMZ (10.10.30.0/24) | **Traefik Ingress Controller and public-facing services ONLY** - isolated from home network |
 | talos-worker-untrusted-1 | Untrusted (10.10.40.0/24) | Experimental workloads with no trusted network access |
-| talos-worker-monitoring-1 | Monitoring (10.10.50.0/24) | Observability infrastructure |
+| talos-worker-monitoring-1 | Monitoring (10.10.50.0/24) | Observability infrastructure (Prometheus, Grafana, Hubble UI) |
 
 **Using Hostname in Pod Deployments:**
 
@@ -117,9 +117,49 @@ spec:
   template:
     spec:
       nodeSelector:
-        kubernetes.io/hostname: talos-worker-dmz-1  # Schedule on DMZ worker
+        kubernetes.io/hostname: talos-worker-dmz-1  # Schedule Traefik/Ingress on DMZ worker
       # ... pod spec
 ```
+
+**Important: DMZ Worker Isolation and Access Control**
+
+The DMZ worker (`talos-worker-dmz-1`) is the **only** location where public-facing services should run. This includes:
+- ✅ **Traefik Ingress Controller** (MUST run here)
+- ✅ **Any ingress rules** that expose services to the internet
+- ✅ **Public APIs** that should be internet-accessible
+
+**Internal services on other networks (Trusted, Untrusted, Monitoring) CANNOT be exposed publicly** without an explicit network policy.
+
+**Accessing Trusted Network Services from DMZ**
+
+When Traefik or other DMZ services need to reach backends on the Trusted network (e.g., proxying to Home Assistant, NAS), create a `CiliumNetworkPolicy` to allow the traffic:
+
+```yaml
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: dmz-to-homeassistant
+  namespace: homeassistant
+spec:
+  endpointSelector:
+    matchLabels:
+      app: homeassistant  # Service on Trusted worker
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: traefik  # DMZ Traefik pod
+    ports:
+    - protocol: TCP
+      port: "8123"
+```
+
+This pattern ensures:
+- ✅ Traefik is isolated on DMZ worker
+- ✅ Only explicit policies allow DMZ↔Trusted communication
+- ✅ Default-deny prevents accidental exposure of internal services
+- ✅ All access rules are version-controlled in Git (GitOps)
 
 
 

@@ -83,21 +83,24 @@ git-crypt unlock /path/to/encryption-key
     10.10.20.0/24   10.10.30.0/24   10.10.40.0/24  10.10.50.0/24
    (Trusted)        (DMZ)            (Untrusted)   (Monitoring)
        │              │              │              │
-    ┌──▼──┐         ┌──▼──┐       ┌──▼──┐       ┌──▼──┐
-    │ Wkr │         │ Wkr │       │ Wkr │       │ Wkr │
-    │.21  │         │.21  │       │.21  │       │.21  │
-    └─────┘         └─────┘       └─────┘       └─────┘
+    ┌──▼──────────┐ ┌──▼──────────┐ ┌──▼──┐       ┌──▼──┐
+    │ Trusted    │ │ DMZ         │ │ Exp │       │Obs  │
+    │ Workloads  │ │ Traefik +   │ │ Wkr │       │Wkr  │
+    │ (HA, NAS)  │ │ Ingress     │ │.21  │       │.21  │
+    │ .21        │ │ Controllers │ │     │       │     │
+    │            │ │ .21         │ └─────┘       └─────┘
+    └────────────┘ └────────────┘
 ```
 
 ## Network Setup
 
 Five isolated networks are created using Linux bridges on Proxmox. The control plane acts as a bastion and router, enabling routing between networks while maintaining strict isolation. See the [Network Architecture](docs/NETWORK_ARCHITECTURE.md) documentation for a detailed overview.
 
-- **Management     (192.168.123.0/24)** - Admin access and MetalLB pool
-- **Trusted        (10.10.20.0/24)**    - Internal applications with access to the home network
-- **DMZ            (10.10.30.0/24)**    - Public-facing services (Traefik ingress controller)
-- **Untrusted      (10.10.40.0/24)**    - Experimental applications isolated from the home network
-- **Monitoring     (10.10.50.0/24)**    - Observability infrastructure
+- **Management     (192.168.123.0/24)** - Control plane, admin access, and MetalLB pool
+- **Trusted        (10.10.20.0/24)**    - Internal applications with home network access (Home Assistant, NAS, etc.)
+- **DMZ            (10.10.30.0/24)**    - **Ingress and Traefik only** - Public-facing services, isolated from internal network
+- **Untrusted      (10.10.40.0/24)**    - Experimental applications isolated from all other networks
+- **Monitoring     (10.10.50.0/24)**    - Observability infrastructure (Prometheus, Grafana, Hubble)
 
 **Security:** Cilium CNI with Hubble observability and default-deny network policies enforce pod-level isolation.
 
