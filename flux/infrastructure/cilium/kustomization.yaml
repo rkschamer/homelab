@@ -6,4 +6,5 @@ metadata:
   namespace: kube-system
 
 resources:
+  - cilium-helmrelease.yaml
   - cilium-config.yaml
