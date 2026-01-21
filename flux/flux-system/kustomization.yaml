@@ -5,9 +5,7 @@ resources:
   - gotk-sync.yaml
 
 patches:
-  # Constrain all Flux controllers to the control plane node
-  # need also to add a toleration, since k8s taints control plane nodes by default
-  # (however, in the small setup here, the toleration is acceptable)
+  # Constrain all Flux controllers to the DMZ worker node
   - patch: |
       apiVersion: apps/v1
       kind: Deployment
@@ -17,11 +15,7 @@ patches:
         template:
           spec:
             nodeSelector:
-              kubernetes.io/hostname: talos-controlplane-1
-            tolerations:
-            - key: node-role.kubernetes.io/control-plane
-              operator: Exists
-              effect: NoSchedule
+              kubernetes.io/hostname: talos-worker-dmz-1
     target:
       kind: Deployment
       labelSelector: "app.kubernetes.io/part-of=flux"
