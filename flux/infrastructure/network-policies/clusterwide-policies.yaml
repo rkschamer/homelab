@@ -1,0 +1,36 @@
+---
+# ClusterWide Default Deny and DNS - Foundation for zero-trust
+# Applied globally across all nodes
+
+apiVersion: cilium.io/v2
+kind: CiliumClusterwideNetworkPolicy
+metadata:
+  name: default-deny-ingress
+spec:
+  description: "Default deny all ingress traffic cluster-wide (zero-trust)"
+  ingress:
+  - {}  # Empty rule means no ingress allowed by default
+
+---
+apiVersion: cilium.io/v2
+kind: CiliumClusterwideNetworkPolicy
+metadata:
+  name: default-allow-dns
+spec:
+  description: "Allow DNS queries to coredns cluster-wide"
+  ingress:
+  - fromEndpoints:
+    - matchLabels:
+        k8s:app.kubernetes.io/name: coredns
+    toPorts:
+    - ports:
+      - port: "53"
+        protocol: UDP
+  egress:
+  - toEndpoints:
+    - matchLabels:
+        k8s:app.kubernetes.io/name: coredns
+    toPorts:
+    - ports:
+      - port: "53"
+        protocol: UDP

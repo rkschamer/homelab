@@ -1,0 +1,152 @@
+---
+# DMZ Worker Node Policies
+# talos-worker-dmz-1
+
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-traefik-dmz
+  namespace: kube-system
+spec:
+  description: "Allow Traefik on DMZ worker to receive external traffic and forward to backends"
+  endpointSelector:
+    matchLabels:
+      app: traefik
+    matchExpressions:
+    - key: kubernetes.io/hostname
+      operator: In
+      values:
+      - talos-worker-dmz-1
+  ingress:
+  # HTTP/HTTPS from internet (via MetalLB)
+  - toPorts:
+    - ports:
+      - port: "80"
+        protocol: TCP
+      - port: "443"
+        protocol: TCP
+      - port: "8000"
+        protocol: TCP
+      - port: "8443"
+        protocol: TCP
+  # Metrics scraping from monitoring
+  - fromNamespaces:
+    - name: monitoring
+    fromLabelSelector:
+      matchLabels:
+        app: prometheus
+    toPorts:
+    - ports:
+      - port: "9100"
+        protocol: TCP
+  egress:
+  # To Trusted network for internal backends (e.g., Home Assistant)
+  - toNamespaces:
+    - name: homeassistant
+    toPorts:
+    - ports:
+      - port: "8123"
+        protocol: TCP
+  # To DNS
+  - toNamespaces:
+    - name: kube-system
+    toFQDNs:
+    - matchName: "*.svc.cluster.local"
+  # To control plane for cluster access
+  - toEndpoints:
+    - matchLabels:
+        k8s:io.kubernetes.pod.namespace: kube-system
+    toPorts:
+    - ports:
+      - port: "443"
+        protocol: TCP
+
+---
+# Allow Traefik (DMZ) to reach Trusted network backends
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-dmz-to-trusted
+  namespace: kube-system
+spec:
+  description: "Allow Traefik on DMZ worker to reach Trusted network services"
+  endpointSelector:
+    matchLabels:
+      app: traefik
+    matchExpressions:
+    - key: kubernetes.io/hostname
+      operator: In
+      values:
+      - talos-worker-dmz-1
+  egress:
+  - toEndpoints:
+    - matchLabels:
+        network-zone: trusted
+    toPorts:
+    - ports:
+      - port: "8123"
+        protocol: TCP
+      - port: "6052"
+        protocol: TCP
+      - port: "5353"
+        protocol: TCP
+
+---
+# Deny DMZ to Untrusted - Strict isolation
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: deny-dmz-to-untrusted
+  namespace: kube-system
+spec:
+  description: "Explicitly deny DMZ to Untrusted network access"
+  endpointSelector:
+    matchLabels:
+      app: traefik
+    matchExpressions:
+    - key: kubernetes.io/hostname
+      operator: In
+      values:
+      - talos-worker-dmz-1
+  egress:
+  - toEndpoints:
+    - matchLabels:
+        network-zone: untrusted
+    toPorts:
+    - ports:
+      - port: ""  # Deny all ports
+        protocol: TCP
+      - port: ""
+        protocol: UDP
+
+---
+# Host firewall for DMZ worker
+apiVersion: cilium.io/v2
+kind: CiliumClusterwideNetworkPolicy
+metadata:
+  name: host-firewall-dmz-worker
+spec:
+  description: "Host firewall rules protecting DMZ worker"
+  nodeSelector:
+    kubernetes.io/hostname: talos-worker-dmz-1
+  ingress:
+  - fromEndpoints:
+    - {}
+    toPorts:
+    - ports:
+      - port: "10250"
+        protocol: TCP
+  - fromEndpoints:
+    - matchLabels:
+        app: prometheus
+    toPorts:
+    - ports:
+      - port: "10250"
+        protocol: TCP
+      - port: "9100"
+        protocol: TCP
+  egress:
+  - toEndpoints:
+    - {}
+  - toFQDNs:
+    - matchName: "*.svc.cluster.local"

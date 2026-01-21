@@ -1,0 +1,42 @@
+---
+# Control Plane Node Policies
+# talos-controlplane-1
+
+apiVersion: cilium.io/v2
+kind: CiliumClusterwideNetworkPolicy
+metadata:
+  name: host-firewall-control-plane
+spec:
+  description: "Host firewall rules protecting control plane from pod-level threats"
+  nodeSelector:
+    kubernetes.io/hostname: talos-controlplane-1
+  ingress:
+  # Allow pod communication on management network
+  - fromEndpoints:
+    - {}  # Any pod
+    toPorts:
+    - ports:
+      - port: "6443"
+        protocol: TCP
+  # Allow kubelet API from pods
+  - fromEndpoints:
+    - {}
+    toPorts:
+    - ports:
+      - port: "10250"
+        protocol: TCP
+  # Allow metrics from monitoring
+  - fromEndpoints:
+    - matchLabels:
+        app: prometheus
+    toPorts:
+    - ports:
+      - port: "10250"
+        protocol: TCP
+      - port: "2379"
+        protocol: TCP
+  egress:
+  - toEndpoints:
+    - {}
+  - toFQDNs:
+    - matchName: "*.svc.cluster.local"

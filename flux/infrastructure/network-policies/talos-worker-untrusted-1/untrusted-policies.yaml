@@ -1,0 +1,70 @@
+---
+# Untrusted Worker Node Policies
+# talos-worker-untrusted-1
+
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-untrusted-network-pods
+  namespace: default
+spec:
+  description: "Isolate Untrusted worker - allow internal communication only"
+  nodeSelector:
+    kubernetes.io/hostname: talos-worker-untrusted-1
+  endpointSelector:
+    matchLabels:
+      network-zone: untrusted
+  ingress:
+  - fromEndpoints:
+    - matchLabels:
+        network-zone: untrusted
+  # Metrics from monitoring (one-way pull)
+  - fromNamespaces:
+    - name: monitoring
+    fromLabelSelector:
+      matchLabels:
+        app: prometheus
+    toPorts:
+    - ports:
+      - port: "9100"
+        protocol: TCP
+  egress:
+  - toEndpoints:
+    - matchLabels:
+        network-zone: untrusted
+  - toNamespaces:
+    - name: kube-system
+  - toFQDNs:
+    - matchName: "*.svc.cluster.local"
+
+---
+# Host firewall for Untrusted worker
+apiVersion: cilium.io/v2
+kind: CiliumClusterwideNetworkPolicy
+metadata:
+  name: host-firewall-untrusted-worker
+spec:
+  description: "Host firewall rules protecting Untrusted worker"
+  nodeSelector:
+    kubernetes.io/hostname: talos-worker-untrusted-1
+  ingress:
+  - fromEndpoints:
+    - {}
+    toPorts:
+    - ports:
+      - port: "10250"
+        protocol: TCP
+  - fromEndpoints:
+    - matchLabels:
+        app: prometheus
+    toPorts:
+    - ports:
+      - port: "10250"
+        protocol: TCP
+      - port: "9100"
+        protocol: TCP
+  egress:
+  - toEndpoints:
+    - {}
+  - toFQDNs:
+    - matchName: "*.svc.cluster.local"

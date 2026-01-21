@@ -1,0 +1,76 @@
+---
+# Trusted Worker Node Policies
+# talos-worker-trusted-1
+
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-trusted-network-pods
+  namespace: default
+spec:
+  description: "Allow pods on Trusted worker to communicate with each other"
+  nodeSelector:
+    kubernetes.io/hostname: talos-worker-trusted-1
+  endpointSelector:
+    matchLabels:
+      network-zone: trusted
+  ingress:
+  - fromEndpoints:
+    - matchLabels:
+        network-zone: trusted
+  # Allow from Traefik (DMZ) for ingress
+  - fromNamespaces:
+    - name: kube-system
+    fromLabelSelector:
+      matchLabels:
+        app: traefik
+  # Metrics from monitoring
+  - fromNamespaces:
+    - name: monitoring
+    fromLabelSelector:
+      matchLabels:
+        app: prometheus
+    toPorts:
+    - ports:
+      - port: "9100"
+        protocol: TCP
+  egress:
+  - toEndpoints:
+    - matchLabels:
+        network-zone: trusted
+  - toNamespaces:
+    - name: kube-system
+  - toFQDNs:
+    - matchName: "*.svc.cluster.local"
+
+---
+# Host firewall for Trusted worker
+apiVersion: cilium.io/v2
+kind: CiliumClusterwideNetworkPolicy
+metadata:
+  name: host-firewall-trusted-worker
+spec:
+  description: "Host firewall rules protecting Trusted worker"
+  nodeSelector:
+    kubernetes.io/hostname: talos-worker-trusted-1
+  ingress:
+  - fromEndpoints:
+    - {}
+    toPorts:
+    - ports:
+      - port: "10250"
+        protocol: TCP
+  - fromEndpoints:
+    - matchLabels:
+        app: prometheus
+    toPorts:
+    - ports:
+      - port: "10250"
+        protocol: TCP
+      - port: "9100"
+        protocol: TCP
+  egress:
+  - toEndpoints:
+    - {}
+  - toFQDNs:
+    - matchName: "*.svc.cluster.local"
