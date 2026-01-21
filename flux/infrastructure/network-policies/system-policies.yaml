@@ -1,0 +1,198 @@
+---
+# System Component Policies
+# Core Kubernetes and cluster infrastructure policies
+
+# ==============================================================================
+# Flux System - GitOps Core
+# ==============================================================================
+
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-flux-system-internal
+  namespace: flux-system
+spec:
+  description: "Allow internal Flux components to communicate"
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: flux
+  ingress:
+  - fromEndpoints:
+    - matchLabels:
+        app.kubernetes.io/part-of: flux
+  egress:
+  - toEndpoints:
+    - matchLabels:
+        app.kubernetes.io/part-of: flux
+  - toEndpoints:
+    - matchLabels:
+        k8s:app.kubernetes.io/name: coredns
+    toPorts:
+    - ports:
+      - port: "53"
+        protocol: UDP
+
+---
+# ==============================================================================
+# Kube System - Core Kubernetes Components
+# ==============================================================================
+
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-kube-system-metrics
+  namespace: kube-system
+spec:
+  description: "Allow Prometheus scraping metrics from kube-system pods"
+  endpointSelector:
+    matchLabels:
+      k8s:io.kubernetes.pod.namespace: kube-system
+  ingress:
+  - fromNamespaces:
+    - name: monitoring
+    fromLabelSelector:
+      matchLabels:
+        app: prometheus
+    toPorts:
+    - ports:
+      - port: "9090"
+        protocol: TCP
+      - port: "10250"
+        protocol: TCP
+    - ports:
+      - port: "6060"
+        protocol: TCP
+
+---
+# ==============================================================================
+# Cilium - CNI and Network Observability
+# ==============================================================================
+
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-cilium-internal
+  namespace: kube-system
+spec:
+  description: "Allow Cilium agent internal communication and Hubble"
+  endpointSelector:
+    matchLabels:
+      k8s:k8s-app: cilium
+  ingress:
+  - fromEndpoints:
+    - matchLabels:
+        k8s:k8s-app: cilium
+  - fromEndpoints:
+    - matchLabels:
+        k8s:k8s-app: hubble-ui
+    toPorts:
+    - ports:
+      - port: "4244"
+        protocol: TCP
+  egress:
+  - toEndpoints:
+    - matchLabels:
+        k8s:k8s-app: cilium
+  - toNamespaces:
+    - name: kube-system
+    toFQDNs:
+    - matchName: "*.cilium.io"
+
+---
+# ==============================================================================
+# Hubble UI - Network Observability Dashboard
+# ==============================================================================
+
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-hubble-ui
+  namespace: kube-system
+spec:
+  description: "Allow Hubble UI access and backend communication"
+  endpointSelector:
+    matchLabels:
+      k8s:k8s-app: hubble-ui
+  ingress:
+  - fromEndpoints:
+    - matchLabels:
+        k8s:app: hubble-ui
+    toPorts:
+    - ports:
+      - port: "8081"
+        protocol: TCP
+  - fromNamespaces:
+    - name: management
+    toPorts:
+    - ports:
+      - port: "8081"
+        protocol: TCP
+  egress:
+  - toEndpoints:
+    - matchLabels:
+        k8s:k8s-app: hubble
+    toPorts:
+    - ports:
+      - port: "4244"
+        protocol: TCP
+  - toNamespaces:
+    - name: kube-system
+    toFQDNs:
+    - matchName: "*.kubernetes.io"
+
+---
+# ==============================================================================
+# MetalLB - Load Balancer
+# ==============================================================================
+
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-metallb
+  namespace: metallb-system
+spec:
+  description: "Allow MetalLB speaker and controller communication"
+  endpointSelector:
+    matchLabels:
+      app: metallb
+  ingress:
+  - fromEndpoints:
+    - matchLabels:
+        app: metallb
+  egress:
+  - toEndpoints:
+    - matchLabels:
+        app: metallb
+  - toNamespaces:
+    - name: kube-system
+  - toFQDNs:
+    - matchName: "*.kubernetes.io"
+
+---
+# ==============================================================================
+# Sealed Secrets - Secret Management
+# ==============================================================================
+
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-sealed-secrets
+  namespace: kube-system
+spec:
+  description: "Allow Sealed Secrets controller communication"
+  endpointSelector:
+    matchLabels:
+      app: sealed-secrets
+  ingress:
+  - fromEndpoints:
+    - matchLabels:
+        app: sealed-secrets
+  - fromNamespaces:
+    - name: flux-system
+    toPorts:
+    - ports:
+      - port: "8080"
+        protocol: TCP
+  egress:
+  - toNamespaces:
+    - name: kube-system

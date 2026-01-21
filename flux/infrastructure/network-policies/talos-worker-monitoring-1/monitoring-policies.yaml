@@ -1,0 +1,151 @@
+---
+# Monitoring Worker Node Policies
+# talos-worker-monitoring-1
+
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-monitoring-scrape
+  namespace: monitoring
+spec:
+  description: "Allow Prometheus to scrape metrics from all networks"
+  endpointSelector:
+    matchLabels:
+      app: prometheus
+  ingress:
+  - fromNamespaces:
+    - name: monitoring
+  egress:
+  # Scrape all kube-system components
+  - toNamespaces:
+    - name: kube-system
+    toPorts:
+    - ports:
+      - port: "9100"
+        protocol: TCP
+      - port: "10250"
+        protocol: TCP
+      - port: "6060"
+        protocol: TCP
+  # Scrape Traefik on DMZ
+  - toNamespaces:
+    - name: kube-system
+    toLabelSelector:
+      matchLabels:
+        app: traefik
+    toPorts:
+    - ports:
+      - port: "9100"
+        protocol: TCP
+  # Scrape nodes
+  - toNamespaces:
+    - name: default
+    toPorts:
+    - ports:
+      - port: "9100"
+        protocol: TCP
+  # DNS resolution
+  - toEndpoints:
+    - matchLabels:
+        k8s:app.kubernetes.io/name: coredns
+    toPorts:
+    - ports:
+      - port: "53"
+        protocol: UDP
+
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-grafana-dashboards
+  namespace: monitoring
+spec:
+  description: "Allow Grafana dashboard access from management network"
+  endpointSelector:
+    matchLabels:
+      app: grafana
+  ingress:
+  - fromNamespaces:
+    - name: management
+    toPorts:
+    - ports:
+      - port: "3000"
+        protocol: TCP
+  egress:
+  - toEndpoints:
+    - matchLabels:
+        app: prometheus
+    toPorts:
+    - ports:
+      - port: "9090"
+        protocol: TCP
+
+---
+# Allow Monitoring to scrape all zones
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-monitoring-cross-zone-scrape
+  namespace: monitoring
+spec:
+  description: "Allow Prometheus to pull metrics from all network zones"
+  endpointSelector:
+    matchLabels:
+      app: prometheus
+  egress:
+  # Trusted zone
+  - toEndpoints:
+    - matchLabels:
+        network-zone: trusted
+    toPorts:
+    - ports:
+      - port: "9100"
+        protocol: TCP
+  # DMZ zone
+  - toEndpoints:
+    - matchLabels:
+        network-zone: dmz
+    toPorts:
+    - ports:
+      - port: "9100"
+        protocol: TCP
+  # Untrusted zone
+  - toEndpoints:
+    - matchLabels:
+        network-zone: untrusted
+    toPorts:
+    - ports:
+      - port: "9100"
+        protocol: TCP
+
+---
+# Host firewall for Monitoring worker
+apiVersion: cilium.io/v2
+kind: CiliumClusterwideNetworkPolicy
+metadata:
+  name: host-firewall-monitoring-worker
+spec:
+  description: "Host firewall rules protecting Monitoring worker"
+  nodeSelector:
+    kubernetes.io/hostname: talos-worker-monitoring-1
+  ingress:
+  - fromEndpoints:
+    - {}
+    toPorts:
+    - ports:
+      - port: "10250"
+        protocol: TCP
+  - fromEndpoints:
+    - matchLabels:
+        app: prometheus
+    toPorts:
+    - ports:
+      - port: "10250"
+        protocol: TCP
+      - port: "9100"
+        protocol: TCP
+  egress:
+  - toEndpoints:
+    - {}
+  - toFQDNs:
+    - matchName: "*.svc.cluster.local"
