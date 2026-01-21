@@ -7,4 +7,3 @@ metadata:
 
 resources:
   - cilium-helmrelease.yaml
-  - cilium-config.yaml
