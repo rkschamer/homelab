@@ -8,6 +8,7 @@ metadata:
   name: default-deny-ingress
 spec:
   description: "Default deny all ingress traffic cluster-wide (zero-trust)"
+  endpointSelector: {}  # Select all endpoints
   ingress:
   - {}  # Empty rule means no ingress allowed by default
 
@@ -18,18 +19,12 @@ metadata:
   name: default-allow-dns
 spec:
   description: "Allow DNS queries to coredns cluster-wide"
-  ingress:
-  - fromEndpoints:
-    - matchLabels:
-        k8s:app.kubernetes.io/name: coredns
-    toPorts:
-    - ports:
-      - port: "53"
-        protocol: UDP
+  endpointSelector: {}  # Select all endpoints
   egress:
   - toEndpoints:
     - matchLabels:
-        k8s:app.kubernetes.io/name: coredns
+        k8s:io.kubernetes.pod.namespace: kube-system
+        k8s:k8s-app: kube-dns
     toPorts:
     - ports:
       - port: "53"
