@@ -7,6 +7,6 @@ metadata:
 
 resources:
   - cilium
-  - network-policies
+#  - network-policies
 #  - metallb-release.yaml
 #  - sealed-secrets-release.yaml
