@@ -1,5 +1,5 @@
 ---
-apiVersion: source.toolkit.fluxcd.io/v1beta2
+apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:
   name: cilium
@@ -9,7 +9,7 @@ spec:
   url: https://helm.cilium.io
 
 ---
-apiVersion: helm.toolkit.fluxcd.io/v2beta2
+apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: cilium
@@ -29,6 +29,11 @@ spec:
   upgrade:
     crds: CreateReplace
   values:
+    # Cluster Configuration
+    cluster:
+      name: homelab
+      id: 1
+
     # IPAM Configuration
     ipam:
       mode: kubernetes
@@ -69,8 +74,17 @@ spec:
       enabled: true
       relay:
         enabled: true
+        tls:
+          server:
+            enabled: true
+          client:
+            enabled: true
+            certValidation: background
       ui:
         enabled: true
+        tls:
+          server:
+            enabled: true
 
     # Gateway API support
     gatewayAPI:

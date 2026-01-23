@@ -48,18 +48,16 @@ spec:
     matchLabels:
       k8s:io.kubernetes.pod.namespace: kube-system
   ingress:
-  - fromNamespaces:
-    - name: monitoring
-    fromLabelSelector:
-      matchLabels:
-        app: prometheus
+  - fromEndpoints:
+    - matchLabels:
+        k8s:io.kubernetes.pod.namespace: monitoring
+        k8s:app: prometheus
     toPorts:
     - ports:
       - port: "9090"
         protocol: TCP
       - port: "10250"
         protocol: TCP
-    - ports:
       - port: "6060"
         protocol: TCP
 
@@ -93,10 +91,64 @@ spec:
   - toEndpoints:
     - matchLabels:
         k8s:k8s-app: cilium
-  - toNamespaces:
-    - name: kube-system
-    toFQDNs:
-    - matchName: "*.cilium.io"
+
+---
+# ==============================================================================
+# Hubble Relay - Network Event Aggregation
+# ==============================================================================
+
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-hubble-relay
+  namespace: kube-system
+spec:
+  description: "Allow Hubble relay to communicate with peer service and Kubernetes API"
+  endpointSelector:
+    matchLabels:
+      k8s:k8s-app: hubble-relay
+  ingress:
+  - fromEndpoints:
+    - matchLabels:
+        k8s:k8s-app: hubble-ui
+    toPorts:
+    - ports:
+      - port: "4222"
+        protocol: TCP
+  - fromEndpoints:
+    - matchLabels:
+        k8s:k8s-app: hubble
+    toPorts:
+    - ports:
+      - port: "4222"
+        protocol: TCP
+  egress:
+  # Allow connection to Cilium agents for Hubble peer discovery
+  - toEndpoints:
+    - matchLabels:
+        k8s:k8s-app: cilium
+    toPorts:
+    - ports:
+      - port: "4244"
+        protocol: TCP
+  # Allow connection to any endpoint on port 443 (Kubernetes API, peer service via DNS)
+  - toEndpoints:
+    - matchExpressions:
+      - key: "k8s:io.kubernetes.pod.namespace"
+        operator: Exists
+    toPorts:
+    - ports:
+      - port: "443"
+        protocol: TCP
+  # Allow DNS queries for service discovery
+  - toEndpoints:
+    - matchLabels:
+        k8s:io.kubernetes.pod.namespace: kube-system
+        k8s:k8s-app: kube-dns
+    toPorts:
+    - ports:
+      - port: "53"
+        protocol: UDP
 
 ---
 # ==============================================================================
@@ -121,12 +173,6 @@ spec:
     - ports:
       - port: "8081"
         protocol: TCP
-  - fromNamespaces:
-    - name: management
-    toPorts:
-    - ports:
-      - port: "8081"
-        protocol: TCP
   egress:
   - toEndpoints:
     - matchLabels:
@@ -135,10 +181,6 @@ spec:
     - ports:
       - port: "4244"
         protocol: TCP
-  - toNamespaces:
-    - name: kube-system
-    toFQDNs:
-    - matchName: "*.kubernetes.io"
 
 ---
 # ==============================================================================
@@ -163,10 +205,6 @@ spec:
   - toEndpoints:
     - matchLabels:
         app: metallb
-  - toNamespaces:
-    - name: kube-system
-  - toFQDNs:
-    - matchName: "*.kubernetes.io"
 
 ---
 # ==============================================================================
@@ -187,12 +225,7 @@ spec:
   - fromEndpoints:
     - matchLabels:
         app: sealed-secrets
-  - fromNamespaces:
-    - name: flux-system
-    toPorts:
-    - ports:
-      - port: "8080"
-        protocol: TCP
   egress:
-  - toNamespaces:
-    - name: kube-system
+  - toEndpoints:
+    - matchLabels:
+        app: sealed-secrets
