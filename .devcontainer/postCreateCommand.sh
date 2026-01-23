@@ -16,6 +16,11 @@ git config --global init.defaultBranch main
 git config --global safe.directory /workspaces/homelab
 echo "Git configuration complete."
 
+echo "Setting up Talisman pre-commit hook..."
+cd /workspaces/homelab
+talisman --githook pre-commit
+echo "Talisman pre-commit hook installed."
+
 echo "Configuring shell aliases..."
 cat >> /home/vscode/.bash_aliases << 'EOF'
 

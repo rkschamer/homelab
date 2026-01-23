@@ -57,5 +57,13 @@ RUN ARCH=$(dpkg --print-architecture) && \
     && install -o root -g root -m 0755 kompose /usr/local/bin/kompose
 RUN echo "Kompose version:" && kompose version
 
+# Install Talisman (secret scanning for Git)
+RUN ARCH=$(dpkg --print-architecture) && \
+    TALISMAN_VERSION=$(curl -s "https://api.github.com/repos/thoughtworks/talisman/releases/latest" | grep -Po '"tag_name": "v\K[0-9.]+') && \
+    curl -L "https://github.com/thoughtworks/talisman/releases/download/v${TALISMAN_VERSION}/talisman_linux_${ARCH}" -o talisman && \
+    install -o root -g root -m 0755 talisman /usr/local/bin/talisman && \
+    rm talisman
+RUN talisman --version
+
 # Clean up
 RUN apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/*
