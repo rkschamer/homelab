@@ -6,10 +6,12 @@ metadata:
   namespace: flux-system
 
 resources:
-  - clusterwide-policies.yaml
-  - system-policies.yaml
-  - talos-controlplane-1
-  - talos-worker-dmz-1
-  - talos-worker-trusted-1
-  - talos-worker-untrusted-1
-  - talos-worker-monitoring-1
+  # NOTE: Network policies are disabled for now due to issues with Flux and Hubble
+  # They will be redesigned and re-enabled in a future update
+  # - clusterwide-policies.yaml
+  # - system-policies.yaml
+  # - talos-controlplane-1
+  # - talos-worker-dmz-1
+  # - talos-worker-trusted-1
+  # - talos-worker-untrusted-1
+  # - talos-worker-monitoring-1
