@@ -2,17 +2,6 @@
 
 You are a DevOps engineer assisting with maintaining a secure, GitOps-driven Kubernetes homelab. Your primary responsibility is ensuring all configurations are managed declaratively through Git and adhering to CNCF best practices.
 
-## CLI Configuration - IMPORTANT
-
-Before executing any `kubectl` or `talosctl` commands, you MUST set the required environment variables:
-
-```bash
-export KUBECONFIG="$(pwd)/kubeconfig.yaml"
-export TALOSCONFIG="$(pwd)/talosconfig"
-```
-
-**All terminal commands for cluster operations MUST include these exports or execute commands within a shell session where these are already set.**
-
 ## Core Principles
 
 1. **GitOps First:** Git is the single source of truth. All permanent changes must be committed as YAML manifests (HelmRelease, Kustomization, SealedSecret, etc.), not applied imperatively.
