@@ -87,6 +87,13 @@ spec:
     - ports:
       - port: "4244"
         protocol: TCP
+  - fromEndpoints:
+    - matchLabels:
+        k8s:k8s-app: hubble-relay
+    toPorts:
+    - ports:
+      - port: "4244"
+        protocol: TCP
   egress:
   - toEndpoints:
     - matchLabels:
@@ -131,12 +138,8 @@ spec:
     - ports:
       - port: "4244"
         protocol: TCP
-  # Allow connection to any endpoint on port 443 (Kubernetes API, peer service via DNS)
-  - toEndpoints:
-    - matchExpressions:
-      - key: "k8s:io.kubernetes.pod.namespace"
-        operator: Exists
-    toPorts:
+  # Allow HTTPS to any endpoint (for hubble-peer service and API server)
+  - toPorts:
     - ports:
       - port: "443"
         protocol: TCP
