@@ -100,6 +100,81 @@ spec:
         k8s:k8s-app: cilium
 
 ---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-hubble-relay-to-peers
+  namespace: kube-system
+spec:
+  description: "Allow Hubble Relay to reach Hubble daemons on all nodes across networks"
+  endpointSelector:
+    matchLabels:
+      k8s:k8s-app: hubble-relay
+  egress:
+  # Allow reaching Hubble daemons on all nodes (port 4244)
+  - toEndpoints:
+    - matchLabels:
+        k8s:k8s-app: cilium
+    toPorts:
+    - ports:
+      - port: "4244"
+        protocol: TCP
+  # Allow DNS for peer discovery
+  - toEndpoints:
+    - matchLabels:
+        k8s:io.kubernetes.pod.namespace: kube-system
+        k8s:k8s-app: kube-dns
+    toPorts:
+    - ports:
+      - port: "53"
+        protocol: UDP
+  # Allow reaching Kubernetes API server (for peer discovery service)
+  - toCIDR:
+    - 127.0.0.1/32
+    - ::1/128
+    toPorts:
+    - ports:
+      - port: "6443"
+        protocol: TCP
+  # Allow reaching Hubble peer service via cluster IP
+  - toServices:
+    - k8sService:
+        namespace: kube-system
+        serviceName: hubble-peer
+    toPorts:
+    - ports:
+      - port: "443"
+        protocol: TCP
+
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-hubble-ui-access
+  namespace: kube-system
+spec:
+  description: "Allow Hubble UI to reach Hubble Relay"
+  endpointSelector:
+    matchLabels:
+      k8s:k8s-app: hubble-ui
+  egress:
+  - toEndpoints:
+    - matchLabels:
+        k8s:k8s-app: hubble-relay
+    toPorts:
+    - ports:
+      - port: "8085"
+        protocol: TCP
+  - toEndpoints:
+    - matchLabels:
+        k8s:io.kubernetes.pod.namespace: kube-system
+        k8s:k8s-app: kube-dns
+    toPorts:
+    - ports:
+      - port: "53"
+        protocol: UDP
+
+---
 # ==============================================================================
 # Hubble Relay - Network Event Aggregation
 # ==============================================================================
