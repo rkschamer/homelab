@@ -21,16 +21,33 @@ spec:
     - matchLabels:
         app.kubernetes.io/part-of: flux
   egress:
+  # Allow Flux components to communicate with each other
   - toEndpoints:
     - matchLabels:
         app.kubernetes.io/part-of: flux
+  # Allow DNS resolution via CoreDNS
   - toEndpoints:
     - matchLabels:
-        k8s:app.kubernetes.io/name: coredns
+        k8s:io.kubernetes.pod.namespace: kube-system
+        k8s:k8s-app: kube-dns
     toPorts:
     - ports:
       - port: "53"
         protocol: UDP
+      - port: "53"
+        protocol: TCP
+  # Allow access to Kubernetes API server (for reconciliation)
+  - toEntities:
+    - kube-apiserver
+  # Allow egress to external endpoints (GitHub, container registries, Helm repos)
+  - toEntities:
+    - world
+    toPorts:
+    - ports:
+      - port: "443"
+        protocol: TCP
+      - port: "80"
+        protocol: TCP
 
 ---
 # ==============================================================================
@@ -112,9 +129,21 @@ spec:
       k8s:k8s-app: hubble-relay
   egress:
   # Allow reaching Hubble daemons on all nodes (port 4244)
+  # Cilium agents run on hostNetwork, so we need toCIDR rules
   - toEndpoints:
     - matchLabels:
         k8s:k8s-app: cilium
+    toPorts:
+    - ports:
+      - port: "4244"
+        protocol: TCP
+  # Allow reaching Cilium agents on all node networks (hostNetwork pods)
+  - toCIDR:
+    - 192.168.123.0/24   # Management network (control plane)
+    - 10.10.20.0/24      # Trusted network
+    - 10.10.30.0/24      # DMZ network
+    - 10.10.40.0/24      # Untrusted network
+    - 10.10.50.0/24      # Monitoring network
     toPorts:
     - ports:
       - port: "4244"
@@ -129,22 +158,8 @@ spec:
       - port: "53"
         protocol: UDP
   # Allow reaching Kubernetes API server (for peer discovery service)
-  - toCIDR:
-    - 127.0.0.1/32
-    - ::1/128
-    toPorts:
-    - ports:
-      - port: "6443"
-        protocol: TCP
-  # Allow reaching Hubble peer service via cluster IP
-  - toServices:
-    - k8sService:
-        namespace: kube-system
-        serviceName: hubble-peer
-    toPorts:
-    - ports:
-      - port: "443"
-        protocol: TCP
+  - toEntities:
+    - kube-apiserver
 
 ---
 apiVersion: cilium.io/v2
