@@ -1,16 +1,16 @@
----
+# ---
 # ClusterWide Default Deny and DNS - Foundation for zero-trust
 # Applied globally across all nodes
 
-apiVersion: cilium.io/v2
-kind: CiliumClusterwideNetworkPolicy
-metadata:
-  name: default-deny-ingress
-spec:
-  description: "Default deny all ingress traffic cluster-wide (zero-trust)"
-  endpointSelector: {}  # Select all endpoints
-  ingress:
-  - {}  # Empty rule means no ingress allowed by default
+# apiVersion: cilium.io/v2
+# kind: CiliumClusterwideNetworkPolicy
+# metadata:
+#   name: default-deny-ingress
+# spec:
+#   description: "Default deny all ingress traffic cluster-wide (zero-trust)"
+#   endpointSelector: {}  # Select all endpoints
+#   ingress:
+#   - {}  # Empty rule means no ingress allowed by default
 
 ---
 apiVersion: cilium.io/v2
