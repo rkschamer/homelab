@@ -88,7 +88,7 @@ spec:
 
     # Host Firewall for pod-to-pod isolation
     hostFirewall:
-      enabled: true
+      enabled: false
 
     # Policy Audit Mode - logs drops without blocking (for debugging)
     # Set to false once policies are validated
