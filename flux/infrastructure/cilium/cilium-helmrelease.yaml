@@ -90,6 +90,10 @@ spec:
     hostFirewall:
       enabled: true
 
+    # Explicitly set devices to exclude leftover flannel.1 interface
+    # which interferes with host firewall BPF programs
+    devices: "ens18"
+
     # Policy Audit Mode - logs drops without blocking (for debugging)
     # Set to false once policies are validated
     policyAuditMode: true
