@@ -1,0 +1,249 @@
+---
+# =============================================================================
+# Host Firewall Base Policies
+# =============================================================================
+# These policies are REQUIRED when hostFirewall is enabled in Cilium.
+# They allow essential node-to-node and cluster infrastructure traffic.
+#
+# Without these policies, the following will break:
+# - API server communication from workers
+# - Kubelet communication between nodes
+# - CoreDNS resolution (when running on different nodes)
+# - Cilium agent peer communication
+# - etcd cluster communication (if multi-node control plane)
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Allow All Nodes to Reach Control Plane API Server
+# -----------------------------------------------------------------------------
+# Workers on isolated networks (10.10.x.0/24) need to reach the API server
+# on the management network (192.168.123.20:6443).
+#
+# This rule allows traffic FROM all node networks TO the control plane.
+# -----------------------------------------------------------------------------
+apiVersion: cilium.io/v2
+kind: CiliumClusterwideNetworkPolicy
+metadata:
+  name: host-allow-apiserver-access
+spec:
+  description: "Allow all nodes to reach Kubernetes API server"
+  nodeSelector:
+    matchLabels:
+      kubernetes.io/hostname: talos-controlplane-1
+  ingress:
+  # From worker nodes on all isolated networks
+  - fromCIDR:
+    - 10.10.20.0/24   # Trusted network
+    - 10.10.30.0/24   # DMZ network
+    - 10.10.40.0/24   # Untrusted network
+    - 10.10.50.0/24   # Monitoring network
+    - 192.168.123.0/24  # Management network (other control planes if HA)
+    toPorts:
+    - ports:
+      - port: "6443"
+        protocol: TCP
+  # From pods (already covered, but explicit for clarity)
+  - fromEndpoints:
+    - {}
+    toPorts:
+    - ports:
+      - port: "6443"
+        protocol: TCP
+
+---
+# -----------------------------------------------------------------------------
+# Allow Control Plane to Reach Worker Kubelets
+# -----------------------------------------------------------------------------
+# The API server needs to reach kubelets on workers for:
+# - Pod exec/logs
+# - Metrics collection
+# - Health checks
+#
+# This rule allows traffic FROM the control plane TO all worker networks.
+# -----------------------------------------------------------------------------
+apiVersion: cilium.io/v2
+kind: CiliumClusterwideNetworkPolicy
+metadata:
+  name: host-allow-kubelet-from-controlplane
+spec:
+  description: "Allow control plane to reach worker kubelets"
+  nodeSelector:
+    matchExpressions:
+    - key: node-role.kubernetes.io/control-plane
+      operator: DoesNotExist
+  ingress:
+  # From control plane
+  - fromCIDR:
+    - 192.168.123.20/32  # Control plane IP
+    toPorts:
+    - ports:
+      - port: "10250"
+        protocol: TCP
+
+---
+# -----------------------------------------------------------------------------
+# Allow Inter-Node Cilium Agent Communication
+# -----------------------------------------------------------------------------
+# Cilium agents run on hostNetwork and need to communicate with each other
+# for VXLAN/Geneve tunneling, health checks, and cluster mesh.
+#
+# This is critical for pod-to-pod traffic across nodes.
+# -----------------------------------------------------------------------------
+apiVersion: cilium.io/v2
+kind: CiliumClusterwideNetworkPolicy
+metadata:
+  name: host-allow-cilium-inter-node
+spec:
+  description: "Allow Cilium agents to communicate between nodes"
+  nodeSelector:
+    matchLabels: {}  # All nodes
+  ingress:
+  # Cilium VXLAN/Geneve tunneling (if using tunnel mode)
+  - fromCIDR:
+    - 10.10.20.0/24
+    - 10.10.30.0/24
+    - 10.10.40.0/24
+    - 10.10.50.0/24
+    - 192.168.123.0/24
+    toPorts:
+    - ports:
+      - port: "8472"    # VXLAN
+        protocol: UDP
+      - port: "6081"    # Geneve
+        protocol: UDP
+  # Cilium health checks
+  - fromCIDR:
+    - 10.10.20.0/24
+    - 10.10.30.0/24
+    - 10.10.40.0/24
+    - 10.10.50.0/24
+    - 192.168.123.0/24
+    toPorts:
+    - ports:
+      - port: "4240"    # Cilium health
+        protocol: TCP
+  # Hubble peer discovery (Cilium agents expose this)
+  - fromCIDR:
+    - 10.10.20.0/24
+    - 10.10.30.0/24
+    - 10.10.40.0/24
+    - 10.10.50.0/24
+    - 192.168.123.0/24
+    toPorts:
+    - ports:
+      - port: "4244"    # Hubble peer
+        protocol: TCP
+  egress:
+  # Allow Cilium agents to reach other nodes
+  - toCIDR:
+    - 10.10.20.0/24
+    - 10.10.30.0/24
+    - 10.10.40.0/24
+    - 10.10.50.0/24
+    - 192.168.123.0/24
+    toPorts:
+    - ports:
+      - port: "8472"
+        protocol: UDP
+      - port: "6081"
+        protocol: UDP
+      - port: "4240"
+        protocol: TCP
+      - port: "4244"
+        protocol: TCP
+
+---
+# -----------------------------------------------------------------------------
+# Allow Workers to Reach CoreDNS (wherever it runs)
+# -----------------------------------------------------------------------------
+# CoreDNS can run on any node. Workers need to reach it for DNS resolution.
+# Since we don't know which node CoreDNS will be on, we allow DNS traffic
+# from all nodes to all nodes.
+# -----------------------------------------------------------------------------
+apiVersion: cilium.io/v2
+kind: CiliumClusterwideNetworkPolicy
+metadata:
+  name: host-allow-dns-cross-node
+spec:
+  description: "Allow DNS traffic between nodes for CoreDNS access"
+  nodeSelector:
+    matchLabels: {}  # All nodes
+  ingress:
+  - fromCIDR:
+    - 10.10.20.0/24
+    - 10.10.30.0/24
+    - 10.10.40.0/24
+    - 10.10.50.0/24
+    - 192.168.123.0/24
+    toPorts:
+    - ports:
+      - port: "53"
+        protocol: UDP
+      - port: "53"
+        protocol: TCP
+  egress:
+  - toCIDR:
+    - 10.10.20.0/24
+    - 10.10.30.0/24
+    - 10.10.40.0/24
+    - 10.10.50.0/24
+    - 192.168.123.0/24
+    toPorts:
+    - ports:
+      - port: "53"
+        protocol: UDP
+      - port: "53"
+        protocol: TCP
+
+---
+# -----------------------------------------------------------------------------
+# Allow Node-to-Node Health Probes
+# -----------------------------------------------------------------------------
+# Kubernetes uses TCP health probes between nodes for liveness/readiness.
+# This allows ICMP and common health check ports.
+# -----------------------------------------------------------------------------
+apiVersion: cilium.io/v2
+kind: CiliumClusterwideNetworkPolicy
+metadata:
+  name: host-allow-node-health
+spec:
+  description: "Allow health probes between nodes"
+  nodeSelector:
+    matchLabels: {}  # All nodes
+  ingress:
+  # ICMP ping for node health
+  - fromCIDR:
+    - 10.10.20.0/24
+    - 10.10.30.0/24
+    - 10.10.40.0/24
+    - 10.10.50.0/24
+    - 192.168.123.0/24
+    icmps:
+    - fields:
+      - type: 8  # Echo request
+        family: IPv4
+
+---
+# -----------------------------------------------------------------------------
+# Allow Talos API Access (for talosctl)
+# -----------------------------------------------------------------------------
+# The Talos API (port 50000) is used by talosctl for node management.
+# This should only be accessible from the management network.
+# -----------------------------------------------------------------------------
+apiVersion: cilium.io/v2
+kind: CiliumClusterwideNetworkPolicy
+metadata:
+  name: host-allow-talos-api
+spec:
+  description: "Allow Talos API access from management network"
+  nodeSelector:
+    matchLabels: {}  # All nodes
+  ingress:
+  - fromCIDR:
+    - 192.168.123.0/24  # Only from management network
+    toPorts:
+    - ports:
+      - port: "50000"
+        protocol: TCP
+      - port: "50001"   # Talos trustd
+        protocol: TCP

@@ -5,8 +5,8 @@ metadata:
   name: infrastructure
   namespace: flux-system
 
-resources: []
-#  - cilium
+resources:
+  - cilium
 #  - network-policies
 #  - metallb-release.yaml
 #  - sealed-secrets-release.yaml

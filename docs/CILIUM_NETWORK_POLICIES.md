@@ -12,6 +12,52 @@ The network policy architecture implements **zero-trust security** with the foll
 4. **Host Firewall Protection**: Host networking protected from pod-level threats
 5. **Observability**: Monitoring zone can observe all zones (one-way pull)
 
+## ⚠️ Critical: Host Firewall Requirements
+
+When `hostFirewall.enabled: true` is set in Cilium, the firewall applies to the **host network namespace** (the node itself), not just pods. This means **node-to-node traffic is also filtered**.
+
+### What Breaks Without Base Policies
+
+| Traffic Path | Symptom |
+|--------------|---------|
+| Worker → API Server (6443) | `kubectl` commands timeout, pods can't start |
+| API Server → Kubelet (10250) | `kubectl logs/exec` fail |
+| CoreDNS cross-node | DNS resolution fails for pods on different nodes |
+| Cilium agent VXLAN/Geneve | Pod-to-pod traffic across nodes fails |
+| Hubble Relay → Cilium agents | Hubble UI shows no flows |
+
+### Required Base Policies
+
+The file `flux/infrastructure/network-policies/host-firewall-base.yaml` contains essential policies that **must be applied first**:
+
+| Policy Name | Purpose |
+|-------------|---------|
+| `host-allow-apiserver-access` | Workers reach API server (fromCIDR: all worker networks) |
+| `host-allow-kubelet-from-controlplane` | Control plane reaches worker kubelets |
+| `host-allow-cilium-inter-node` | Cilium agents communicate (VXLAN 8472, health 4240, Hubble 4244) |
+| `host-allow-dns-cross-node` | DNS traffic between all nodes (port 53) |
+| `host-allow-node-health` | ICMP health probes |
+| `host-allow-talos-api` | `talosctl` access from management network |
+
+### System Pods That Can Run Anywhere
+
+Some system pods (CoreDNS, sealed-secrets, hubble-relay) can be scheduled on **any node** by the Kubernetes scheduler. This means you cannot rely on knowing which node they run on.
+
+**Solution**: Use `fromCIDR`/`toCIDR` rules in host firewall policies to allow traffic from all node networks, not just specific endpoints.
+
+Example: CoreDNS might run on the DMZ worker, but pods on the Trusted worker need to reach it:
+```yaml
+# In host-firewall-base.yaml
+- fromCIDR:
+  - 10.10.20.0/24   # Trusted
+  - 10.10.30.0/24   # DMZ (where CoreDNS might be)
+  - 10.10.40.0/24   # Untrusted
+  toPorts:
+  - ports:
+    - port: "53"
+      protocol: UDP
+```
+
 ## Architecture
 
 ### Network Zones
