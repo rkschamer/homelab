@@ -32,7 +32,7 @@ spec:
     # Cluster Configuration
     cluster:
       name: homelab
-      id: 1
+      id: 0
 
     # IPAM Configuration
     ipam:
@@ -86,15 +86,17 @@ spec:
           server:
             enabled: true
 
-    # Gateway API support
-    gatewayAPI:
-      enabled: true
-      enableAlpn: true
-      enableAppProtocol: true
-
     # Host Firewall for pod-to-pod isolation
     hostFirewall:
       enabled: true
+
+    # Policy Audit Mode - logs drops without blocking (for debugging)
+    # Set to false once policies are validated
+    policyAuditMode: true
+
+    # Routing mode (matches ConfigMap)
+    routingMode: tunnel
+    tunnelProtocol: vxlan
 
     # Additional settings for eBPF mode
     bpf:

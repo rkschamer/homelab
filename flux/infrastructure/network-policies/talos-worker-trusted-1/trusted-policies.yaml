@@ -45,21 +45,25 @@ spec:
 
 ---
 # Host firewall for Trusted worker
+# NOTE: Base rules are in host-firewall-base.yaml
+# This adds Trusted-worker-specific rules only
 apiVersion: cilium.io/v2
 kind: CiliumClusterwideNetworkPolicy
 metadata:
   name: host-firewall-trusted-worker
 spec:
-  description: "Host firewall rules protecting Trusted worker"
+  description: "Trusted worker specific host firewall rules"
   nodeSelector:
     kubernetes.io/hostname: talos-worker-trusted-1
   ingress:
-  - fromEndpoints:
-    - {}
+  # Allow access from home LAN (Trusted zone has home network access)
+  - fromCIDR:
+    - 192.168.123.0/24
     toPorts:
     - ports:
       - port: "10250"
         protocol: TCP
+  # Allow metrics from Prometheus pods
   - fromEndpoints:
     - matchLabels:
         app: prometheus
@@ -70,7 +74,6 @@ spec:
       - port: "9100"
         protocol: TCP
   egress:
-  - toEndpoints:
-    - {}
-  - toFQDNs:
-    - matchName: "*.svc.cluster.local"
+  # Can reach home LAN (this is what makes it "trusted")
+  - toCIDR:
+    - 192.168.123.0/24

@@ -39,21 +39,18 @@ spec:
 
 ---
 # Host firewall for Untrusted worker
+# NOTE: Base rules are in host-firewall-base.yaml
+# Untrusted has MOST restrictive egress - internet only, no internal networks
 apiVersion: cilium.io/v2
 kind: CiliumClusterwideNetworkPolicy
 metadata:
   name: host-firewall-untrusted-worker
 spec:
-  description: "Host firewall rules protecting Untrusted worker"
+  description: "Untrusted worker specific host firewall rules (strict isolation)"
   nodeSelector:
     kubernetes.io/hostname: talos-worker-untrusted-1
   ingress:
-  - fromEndpoints:
-    - {}
-    toPorts:
-    - ports:
-      - port: "10250"
-        protocol: TCP
+  # Only Prometheus metrics allowed
   - fromEndpoints:
     - matchLabels:
         app: prometheus
@@ -64,7 +61,11 @@ spec:
       - port: "9100"
         protocol: TCP
   egress:
-  - toEndpoints:
-    - {}
-  - toFQDNs:
-    - matchName: "*.svc.cluster.local"
+  # Internet access only - NO internal networks (except control plane for cluster)
+  - toCIDR:
+    - 0.0.0.0/0
+    exceptCIDR:
+    - 192.168.123.0/24  # No home LAN
+    - 10.10.20.0/24     # No Trusted
+    - 10.10.30.0/24     # No DMZ
+    - 10.10.50.0/24     # No Monitoring

@@ -2,10 +2,22 @@
 
 This directory contains organized CiliumNetworkPolicy resources for the homelab Kubernetes cluster, organized by node and policy type.
 
+## ⚠️ Host Firewall Important Notes
+
+When `hostFirewall.enabled: true` is set in the Cilium HelmRelease, additional policies are **required** for the cluster to function. The `host-firewall-base.yaml` file contains essential node-to-node communication rules that MUST be applied.
+
+**Without these base policies, the following will break:**
+- API server communication from worker nodes
+- Kubelet communication (pod exec/logs)
+- DNS resolution across nodes
+- Cilium agent peer communication (pod-to-pod cross-node)
+- Hubble relay observability
+
 ## Structure
 
 ```
 network-policies/
+├── host-firewall-base.yaml         # ⚠️ REQUIRED: Node-to-node base rules
 ├── clusterwide-policies.yaml       # Global policies (default deny, DNS)
 ├── system-policies.yaml            # System component policies (Flux, Cilium, MetalLB, etc)
 ├── kustomization.yaml              # Kustomize manifest for all policies
@@ -28,6 +40,16 @@ network-policies/
 
 ## File Organization
 
+### Host Firewall Base Policies
+
+**`host-firewall-base.yaml`** (APPLY FIRST)
+- `host-allow-apiserver-access` - Workers can reach API server (192.168.123.20:6443)
+- `host-allow-kubelet-from-controlplane` - Control plane can reach worker kubelets
+- `host-allow-cilium-inter-node` - Cilium agents communicate (VXLAN/health/Hubble)
+- `host-allow-dns-cross-node` - DNS traffic between nodes for CoreDNS
+- `host-allow-node-health` - ICMP health probes between nodes
+- `host-allow-talos-api` - Talos API access (port 50000) from management network
+
 ### Global Policies
 
 **`clusterwide-policies.yaml`**
@@ -45,7 +67,7 @@ network-policies/
 ### Per-Node Policies
 
 **`talos-controlplane-1/host-firewall.yaml`**
-- `host-firewall-control-plane` - Protects control plane from pod-level threats
+- `host-firewall-control-plane` - Control-plane specific rules (etcd, scheduler)
 
 **`talos-worker-dmz-1/dmz-policies.yaml`**
 - `allow-traefik-dmz` - Allow external traffic ingress
