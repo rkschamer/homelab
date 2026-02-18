@@ -256,3 +256,38 @@ spec:
         protocol: TCP
       - port: "50001"   # Talos trustd
         protocol: TCP
+
+---
+# -----------------------------------------------------------------------------
+# Allow Host to Reach Cilium Health Endpoints (Pod CIDR)
+# -----------------------------------------------------------------------------
+# Cilium health checks run from the host and need to reach health endpoints
+# on other nodes. Health endpoints have pod IPs (10.244.x.x), not node IPs.
+# This allows the host egress to pod CIDR for health probes.
+# -----------------------------------------------------------------------------
+apiVersion: cilium.io/v2
+kind: CiliumClusterwideNetworkPolicy
+metadata:
+  name: host-allow-health-egress
+spec:
+  description: "Allow host to reach Cilium health endpoints on pod CIDR"
+  nodeSelector:
+    matchLabels: {}  # All nodes
+  egress:
+  # Allow health check traffic to pod CIDR (where health endpoints live)
+  - toCIDR:
+    - 10.244.0.0/16   # Pod CIDR
+    toPorts:
+    - ports:
+      - port: "4240"    # Cilium health check port
+        protocol: TCP
+  # Allow ICMP ping to health endpoints
+  - toCIDR:
+    - 10.244.0.0/16
+    icmps:
+    - fields:
+      - type: 8  # Echo request
+        family: IPv4
+  # Allow health checks to reach reserved:health identity endpoints
+  - toEntities:
+    - health
