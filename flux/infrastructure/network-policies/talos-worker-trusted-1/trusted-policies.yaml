@@ -9,8 +9,6 @@ metadata:
   namespace: default
 spec:
   description: "Allow pods on Trusted worker to communicate with each other"
-  nodeSelector:
-    kubernetes.io/hostname: talos-worker-trusted-1
   endpointSelector:
     matchLabels:
       network-zone: trusted
@@ -19,17 +17,23 @@ spec:
     - matchLabels:
         network-zone: trusted
   # Allow from Traefik (DMZ) for ingress
-  - fromNamespaces:
-    - name: kube-system
-    fromLabelSelector:
-      matchLabels:
+  - fromEndpoints:
+    - matchLabels:
         app: traefik
-  # Metrics from monitoring
-  - fromNamespaces:
-    - name: monitoring
-    fromLabelSelector:
-      matchLabels:
+      matchExpressions:
+      - key: io.kubernetes.pod.namespace
+        operator: In
+        values:
+        - kube-system
+  # Metrics from prometheus in kube-system
+  - fromEndpoints:
+    - matchLabels:
         app: prometheus
+      matchExpressions:
+      - key: io.kubernetes.pod.namespace
+        operator: In
+        values:
+        - kube-system
     toPorts:
     - ports:
       - port: "9100"
@@ -38,10 +42,28 @@ spec:
   - toEndpoints:
     - matchLabels:
         network-zone: trusted
-  - toNamespaces:
-    - name: kube-system
-  - toFQDNs:
-    - matchName: "*.svc.cluster.local"
+  # To kube-system (CoreDNS, API server, etc.)
+  - toEndpoints:
+    - matchExpressions:
+      - key: io.kubernetes.pod.namespace
+        operator: In
+        values:
+        - kube-system
+    toPorts:
+    - ports:
+      - port: "53"
+        protocol: UDP
+      - port: "443"
+        protocol: TCP
+  # To DNS (CoreDNS in kube-system)
+  - toEndpoints:
+    - matchLabels:
+        k8s-app: coredns
+      matchExpressions:
+      - key: io.kubernetes.pod.namespace
+        operator: In
+        values:
+        - kube-system
 
 ---
 # Host firewall for Trusted worker
@@ -54,7 +76,8 @@ metadata:
 spec:
   description: "Trusted worker specific host firewall rules"
   nodeSelector:
-    kubernetes.io/hostname: talos-worker-trusted-1
+    matchLabels:
+      kubernetes.io/hostname: talos-worker-trusted-1
   ingress:
   # Allow access from home LAN (Trusted zone has home network access)
   - fromCIDR:
