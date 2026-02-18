@@ -17,8 +17,7 @@ cilium install \
     --set k8sServiceHost=localhost \
     --set k8sServicePort=7445 \
     --set hubble.relay.enabled=true \
-    --set hubble.ui.enabled=true \
-    --set hostFirewall.enabled=true
+    --set hubble.ui.enabled=true
 
 echo "Cilium installation completed."
 echo "Waiting for Cilium to be fully ready..."
