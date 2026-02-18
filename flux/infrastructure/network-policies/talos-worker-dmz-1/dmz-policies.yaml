@@ -29,33 +29,40 @@ spec:
         protocol: TCP
       - port: "8443"
         protocol: TCP
-  # Metrics scraping from monitoring
-  - fromNamespaces:
-    - name: monitoring
-    fromLabelSelector:
-      matchLabels:
+  # Metrics scraping from prometheus in kube-system
+  - fromEndpoints:
+    - matchLabels:
         app: prometheus
+      matchExpressions:
+      - key: io.kubernetes.pod.namespace
+        operator: In
+        values:
+        - kube-system
     toPorts:
     - ports:
       - port: "9100"
         protocol: TCP
   egress:
   # To Trusted network for internal backends (e.g., Home Assistant)
-  - toNamespaces:
-    - name: homeassistant
+  - toEndpoints:
+    - matchLabels:
+        network-zone: trusted
     toPorts:
     - ports:
       - port: "8123"
         protocol: TCP
-  # To DNS
-  - toNamespaces:
-    - name: kube-system
-    toFQDNs:
-    - matchName: "*.svc.cluster.local"
+  # To DNS (CoreDNS)
+  - toEndpoints:
+    - matchLabels:
+        k8s-app: coredns
+    toPorts:
+    - ports:
+      - port: "53"
+        protocol: UDP
   # To control plane for cluster access
   - toEndpoints:
     - matchLabels:
-        k8s:io.kubernetes.pod.namespace: kube-system
+        k8s-app: kube-apiserver
     toPorts:
     - ports:
       - port: "443"
@@ -124,7 +131,8 @@ metadata:
 spec:
   description: "DMZ worker specific host firewall rules (restricted egress)"
   nodeSelector:
-    kubernetes.io/hostname: talos-worker-dmz-1
+    matchLabels:
+      kubernetes.io/hostname: talos-worker-dmz-1
   ingress:
   # Allow external traffic for Traefik (MetalLB will route here)
   - fromCIDR:
@@ -135,7 +143,7 @@ spec:
         protocol: TCP
       - port: "443"
         protocol: TCP
-  # Metrics from Prometheus
+  # Metrics from Prometheus pods
   - fromEndpoints:
     - matchLabels:
         app: prometheus
@@ -146,9 +154,13 @@ spec:
       - port: "9100"
         protocol: TCP
   egress:
-  # DMZ can reach internet (for Let's Encrypt, etc.)
+  # DMZ can reach internet
   - toCIDR:
     - 0.0.0.0/0
-    exceptCIDR:
-    - 192.168.123.0/24  # Except home LAN (must go through Traefik policies)
-    - 10.10.40.0/24     # Except Untrusted (strict isolation)
+  # Explicitly block home LAN access (must go through Traefik policies)
+  egressDeny:
+  - toCIDR:
+    - 192.168.123.0/24
+  # Explicitly block Untrusted (strict isolation)
+  - toCIDR:
+    - 10.10.40.0/24

@@ -9,8 +9,6 @@ metadata:
   namespace: default
 spec:
   description: "Isolate Untrusted worker - allow internal communication only"
-  nodeSelector:
-    kubernetes.io/hostname: talos-worker-untrusted-1
   endpointSelector:
     matchLabels:
       network-zone: untrusted
@@ -18,12 +16,15 @@ spec:
   - fromEndpoints:
     - matchLabels:
         network-zone: untrusted
-  # Metrics from monitoring (one-way pull)
-  - fromNamespaces:
-    - name: monitoring
-    fromLabelSelector:
-      matchLabels:
+  # Metrics from prometheus in kube-system (one-way pull)
+  - fromEndpoints:
+    - matchLabels:
         app: prometheus
+      matchExpressions:
+      - key: io.kubernetes.pod.namespace
+        operator: In
+        values:
+        - kube-system
     toPorts:
     - ports:
       - port: "9100"
@@ -32,10 +33,28 @@ spec:
   - toEndpoints:
     - matchLabels:
         network-zone: untrusted
-  - toNamespaces:
-    - name: kube-system
-  - toFQDNs:
-    - matchName: "*.svc.cluster.local"
+  # To kube-system (CoreDNS, API server)
+  - toEndpoints:
+    - matchExpressions:
+      - key: io.kubernetes.pod.namespace
+        operator: In
+        values:
+        - kube-system
+    toPorts:
+    - ports:
+      - port: "53"
+        protocol: UDP
+      - port: "443"
+        protocol: TCP
+  # To DNS (CoreDNS in kube-system)
+  - toEndpoints:
+    - matchLabels:
+        k8s-app: coredns
+      matchExpressions:
+      - key: io.kubernetes.pod.namespace
+        operator: In
+        values:
+        - kube-system
 
 ---
 # Host firewall for Untrusted worker
@@ -48,7 +67,8 @@ metadata:
 spec:
   description: "Untrusted worker specific host firewall rules (strict isolation)"
   nodeSelector:
-    kubernetes.io/hostname: talos-worker-untrusted-1
+    matchLabels:
+      kubernetes.io/hostname: talos-worker-untrusted-1
   ingress:
   # Only Prometheus metrics allowed
   - fromEndpoints:
@@ -61,11 +81,16 @@ spec:
       - port: "9100"
         protocol: TCP
   egress:
-  # Internet access only - NO internal networks (except control plane for cluster)
+  # Internet access only (control plane access handled by base rules)
   - toCIDR:
     - 0.0.0.0/0
-    exceptCIDR:
+  # Deny access to internal networks
+  egressDeny:
+  - toCIDR:
     - 192.168.123.0/24  # No home LAN
+  - toCIDR:
     - 10.10.20.0/24     # No Trusted
+  - toCIDR:
     - 10.10.30.0/24     # No DMZ
+  - toCIDR:
     - 10.10.50.0/24     # No Monitoring

@@ -6,19 +6,27 @@ apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
   name: allow-monitoring-scrape
-  namespace: monitoring
+  namespace: kube-system
 spec:
   description: "Allow Prometheus to scrape metrics from all networks"
   endpointSelector:
     matchLabels:
       app: prometheus
   ingress:
-  - fromNamespaces:
-    - name: monitoring
+  - fromEndpoints:
+    - matchExpressions:
+      - key: io.kubernetes.pod.namespace
+        operator: In
+        values:
+        - kube-system
   egress:
   # Scrape all kube-system components
-  - toNamespaces:
-    - name: kube-system
+  - toEndpoints:
+    - matchExpressions:
+      - key: io.kubernetes.pod.namespace
+        operator: In
+        values:
+        - kube-system
     toPorts:
     - ports:
       - port: "9100"
@@ -28,18 +36,25 @@ spec:
       - port: "6060"
         protocol: TCP
   # Scrape Traefik on DMZ
-  - toNamespaces:
-    - name: kube-system
-    toLabelSelector:
-      matchLabels:
+  - toEndpoints:
+    - matchLabels:
         app: traefik
+      matchExpressions:
+      - key: io.kubernetes.pod.namespace
+        operator: In
+        values:
+        - kube-system
     toPorts:
     - ports:
       - port: "9100"
         protocol: TCP
-  # Scrape nodes
-  - toNamespaces:
-    - name: default
+  # Scrape nodes with network-zone labels
+  - toEndpoints:
+    - matchExpressions:
+      - key: io.kubernetes.pod.namespace
+        operator: In
+        values:
+        - default
     toPorts:
     - ports:
       - port: "9100"
@@ -47,7 +62,7 @@ spec:
   # DNS resolution
   - toEndpoints:
     - matchLabels:
-        k8s:app.kubernetes.io/name: coredns
+        k8s-app: coredns
     toPorts:
     - ports:
       - port: "53"
@@ -58,15 +73,20 @@ apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
   name: allow-grafana-dashboards
-  namespace: monitoring
+  namespace: kube-system
 spec:
-  description: "Allow Grafana dashboard access from management network"
+  description: "Allow Grafana dashboard access"
   endpointSelector:
     matchLabels:
       app: grafana
   ingress:
-  - fromNamespaces:
-    - name: management
+  # From kube-system namespace itself
+  - fromEndpoints:
+    - matchExpressions:
+      - key: io.kubernetes.pod.namespace
+        operator: In
+        values:
+        - kube-system
     toPorts:
     - ports:
       - port: "3000"
@@ -86,7 +106,7 @@ apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
   name: allow-monitoring-cross-zone-scrape
-  namespace: monitoring
+  namespace: kube-system
 spec:
   description: "Allow Prometheus to pull metrics from all network zones"
   endpointSelector:
@@ -129,7 +149,8 @@ metadata:
 spec:
   description: "Monitoring worker specific host firewall rules (can scrape all zones)"
   nodeSelector:
-    kubernetes.io/hostname: talos-worker-monitoring-1
+    matchLabels:
+      kubernetes.io/hostname: talos-worker-monitoring-1
   ingress:
   # Grafana dashboard access from management
   - fromCIDR:
@@ -148,10 +169,8 @@ spec:
     - ports:
       - port: "10250"
         protocol: TCP
-      - port: "9100"
-        protocol: TCP
   egress:
-  # Monitoring can reach ALL zones for scraping (one-way pull)
+  # Can reach all networks for scraping
   - toCIDR:
     - 192.168.123.0/24  # Management
     - 10.10.20.0/24     # Trusted
@@ -159,7 +178,9 @@ spec:
     - 10.10.40.0/24     # Untrusted
     toPorts:
     - ports:
-      - port: "9100"    # Node exporter
+      - port: "9100"
         protocol: TCP
-      - port: "10250"   # Kubelet metrics
+      - port: "10250"
+        protocol: TCP
+      - port: "9100"
         protocol: TCP

@@ -12,7 +12,8 @@ metadata:
 spec:
   description: "Control plane specific host firewall rules (in addition to base rules)"
   nodeSelector:
-    kubernetes.io/hostname: talos-controlplane-1
+    matchLabels:
+      kubernetes.io/hostname: talos-controlplane-1
   ingress:
   # Allow etcd communication (for multi-control-plane setups)
   - fromCIDR:
