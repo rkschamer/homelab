@@ -25,9 +25,10 @@ data "talos_machine_configuration" "worker" {
 }
 
 # Generate patched control plane configuration
+# Note: Extract first document only (split on ---) to handle multiple documents in newer Talos provider versions
 locals {
-  controlplane_config_patched = yamldecode(data.talos_machine_configuration.controlplane.machine_configuration)
-  worker_config_patched       = yamldecode(data.talos_machine_configuration.worker.machine_configuration)
+  controlplane_config_patched = yamldecode(split("---", data.talos_machine_configuration.controlplane.machine_configuration)[0])
+  worker_config_patched       = yamldecode(split("---", data.talos_machine_configuration.worker.machine_configuration)[0])
 
   # Base manifests directory
   manifests_base_dir = "${path.module}/../talos/manifests"
