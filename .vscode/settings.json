@@ -3,6 +3,6 @@
     "terminal.integrated.env.linux": {
         "KUBECONFIG": "${workspaceFolder}/kubeconfig.yaml",
         "KUBE_EDITOR": "code --wait",
-        "TALOSCONFIG": "${workspaceFolder}/talosconfig.yaml",
+        "TALOSCONFIG": "${workspaceFolder}/talosconfig",
     }
 }
