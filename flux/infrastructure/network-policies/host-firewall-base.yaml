@@ -259,27 +259,32 @@ spec:
 
 ---
 # -----------------------------------------------------------------------------
-# Allow Host to Reach Cilium Health Endpoints (Pod CIDR)
+# Allow Host to Reach Pod Health Endpoints (Kubelet Probes)
 # -----------------------------------------------------------------------------
-# Cilium health checks run from the host and need to reach health endpoints
-# on other nodes. Health endpoints have pod IPs (10.244.x.x), not node IPs.
-# This allows the host egress to pod CIDR for health probes.
+# The kubelet performs liveness/readiness probes on pods. These probes
+# come from the host and need to reach pods on their health ports.
+# This also covers Cilium health endpoints on other nodes.
 # -----------------------------------------------------------------------------
 apiVersion: cilium.io/v2
 kind: CiliumClusterwideNetworkPolicy
 metadata:
   name: host-allow-health-egress
 spec:
-  description: "Allow host to reach Cilium health endpoints on pod CIDR"
+  description: "Allow kubelet and Cilium health probes to reach pods"
   nodeSelector:
     matchLabels: {}  # All nodes
   egress:
-  # Allow health check traffic to pod CIDR (where health endpoints live)
+  # Allow kubelet liveness/readiness probes to pods
+  # CoreDNS uses 8080 (/health) and 8181 (/ready)
   - toCIDR:
     - 10.244.0.0/16   # Pod CIDR
     toPorts:
     - ports:
       - port: "4240"    # Cilium health check port
+        protocol: TCP
+      - port: "8080"    # Common health endpoint (CoreDNS /health)
+        protocol: TCP
+      - port: "8181"    # CoreDNS readiness endpoint (/ready)
         protocol: TCP
   # Allow ICMP ping to health endpoints
   - toCIDR:
