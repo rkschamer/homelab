@@ -1,45 +1,39 @@
+---
+# Network Policy Test Pods - Uses pod network (NOT hostNetwork)
+# These pods are subject to Cilium network policies
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: network-analysis
+  name: network-policy-test
   namespace: network-testing
+  labels:
+    app: network-policy-test
 spec:
   selector:
     matchLabels:
-      app: network-analysis
+      app: network-policy-test
   template:
     metadata:
       labels:
-        app: network-analysis
+        app: network-policy-test
     spec:
-      hostNetwork: true
-      hostPID: true
-      dnsPolicy: ClusterFirstWithHostNet
+      # NO hostNetwork - uses pod network, subject to Cilium policies
+      dnsPolicy: ClusterFirst
       tolerations:
-        # Allow scheduling on control plane nodes
         - key: node-role.kubernetes.io/control-plane
           operator: Exists
           effect: NoSchedule
-        # For any other taints
         - operator: Exists
           effect: NoExecute
           tolerationSeconds: 300
       containers:
-        - name: network-analysis
+        - name: netshoot
           image: nicolaka/netshoot:latest
           imagePullPolicy: IfNotPresent
           command:
             - /bin/sh
             - -c
             - sleep infinity
-          securityContext:
-            privileged: true
-            capabilities:
-              add:
-                - NET_ADMIN
-                - NET_RAW
-                - SYS_ADMIN
-                - SYS_PTRACE
           resources:
             requests:
               cpu: 50m
@@ -47,11 +41,3 @@ spec:
             limits:
               cpu: 200m
               memory: 256Mi
-          volumeMounts:
-            - name: host-root
-              mountPath: /host
-      volumes:
-        - name: host-root
-          hostPath:
-            path: /
-            type: Directory
