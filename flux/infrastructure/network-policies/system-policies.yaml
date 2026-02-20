@@ -80,6 +80,54 @@ spec:
 
 ---
 # ==============================================================================
+# CoreDNS - Cluster DNS
+# ==============================================================================
+
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-coredns
+  namespace: kube-system
+spec:
+  description: "Allow CoreDNS to receive DNS queries and forward to upstreams"
+  endpointSelector:
+    matchLabels:
+      k8s-app: kube-dns
+  ingress:
+  # Allow DNS queries from all pods
+  - fromEndpoints:
+    - {}
+    toPorts:
+    - ports:
+      - port: "53"
+        protocol: UDP
+      - port: "53"
+        protocol: TCP
+  # Health check endpoints
+  - fromEndpoints:
+    - {}
+    toPorts:
+    - ports:
+      - port: "8080"
+        protocol: TCP
+      - port: "8181"
+        protocol: TCP
+  egress:
+  # Forward DNS queries to external upstream DNS servers (Cloudflare, Google, etc.)
+  - toEntities:
+    - world
+    toPorts:
+    - ports:
+      - port: "53"
+        protocol: UDP
+      - port: "53"
+        protocol: TCP
+  # Allow DNS to reach Kubernetes API (for service discovery)
+  - toEntities:
+    - kube-apiserver
+
+---
+# ==============================================================================
 # Cilium - CNI and Network Observability
 # ==============================================================================
 

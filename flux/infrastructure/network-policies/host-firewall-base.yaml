@@ -52,6 +52,37 @@ spec:
 
 ---
 # -----------------------------------------------------------------------------
+# Allow All Nodes to Egress to API Server
+# -----------------------------------------------------------------------------
+# Workers need to initiate connections to the Kubernetes API server for:
+# - kubelet registration
+# - watching pod specs
+# - reporting status
+#
+# This rule allows egress FROM all nodes TO the control plane API server.
+# -----------------------------------------------------------------------------
+apiVersion: cilium.io/v2
+kind: CiliumClusterwideNetworkPolicy
+metadata:
+  name: host-allow-apiserver-egress
+spec:
+  description: "Allow all nodes to reach Kubernetes API server"
+  nodeSelector:
+    matchLabels: {}  # All nodes
+  egress:
+  # To control plane API server
+  - toCIDR:
+    - 192.168.123.20/32  # Control plane node IP
+    toPorts:
+    - ports:
+      - port: "6443"
+        protocol: TCP
+  # To API server ClusterIP (if accessed via service)
+  - toEntities:
+    - kube-apiserver
+
+---
+# -----------------------------------------------------------------------------
 # Allow Control Plane to Reach Worker Kubelets
 # -----------------------------------------------------------------------------
 # The API server needs to reach kubelets on workers for:
@@ -68,13 +99,18 @@ metadata:
 spec:
   description: "Allow control plane to reach worker kubelets"
   nodeSelector:
-    matchExpressions:
-    - key: node-role.kubernetes.io/control-plane
-      operator: DoesNotExist
+    matchLabels: {}  # All nodes (workers will receive kubelet traffic)
   ingress:
-  # From control plane
+  # From control plane node IP
   - fromCIDR:
     - 192.168.123.20/32  # Control plane IP
+    toPorts:
+    - ports:
+      - port: "10250"
+        protocol: TCP
+  # From API server identity (for pod exec/logs via apiserver)
+  - fromEntities:
+    - kube-apiserver
     toPorts:
     - ports:
       - port: "10250"
@@ -208,8 +244,8 @@ spec:
 # -----------------------------------------------------------------------------
 # Allow Node-to-Node Health Probes
 # -----------------------------------------------------------------------------
-# Kubernetes uses TCP health probes between nodes for liveness/readiness.
-# This allows ICMP and common health check ports.
+# Kubernetes and Cilium use health probes between nodes.
+# This allows ICMP ping in both directions.
 # -----------------------------------------------------------------------------
 apiVersion: cilium.io/v2
 kind: CiliumClusterwideNetworkPolicy
@@ -222,6 +258,18 @@ spec:
   ingress:
   # ICMP ping for node health
   - fromCIDR:
+    - 10.10.20.0/24
+    - 10.10.30.0/24
+    - 10.10.40.0/24
+    - 10.10.50.0/24
+    - 192.168.123.0/24
+    icmps:
+    - fields:
+      - type: 8  # Echo request
+        family: IPv4
+  egress:
+  # ICMP ping to other nodes for health checks
+  - toCIDR:
     - 10.10.20.0/24
     - 10.10.30.0/24
     - 10.10.40.0/24
@@ -296,3 +344,26 @@ spec:
   # Allow health checks to reach reserved:health identity endpoints
   - toEntities:
     - health
+
+---
+# -----------------------------------------------------------------------------
+# Allow NTP Time Synchronization
+# -----------------------------------------------------------------------------
+# Nodes need to sync time with NTP servers for certificate validation,
+# logging timestamps, and cluster coordination.
+# -----------------------------------------------------------------------------
+apiVersion: cilium.io/v2
+kind: CiliumClusterwideNetworkPolicy
+metadata:
+  name: host-allow-ntp-egress
+spec:
+  description: "Allow nodes to reach NTP servers for time sync"
+  nodeSelector:
+    matchLabels: {}  # All nodes
+  egress:
+  - toEntities:
+    - world
+    toPorts:
+    - ports:
+      - port: "123"
+        protocol: UDP
