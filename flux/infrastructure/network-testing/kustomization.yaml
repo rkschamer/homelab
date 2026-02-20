@@ -6,4 +6,4 @@ namespace: network-testing
 
 resources:
   - namespace.yaml
-  - network-analysis-daemonset.yaml
+  - network-policy-test-daemonset.yaml

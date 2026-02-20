@@ -1,29 +1,43 @@
 # Network Testing Pods
 
-This directory contains Flux manifests for deploying network analysis pods on all cluster nodes for testing and validating Cilium network policies.
+This directory contains Flux manifests for deploying network testing pods on all cluster nodes for validating Cilium network policies.
 
 ## Pods Deployed
 
-- **DaemonSet: `network-analysis`** — Runs on all nodes (including control plane) with full network analysis capabilities
-  - Uses `nicolaka/netshoot` image with tools: `tcpdump`, `curl`, `dig`, `nslookup`, `netcat`, `ip`, `ifconfig`, `iptables`, etc.
-  - Runs with `hostNetwork: true` and `privileged: true` to access host network namespace
-  - Useful for debugging network policies, packet analysis, and connectivity tests
+### `network-policy-test` DaemonSet
+
+- **Purpose:** Testing Cilium network policy enforcement
+- Uses standard pod networking — **subject to all CiliumNetworkPolicies**
+- Non-privileged — runs like a normal application pod
+- Deployed on all nodes including control plane
+- Image: `nicolaka/netshoot` (includes curl, dig, ping, netcat, etc.)
 
 ## Usage
 
-Once deployed, you can connect to any pod and perform network analysis:
+```bash
+# List all pods with their node placement
+kubectl get pods -n network-testing -o wide
+
+# Test connectivity from a specific node
+kubectl exec -it network-policy-test-xxxxx -n network-testing -- ping 192.168.123.5
+kubectl exec -it network-policy-test-xxxxx -n network-testing -- curl http://some-service
+kubectl exec -it network-policy-test-xxxxx -n network-testing -- dig kubernetes.default
+kubectl exec -it network-policy-test-xxxxx -n network-testing -- nc -zv some-host 80
+```
+
+## Testing Network Isolation
+
+Verify policy enforcement across network segments:
 
 ```bash
-# List all network testing pods
-kubectl get pods -n network-testing
+# Find pods by node
+kubectl get pods -n network-testing -o wide
 
-# Execute commands on a specific pod
-kubectl exec -it <pod-name> -n network-testing -- bash
+# From untrusted worker - should be BLOCKED from reaching home LAN
+kubectl exec -it <pod-on-untrusted> -n network-testing -- ping 192.168.123.5
 
-# Examples:
-kubectl exec -it network-analysis-xxxxx -n network-testing -- tcpdump -i eth0
-kubectl exec -it network-analysis-xxxxx -n network-testing -- curl http://some-service
-kubectl exec -it network-analysis-xxxxx -n network-testing -- dig kubernetes.default
+# From trusted worker - should be ALLOWED to reach home LAN
+kubectl exec -it <pod-on-trusted> -n network-testing -- ping 192.168.123.5
 ```
 
 ## Testing Network Policies
