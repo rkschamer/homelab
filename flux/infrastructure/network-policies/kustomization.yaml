@@ -17,7 +17,7 @@ resources:
   # =============================================================================
 
   # Host firewall base policies (REQUIRED for hostFirewall: true)
-  - host-firewall-base.yaml
+  - host-firewall-policies.yaml
 
   # Clusterwide policies
   - clusterwide-policies.yaml
