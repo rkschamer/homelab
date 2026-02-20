@@ -70,14 +70,20 @@ spec:
   nodeSelector:
     matchLabels: {}  # All nodes
   egress:
-  # To control plane API server
+  # To control plane API server on ALL its interface IPs
+  # The control plane has interfaces on each network:
+  # Using /24 CIDRs because Cilium maps IPs to subnet-based identities
   - toCIDR:
-    - 192.168.123.20/32  # Control plane node IP
+    - 192.168.123.0/24   # Management network (control plane IP: .20)
+    - 10.10.20.0/24      # Trusted network (control plane interface: .2)
+    - 10.10.30.0/24      # DMZ network (control plane interface: .2)
+    - 10.10.40.0/24      # Untrusted network (control plane interface: .2)
+    - 10.10.50.0/24      # Monitoring network (control plane interface: .2)
     toPorts:
     - ports:
       - port: "6443"
         protocol: TCP
-  # To API server ClusterIP (if accessed via service)
+  # To API server identity (covers ClusterIP access)
   - toEntities:
     - kube-apiserver
 
@@ -134,7 +140,21 @@ spec:
   nodeSelector:
     matchLabels: {}  # All nodes
   ingress:
-  # Cilium VXLAN/Geneve tunneling (if using tunnel mode)
+  # From other cluster nodes (reserved:remote-node identity)
+  - fromEntities:
+    - remote-node
+    - kube-apiserver
+    toPorts:
+    - ports:
+      - port: "8472"    # VXLAN
+        protocol: UDP
+      - port: "6081"    # Geneve
+        protocol: UDP
+      - port: "4240"    # Cilium health
+        protocol: TCP
+      - port: "4244"    # Hubble peer
+        protocol: TCP
+  # Cilium VXLAN/Geneve tunneling (CIDR fallback for non-node traffic)
   - fromCIDR:
     - 10.10.20.0/24
     - 10.10.30.0/24
@@ -179,7 +199,21 @@ spec:
       - port: "4244"
         protocol: TCP
   egress:
-  # Allow Cilium agents to reach other nodes
+  # Allow Cilium agents to reach other nodes (using entity for proper matching)
+  - toEntities:
+    - remote-node
+    - kube-apiserver
+    toPorts:
+    - ports:
+      - port: "8472"
+        protocol: UDP
+      - port: "6081"
+        protocol: UDP
+      - port: "4240"
+        protocol: TCP
+      - port: "4244"
+        protocol: TCP
+  # CIDR fallback
   - toCIDR:
     - 10.10.20.0/24
     - 10.10.30.0/24
@@ -256,7 +290,15 @@ spec:
   nodeSelector:
     matchLabels: {}  # All nodes
   ingress:
-  # ICMP ping for node health
+  # ICMP ping from other nodes (entity-based for remote-node identity)
+  - fromEntities:
+    - remote-node
+    - kube-apiserver
+    icmps:
+    - fields:
+      - type: 8  # Echo request
+        family: IPv4
+  # ICMP ping for node health (CIDR fallback)
   - fromCIDR:
     - 10.10.20.0/24
     - 10.10.30.0/24
@@ -268,7 +310,15 @@ spec:
       - type: 8  # Echo request
         family: IPv4
   egress:
-  # ICMP ping to other nodes for health checks
+  # ICMP ping to other nodes (entity-based)
+  - toEntities:
+    - remote-node
+    - kube-apiserver
+    icmps:
+    - fields:
+      - type: 8  # Echo request
+        family: IPv4
+  # ICMP ping to other nodes for health checks (CIDR fallback)
   - toCIDR:
     - 10.10.20.0/24
     - 10.10.30.0/24
@@ -322,17 +372,26 @@ spec:
   nodeSelector:
     matchLabels: {}  # All nodes
   egress:
-  # Allow kubelet liveness/readiness probes to pods
-  # CoreDNS uses 8080 (/health) and 8181 (/ready)
+  # Allow kubelet liveness/readiness probes to CoreDNS
+  - toEndpoints:
+    - matchLabels:
+        k8s-app: kube-dns
+    toPorts:
+    - ports:
+      - port: "8080"    # CoreDNS /health endpoint
+        protocol: TCP
+      - port: "8181"    # CoreDNS /ready endpoint
+        protocol: TCP
+  # Allow kubelet probes to any pod on common health ports
   - toCIDR:
     - 10.244.0.0/16   # Pod CIDR
     toPorts:
     - ports:
       - port: "4240"    # Cilium health check port
         protocol: TCP
-      - port: "8080"    # Common health endpoint (CoreDNS /health)
+      - port: "8080"    # Common health endpoint
         protocol: TCP
-      - port: "8181"    # CoreDNS readiness endpoint (/ready)
+      - port: "8181"    # Common readiness endpoint
         protocol: TCP
   # Allow ICMP ping to health endpoints
   - toCIDR:
