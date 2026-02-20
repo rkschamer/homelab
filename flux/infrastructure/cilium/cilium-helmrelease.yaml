@@ -100,7 +100,7 @@ spec:
 
     # Policy Audit Mode - logs drops without blocking (for debugging)
     # Set to false once policies are validated
-    policyAuditMode: true
+    policyAuditMode: false
 
     # Routing mode (matches ConfigMap)
     routingMode: tunnel
