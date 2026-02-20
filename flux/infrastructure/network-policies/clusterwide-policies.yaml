@@ -5,60 +5,46 @@
 # They are always active regardless of Cilium's hostFirewall setting.
 #
 # PURPOSE: Application-level zero-trust (default deny, DNS access)
-# SCOPE: All pods in the cluster
-# SELECTOR: endpointSelector (matches pods)
+# SCOPE: All pods EXCEPT kube-system (critical infrastructure excluded)
+# SELECTOR: endpointSelector with matchExpressions to exclude system namespaces
 #
-# NOTE: Keep this file SEPARATE from host-firewall-base.yaml because:
-# - Different selector types (endpointSelector vs nodeSelector)
-# - Different enablement (always active vs requires hostFirewall: true)
-# - Easier troubleshooting (pod issues vs node connectivity issues)
-# - Independent deployment/testing lifecycle
+# HOW IT WORKS:
+# - A policy with ONLY `egress` rules implicitly denies all ingress
+# - A policy with ONLY `ingress` rules implicitly denies all egress
+# - Empty endpointSelector {} selects ALL pods - DON'T DO THIS for system traffic
+# - Use matchExpressions to exclude critical namespaces
 #
-# See host-firewall-base.yaml for node-level infrastructure policies.
+# See host-firewall-policies.yaml for node-level infrastructure policies.
 # =============================================================================
 
-# ---
-# Default Deny Ingress
-# ---
-apiVersion: cilium.io/v2
-kind: CiliumClusterwideNetworkPolicy
-metadata:
-  name: default-deny-ingress
-spec:
-  description: "Default deny all ingress traffic cluster-wide (zero-trust)"
-  endpointSelector: {}  # Select all endpoints
-  ingress:
-  - {}  # Empty rule means no ingress allowed by default
-
 ---
-# ---
-# Default Deny Egress
-# ---
+# Default Deny Policy (excludes kube-system)
+# Pattern from: https://docs.cilium.io/en/latest/network/servicemesh/default-deny-ingress-policy/
 apiVersion: cilium.io/v2
 kind: CiliumClusterwideNetworkPolicy
 metadata:
-  name: default-deny-egress
+  name: default-deny
 spec:
-  description: "Default deny all egress traffic cluster-wide (zero-trust)"
-  endpointSelector: {}  # Select all endpoints
-  egressDeny:
-  - toEntities:
-    - all
-
----
-apiVersion: cilium.io/v2
-kind: CiliumClusterwideNetworkPolicy
-metadata:
-  name: default-allow-dns
-spec:
-  description: "Allow DNS queries to coredns cluster-wide"
-  endpointSelector: {}  # Select all endpoints
+  description: "Default deny all traffic except DNS (excludes kube-system)"
+  endpointSelector:
+    matchExpressions:
+    # Exclude critical system namespaces from this policy
+    - key: io.kubernetes.pod.namespace
+      operator: NotIn
+      values:
+      - kube-system
+      - cilium-secrets
+  # Only DNS egress is allowed - everything else is implicitly denied
+  # No ingress rules = all ingress denied
   egress:
   - toEndpoints:
     - matchLabels:
-        k8s:io.kubernetes.pod.namespace: kube-system
-        k8s:k8s-app: kube-dns
+        io.kubernetes.pod.namespace: kube-system
+        k8s-app: kube-dns
     toPorts:
     - ports:
       - port: "53"
         protocol: UDP
+      rules:
+        dns:
+        - matchPattern: "*"
