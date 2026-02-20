@@ -189,15 +189,8 @@ spec:
     - ports:
       - port: "4244"    # Hubble peer
         protocol: TCP
-  # Allow hubble-relay pod to reach Cilium agents on all nodes
-  # Hubble-relay has a pod IP (10.244.x.x), not a node IP, so needs explicit rule
-  - fromEndpoints:
-    - matchLabels:
-        k8s-app: hubble-relay
-    toPorts:
-    - ports:
-      - port: "4244"
-        protocol: TCP
+  # Note: hubble-relay pod access to Cilium agents is covered by
+  # allow-cilium-internal policy in system-policies.yaml
   egress:
   # Allow Cilium agents to reach other nodes (using entity for proper matching)
   - toEntities:
