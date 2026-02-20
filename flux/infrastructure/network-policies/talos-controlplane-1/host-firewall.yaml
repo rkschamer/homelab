@@ -46,7 +46,7 @@ spec:
       - port: "6443"
         protocol: TCP
   egress:
-  # Control plane can reach all worker networks
+  # Control plane can reach all worker networks (kubelet)
   - toCIDR:
     - 10.10.20.0/24   # Trusted
     - 10.10.30.0/24   # DMZ
@@ -55,4 +55,17 @@ spec:
     toPorts:
     - ports:
       - port: "10250"   # Kubelet API
+        protocol: TCP
+  # Internet access for Talos discovery, container registries, updates
+  - toEntities:
+    - world
+    toPorts:
+    - ports:
+      - port: "53"      # DNS (external resolvers)
+        protocol: UDP
+      - port: "53"
+        protocol: TCP
+      - port: "80"      # HTTP (some registries)
+        protocol: TCP
+      - port: "443"     # HTTPS (discovery.talos.dev, registries)
         protocol: TCP

@@ -100,3 +100,16 @@ spec:
   # Can reach home LAN (this is what makes it "trusted")
   - toCIDR:
     - 192.168.123.0/24
+  # Internet access for image pulls, app APIs, etc.
+  - toEntities:
+    - world
+    toPorts:
+    - ports:
+      - port: "53"      # DNS
+        protocol: UDP
+      - port: "53"
+        protocol: TCP
+      - port: "80"      # HTTP
+        protocol: TCP
+      - port: "443"     # HTTPS
+        protocol: TCP
