@@ -15,25 +15,12 @@ spec:
     matchLabels:
       kubernetes.io/hostname: talos-controlplane-1
   ingress:
-  # Allow etcd communication (for multi-control-plane setups)
+  # Allow all traffic from management network (home LAN)
+  # This is acceptable for homelab - the network is trusted and behind NAT
+  # Services still require authentication (K8s API certs, Talos API certs)
   - fromCIDR:
     - 192.168.123.0/24
-    toPorts:
-    - ports:
-      - port: "2379"
-        protocol: TCP
-      - port: "2380"
-        protocol: TCP
-  # Allow scheduler and controller-manager
-  - fromCIDR:
-    - 192.168.123.0/24
-    toPorts:
-    - ports:
-      - port: "10257"   # kube-controller-manager
-        protocol: TCP
-      - port: "10259"   # kube-scheduler
-        protocol: TCP
-  # Allow metrics scraping from Prometheus
+  # Allow metrics scraping from Prometheus pods
   - fromEndpoints:
     - matchLabels:
         app: prometheus
@@ -46,9 +33,6 @@ spec:
       - port: "6443"
         protocol: TCP
   egress:
-  # Respond to management network traffic (reverse proxy, kubectl clients, etc.)
-  - toCIDR:
-    - 192.168.123.0/24
   # Control plane can reach all worker networks (kubelet)
   - toCIDR:
     - 10.10.20.0/24   # Trusted
