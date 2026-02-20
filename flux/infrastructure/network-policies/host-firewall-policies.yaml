@@ -1,9 +1,23 @@
 ---
 # =============================================================================
-# Host Firewall Base Policies
+# Host Firewall Base Policies - Node-Level Infrastructure
 # =============================================================================
-# These policies are REQUIRED when hostFirewall is enabled in Cilium.
-# They allow essential node-to-node and cluster infrastructure traffic.
+# These policies use `nodeSelector` to control HOST/NODE traffic.
+# They are ONLY active when hostFirewall is enabled in Cilium config.
+#
+# PURPOSE: Infrastructure plumbing (API server, kubelet, Cilium tunneling)
+# SCOPE: Node-to-node communication
+# SELECTOR: nodeSelector (matches nodes/hosts)
+# DEPENDENCY: Requires `hostFirewall: true` in Cilium HelmRelease
+#
+# NOTE: Keep this file SEPARATE from clusterwide-policies.yaml because:
+# - Different selector types (nodeSelector vs endpointSelector)
+# - Conditional enablement (only when hostFirewall is enabled)
+# - Easier troubleshooting (node connectivity vs pod traffic issues)
+# - Can be disabled temporarily without affecting pod policies
+#
+# See clusterwide-policies.yaml for pod-level zero-trust policies.
+# =============================================================================
 #
 # Without these policies, the following will break:
 # - API server communication from workers

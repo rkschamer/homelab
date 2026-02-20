@@ -1,6 +1,25 @@
+# =============================================================================
+# ClusterWide Pod Policies - Zero-Trust Foundation
+# =============================================================================
+# These policies use `endpointSelector` to control POD/WORKLOAD traffic.
+# They are always active regardless of Cilium's hostFirewall setting.
+#
+# PURPOSE: Application-level zero-trust (default deny, DNS access)
+# SCOPE: All pods in the cluster
+# SELECTOR: endpointSelector (matches pods)
+#
+# NOTE: Keep this file SEPARATE from host-firewall-base.yaml because:
+# - Different selector types (endpointSelector vs nodeSelector)
+# - Different enablement (always active vs requires hostFirewall: true)
+# - Easier troubleshooting (pod issues vs node connectivity issues)
+# - Independent deployment/testing lifecycle
+#
+# See host-firewall-base.yaml for node-level infrastructure policies.
+# =============================================================================
+
 # ---
-# ClusterWide Default Deny and DNS - Foundation for zero-trust
-# Applied globally across all nodes
+# Default Deny (commented out - enable for strict zero-trust)
+# ---
 
 # apiVersion: cilium.io/v2
 # kind: CiliumClusterwideNetworkPolicy
