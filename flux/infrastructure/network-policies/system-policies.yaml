@@ -25,17 +25,7 @@ spec:
   - toEndpoints:
     - matchLabels:
         app.kubernetes.io/part-of: flux
-  # Allow DNS resolution via CoreDNS
-  - toEndpoints:
-    - matchLabels:
-        k8s:io.kubernetes.pod.namespace: kube-system
-        k8s:k8s-app: kube-dns
-    toPorts:
-    - ports:
-      - port: "53"
-        protocol: UDP
-      - port: "53"
-        protocol: TCP
+  # DNS egress covered by cluster-wide default-allow-dns policy
   # Allow access to Kubernetes API server (for reconciliation)
   - toEntities:
     - kube-apiserver
@@ -186,16 +176,37 @@ spec:
         k8s:k8s-app: cilium
 
 ---
+# ==============================================================================
+# Hubble Relay - Network Event Aggregation
+# ==============================================================================
+# Consolidated policy (merged allow-hubble-relay-to-peers and allow-hubble-relay)
+# DNS egress covered by cluster-wide default-allow-dns policy
+
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
-  name: allow-hubble-relay-to-peers
+  name: allow-hubble-relay
   namespace: kube-system
 spec:
-  description: "Allow Hubble Relay to reach Hubble daemons on all nodes across networks"
+  description: "Allow Hubble Relay to communicate with Cilium agents and peer services"
   endpointSelector:
     matchLabels:
       k8s:k8s-app: hubble-relay
+  ingress:
+  - fromEndpoints:
+    - matchLabels:
+        k8s:k8s-app: hubble-ui
+    toPorts:
+    - ports:
+      - port: "4222"
+        protocol: TCP
+  - fromEndpoints:
+    - matchLabels:
+        k8s:k8s-app: hubble
+    toPorts:
+    - ports:
+      - port: "4222"
+        protocol: TCP
   egress:
   # Allow reaching Hubble daemons on all nodes (port 4244)
   # Cilium agents run on hostNetwork, so we need toCIDR rules
@@ -217,105 +228,21 @@ spec:
     - ports:
       - port: "4244"
         protocol: TCP
-  # Allow DNS for peer discovery
-  - toEndpoints:
-    - matchLabels:
-        k8s:io.kubernetes.pod.namespace: kube-system
-        k8s:k8s-app: kube-dns
-    toPorts:
-    - ports:
-      - port: "53"
-        protocol: UDP
-  # Allow reaching Kubernetes API server (for peer discovery service)
-  - toEntities:
-    - kube-apiserver
-
----
-apiVersion: cilium.io/v2
-kind: CiliumNetworkPolicy
-metadata:
-  name: allow-hubble-ui-access
-  namespace: kube-system
-spec:
-  description: "Allow Hubble UI to reach Hubble Relay"
-  endpointSelector:
-    matchLabels:
-      k8s:k8s-app: hubble-ui
-  egress:
-  - toEndpoints:
-    - matchLabels:
-        k8s:k8s-app: hubble-relay
-    toPorts:
-    - ports:
-      - port: "8085"
-        protocol: TCP
-  - toEndpoints:
-    - matchLabels:
-        k8s:io.kubernetes.pod.namespace: kube-system
-        k8s:k8s-app: kube-dns
-    toPorts:
-    - ports:
-      - port: "53"
-        protocol: UDP
-
----
-# ==============================================================================
-# Hubble Relay - Network Event Aggregation
-# ==============================================================================
-
-apiVersion: cilium.io/v2
-kind: CiliumNetworkPolicy
-metadata:
-  name: allow-hubble-relay
-  namespace: kube-system
-spec:
-  description: "Allow Hubble relay to communicate with peer service and Kubernetes API"
-  endpointSelector:
-    matchLabels:
-      k8s:k8s-app: hubble-relay
-  ingress:
-  - fromEndpoints:
-    - matchLabels:
-        k8s:k8s-app: hubble-ui
-    toPorts:
-    - ports:
-      - port: "4222"
-        protocol: TCP
-  - fromEndpoints:
-    - matchLabels:
-        k8s:k8s-app: hubble
-    toPorts:
-    - ports:
-      - port: "4222"
-        protocol: TCP
-  egress:
-  # Allow connection to Cilium agents for Hubble peer discovery
-  - toEndpoints:
-    - matchLabels:
-        k8s:k8s-app: cilium
-    toPorts:
-    - ports:
-      - port: "4244"
-        protocol: TCP
   # Allow HTTPS to any endpoint (for hubble-peer service and API server)
   - toPorts:
     - ports:
       - port: "443"
         protocol: TCP
-  # Allow DNS queries for service discovery
-  - toEndpoints:
-    - matchLabels:
-        k8s:io.kubernetes.pod.namespace: kube-system
-        k8s:k8s-app: kube-dns
-    toPorts:
-    - ports:
-      - port: "53"
-        protocol: UDP
+  # Allow reaching Kubernetes API server (for peer discovery service)
+  - toEntities:
+    - kube-apiserver
 
 ---
 # ==============================================================================
 # Hubble UI - Network Observability Dashboard
 # ==============================================================================
+# Consolidated policy (merged allow-hubble-ui-access and allow-hubble-ui)
+# DNS egress covered by cluster-wide default-allow-dns policy
 
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
@@ -336,6 +263,14 @@ spec:
       - port: "8081"
         protocol: TCP
   egress:
+  # Allow Hubble UI to reach Hubble Relay
+  - toEndpoints:
+    - matchLabels:
+        k8s:k8s-app: hubble-relay
+    toPorts:
+    - ports:
+      - port: "8085"
+        protocol: TCP
   - toEndpoints:
     - matchLabels:
         k8s:k8s-app: hubble
