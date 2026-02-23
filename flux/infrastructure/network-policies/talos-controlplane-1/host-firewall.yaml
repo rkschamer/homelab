@@ -18,11 +18,14 @@ spec:
     matchLabels:
       kubernetes.io/hostname: talos-controlplane-1
   ingress:
-  # Allow all traffic from management network (home LAN)
-  # This is acceptable for homelab - the network is trusted and behind NAT
-  # Services still require authentication (K8s API certs, Talos API certs)
+  # Allow API server access from management network (including Proxmox gateway for IP forwarding)
+  # Traffic from Fritzbox is routed through Proxmox (192.168.123.9) which IP forwards to control plane
   - fromCIDR:
     - 192.168.123.0/24
+    toPorts:
+    - ports:
+      - port: "6443"
+        protocol: TCP
   # Allow metrics scraping from Prometheus pods
   - fromEndpoints:
     - matchLabels:
