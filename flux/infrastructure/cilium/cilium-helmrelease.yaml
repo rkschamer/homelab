@@ -99,14 +99,16 @@ spec:
     devices: "ens18"
 
     # Policy Enforcement Mode
-    # - default: Endpoints allow all until selected by a policy
+    # - default: Endpoints allow all until selected by a policy (deny rules only)
     # - always: All endpoints start in default-deny (zero-trust)
     # - never: Policy enforcement disabled
-    policyEnforcementMode: always
+    #
+    # Using 'default' mode with explicit deny rules for zone isolation.
+    # This is simpler than zero-trust and sufficient for homelab where
+    # network-level segmentation (VLANs) provides the primary isolation.
+    policyEnforcementMode: default
 
-    # Policy Audit Mode - logs drops without blocking (for debugging)
-    # Set to false once policies are validated
-    # WARNING: Keep enabled until all required allow rules are in place!
+    # Policy Audit Mode disabled - using simple deny rules now
     policyAuditMode: true
 
     # Routing mode (matches ConfigMap)

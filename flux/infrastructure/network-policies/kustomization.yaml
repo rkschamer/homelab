@@ -7,27 +7,18 @@ metadata:
 
 resources:
   # =============================================================================
-  # IMPORTANT: Apply order matters for host firewall!
+  # Default-Allow with Zone Isolation Deny Rules
   # =============================================================================
-  # 1. host-firewall-base.yaml - MUST be applied first when hostFirewall is enabled
-  #    Contains essential node-to-node communication rules (API server, kubelet, DNS)
-  # 2. clusterwide-policies.yaml - Global policies (default-deny, DNS allow)
-  # 3. system-policies.yaml - Core system component policies
-  # 4. Per-node policies - Zone-specific isolation rules
+  # With policyEnforcementMode=default, all traffic is allowed unless
+  # explicitly blocked. These deny-only policies enforce critical zone
+  # boundaries while keeping the configuration simple.
+  #
+  # Key isolation rules:
+  # - Untrusted zone: No access to Home LAN, Trusted, DMZ, or Monitoring
+  # - DMZ zone: No access to Home LAN or Untrusted
+  # - Monitoring zone: Can reach all zones (for metrics scraping)
+  # - Trusted zone: Full access (home LAN connectivity)
   # =============================================================================
 
-  # Host firewall base policies (REQUIRED for hostFirewall: true)
-  - host-firewall-policies.yaml
-
-  # Clusterwide policies
-  - clusterwide-policies.yaml
-
-  # System component policies
-  - system-policies.yaml
-
-  # Per-node policies
-  - talos-controlplane-1
-  - talos-worker-dmz-1
-  - talos-worker-trusted-1
-  - talos-worker-untrusted-1
-  - talos-worker-monitoring-1
+  # Zone isolation deny policies (pod and host firewall)
+  - zone-isolation-deny.yaml
