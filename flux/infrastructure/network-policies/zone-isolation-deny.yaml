@@ -21,18 +21,19 @@
 # -----------------------------------------------------------------------------
 # Untrusted Zone Isolation - Block access to internal networks
 # -----------------------------------------------------------------------------
-# Pods on the Untrusted worker should only have internet access.
-# Block all private network ranges and other zones.
+# The Untrusted worker node should only have internet access.
+# All pods on this node are blocked from reaching internal networks.
+# No pod labeling required - node-level isolation.
 # -----------------------------------------------------------------------------
 apiVersion: cilium.io/v2
 kind: CiliumClusterwideNetworkPolicy
 metadata:
   name: deny-untrusted-to-internal
 spec:
-  description: "Block Untrusted zone from accessing internal networks"
-  endpointSelector:
+  description: "Block Untrusted worker node from accessing internal networks"
+  nodeSelector:
     matchLabels:
-      network-zone: untrusted
+      kubernetes.io/hostname: talos-worker-untrusted-1
   egressDeny:
   # Block Home LAN / Management network
   - toCIDR:
@@ -52,51 +53,21 @@ spec:
 
 ---
 # -----------------------------------------------------------------------------
-# Untrusted Zone Host Isolation - Node-level egress blocking
-# -----------------------------------------------------------------------------
-# Block the Untrusted worker node itself from reaching internal networks.
-# This is the host firewall equivalent of the pod policy above.
-# -----------------------------------------------------------------------------
-apiVersion: cilium.io/v2
-kind: CiliumClusterwideNetworkPolicy
-metadata:
-  name: deny-untrusted-host-to-internal
-spec:
-  description: "Block Untrusted worker node from accessing internal networks"
-  nodeSelector:
-    matchLabels:
-      kubernetes.io/hostname: talos-worker-untrusted-1
-  egressDeny:
-  # Block Home LAN
-  - toCIDR:
-    - 192.168.123.0/24
-  # Block Trusted zone
-  - toCIDR:
-    - 10.10.20.0/24
-  # Block DMZ zone
-  - toCIDR:
-    - 10.10.30.0/24
-  # Block Monitoring zone
-  - toCIDR:
-    - 10.10.50.0/24
-
----
-# -----------------------------------------------------------------------------
 # DMZ Zone Isolation - Block access to Home LAN
 # -----------------------------------------------------------------------------
-# Pods on the DMZ worker can serve internet traffic but should not
-# access the home LAN directly. They can reach Trusted zone backends
-# that are explicitly exposed via Traefik.
+# The DMZ worker node can serve internet traffic but should not
+# access the home LAN. All pods on this node are blocked.
+# No pod labeling required - node-level isolation.
 # -----------------------------------------------------------------------------
 apiVersion: cilium.io/v2
 kind: CiliumClusterwideNetworkPolicy
 metadata:
   name: deny-dmz-to-home-lan
 spec:
-  description: "Block DMZ zone from accessing Home LAN"
-  endpointSelector:
+  description: "Block DMZ worker node from accessing Home LAN"
+  nodeSelector:
     matchLabels:
-      network-zone: dmz
+      kubernetes.io/hostname: talos-worker-dmz-1
   egressDeny:
   # Block Home LAN / Management network
   - toCIDR:
@@ -104,40 +75,21 @@ spec:
 
 ---
 # -----------------------------------------------------------------------------
-# DMZ Zone Host Isolation - Node-level egress blocking
-# -----------------------------------------------------------------------------
-# Block the DMZ worker node itself from reaching the home LAN.
-# -----------------------------------------------------------------------------
-apiVersion: cilium.io/v2
-kind: CiliumClusterwideNetworkPolicy
-metadata:
-  name: deny-dmz-host-to-home-lan
-spec:
-  description: "Block DMZ worker node from accessing Home LAN"
-  nodeSelector:
-    matchLabels:
-      kubernetes.io/hostname: talos-worker-dmz-1
-  egressDeny:
-  # Block Home LAN
-  - toCIDR:
-    - 192.168.123.0/24
-
----
-# -----------------------------------------------------------------------------
 # DMZ to Untrusted Isolation - Prevent cross-zone leakage
 # -----------------------------------------------------------------------------
-# DMZ and Untrusted should not communicate with each other.
+# The DMZ worker node should not communicate with the Untrusted zone.
 # This prevents compromised services from pivoting between zones.
+# No pod labeling required - node-level isolation.
 # -----------------------------------------------------------------------------
 apiVersion: cilium.io/v2
 kind: CiliumClusterwideNetworkPolicy
 metadata:
   name: deny-dmz-to-untrusted
 spec:
-  description: "Block DMZ zone from reaching Untrusted zone"
-  endpointSelector:
+  description: "Block DMZ worker node from reaching Untrusted zone"
+  nodeSelector:
     matchLabels:
-      network-zone: dmz
+      kubernetes.io/hostname: talos-worker-dmz-1
   egressDeny:
   - toCIDR:
     - 10.10.40.0/24  # Untrusted network
