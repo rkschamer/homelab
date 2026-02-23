@@ -48,3 +48,34 @@ spec:
       rules:
         dns:
         - matchPattern: "*"
+
+---
+# Allow API Server Access for All Pods
+# With policyEnforcementMode=always, all pods need explicit API server access.
+# This is critical infrastructure required by all pods for:
+# - Service discovery via DNS
+# - Webhook admission controllers
+# - Custom resource watchers
+apiVersion: cilium.io/v2
+kind: CiliumClusterwideNetworkPolicy
+metadata:
+  name: allow-apiserver-egress
+spec:
+  description: "Allow all pods to reach Kubernetes API server"
+  endpointSelector: {}  # All pods
+  egress:
+  # API server entity (covers ClusterIP 10.96.0.1)
+  - toEntities:
+    - kube-apiserver
+  # API server on control plane node IPs across all networks
+  # (Required when kube-apiserver runs on node host and DNS to entity doesn't match)
+  - toCIDR:
+    - 192.168.123.0/24   # Management network
+    - 10.10.20.0/24      # Trusted network
+    - 10.10.30.0/24      # DMZ network
+    - 10.10.40.0/24      # Untrusted network
+    - 10.10.50.0/24      # Monitoring network
+    toPorts:
+    - ports:
+      - port: "6443"
+        protocol: TCP

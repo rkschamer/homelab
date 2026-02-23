@@ -25,10 +25,20 @@ spec:
   - toEndpoints:
     - matchLabels:
         app.kubernetes.io/part-of: flux
-  # DNS egress covered by cluster-wide default-allow-dns policy
-  # Allow access to Kubernetes API server (for reconciliation)
+  # Access to Kubernetes API server (both entity and node IPs)
   - toEntities:
     - kube-apiserver
+  # API server on control plane node IP across all networks
+  - toCIDR:
+    - 192.168.123.0/24   # Management network
+    - 10.10.20.0/24      # Trusted network
+    - 10.10.30.0/24      # DMZ network
+    - 10.10.40.0/24      # Untrusted network
+    - 10.10.50.0/24      # Monitoring network
+    toPorts:
+    - ports:
+      - port: "6443"
+        protocol: TCP
   # Allow egress to external endpoints (GitHub, container registries, Helm repos)
   - toEntities:
     - world
@@ -71,6 +81,7 @@ spec:
 ---
 # Allow all kube-system pods to reach the Kubernetes API server
 # Required for controllers, operators, and system components to function
+# Includes both entity-based (ClusterIP) and CIDR-based (node IPs) rules
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
@@ -80,8 +91,20 @@ spec:
   description: "Allow kube-system pods to reach Kubernetes API server"
   endpointSelector: {}  # All pods in kube-system namespace
   egress:
+  # API server entity (covers ClusterIP 10.96.0.1)
   - toEntities:
     - kube-apiserver
+  # API server on control plane node IP across all networks
+  - toCIDR:
+    - 192.168.123.0/24   # Management network
+    - 10.10.20.0/24      # Trusted network
+    - 10.10.30.0/24      # DMZ network
+    - 10.10.40.0/24      # Untrusted network
+    - 10.10.50.0/24      # Monitoring network
+    toPorts:
+    - ports:
+      - port: "6443"
+        protocol: TCP
 
 ---
 # ==============================================================================
