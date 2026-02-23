@@ -69,6 +69,21 @@ spec:
         protocol: TCP
 
 ---
+# Allow all kube-system pods to reach the Kubernetes API server
+# Required for controllers, operators, and system components to function
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-kube-system-apiserver
+  namespace: kube-system
+spec:
+  description: "Allow kube-system pods to reach Kubernetes API server"
+  endpointSelector: {}  # All pods in kube-system namespace
+  egress:
+  - toEntities:
+    - kube-apiserver
+
+---
 # ==============================================================================
 # CoreDNS - Cluster DNS
 # ==============================================================================

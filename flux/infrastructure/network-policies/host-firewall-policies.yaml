@@ -433,3 +433,37 @@ spec:
     - ports:
       - port: "123"
         protocol: UDP
+
+---
+# -----------------------------------------------------------------------------
+# Allow External DNS and HTTPS (Internet Egress)
+# -----------------------------------------------------------------------------
+# All nodes need to reach external services:
+# - DNS servers (for external name resolution, e.g., discovery.talos.dev)
+# - HTTPS endpoints (container registries, Talos discovery, updates)
+# - HTTP endpoints (some registries, package repos)
+#
+# This fixes the Talos discovery error:
+#   "lookup discovery.talos.dev on 127.0.0.53:53: server misbehaving"
+# -----------------------------------------------------------------------------
+apiVersion: cilium.io/v2
+kind: CiliumClusterwideNetworkPolicy
+metadata:
+  name: host-allow-internet-egress
+spec:
+  description: "Allow nodes to reach external DNS, registries, and discovery services"
+  nodeSelector:
+    matchLabels: {}  # All nodes
+  egress:
+  - toEntities:
+    - world
+    toPorts:
+    - ports:
+      - port: "53"
+        protocol: UDP
+      - port: "53"
+        protocol: TCP
+      - port: "80"
+        protocol: TCP
+      - port: "443"
+        protocol: TCP

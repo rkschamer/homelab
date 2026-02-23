@@ -4,38 +4,36 @@
 # These policies use `endpointSelector` to control POD/WORKLOAD traffic.
 # They are always active regardless of Cilium's hostFirewall setting.
 #
-# PURPOSE: Application-level zero-trust (default deny, DNS access)
-# SCOPE: All pods EXCEPT kube-system (critical infrastructure excluded)
-# SELECTOR: endpointSelector with matchExpressions to exclude system namespaces
+# PURPOSE: Application-level zero-trust (DNS access for all pods)
+# SCOPE: All pods cluster-wide
+# SELECTOR: endpointSelector {} selects all pods
 #
-# HOW IT WORKS:
-# - A policy with ONLY `egress` rules implicitly denies all ingress
-# - A policy with ONLY `ingress` rules implicitly denies all egress
-# - Empty endpointSelector {} selects ALL pods - DON'T DO THIS for system traffic
-# - Use matchExpressions to exclude critical namespaces
+# ENFORCEMENT MODE: policyEnforcementMode=always
+# With `always` mode, ALL endpoints start in default-deny automatically.
+# We no longer need a policy to "trigger" default-deny - it's built-in.
+# This policy only needs to ALLOW the baseline traffic (DNS).
 #
 # See host-firewall-policies.yaml for node-level infrastructure policies.
 # =============================================================================
 
 ---
-# Default Deny Policy (excludes kube-system)
-# Pattern from: https://docs.cilium.io/en/latest/network/servicemesh/default-deny-ingress-policy/
+# -----------------------------------------------------------------------------
+# Allow DNS Egress for All Pods
+# -----------------------------------------------------------------------------
+# With policyEnforcementMode=always, all pods are in default-deny.
+# This policy grants DNS access to CoreDNS for all pods cluster-wide.
+#
+# NOTE: This replaces the old "default-deny" policy which was designed for
+# policyEnforcementMode=default. With `always` mode, namespace exclusions
+# are ineffective - kube-system pods need explicit allow rules too.
+# -----------------------------------------------------------------------------
 apiVersion: cilium.io/v2
 kind: CiliumClusterwideNetworkPolicy
 metadata:
-  name: default-deny
+  name: allow-dns-egress
 spec:
-  description: "Default deny all traffic except DNS (excludes kube-system)"
-  endpointSelector:
-    matchExpressions:
-    # Exclude critical system namespaces from this policy
-    - key: io.kubernetes.pod.namespace
-      operator: NotIn
-      values:
-      - kube-system
-      - cilium-secrets
-  # Only DNS egress is allowed - everything else is implicitly denied
-  # No ingress rules = all ingress denied
+  description: "Allow all pods to query CoreDNS for DNS resolution"
+  endpointSelector: {}  # All pods cluster-wide
   egress:
   - toEndpoints:
     - matchLabels:
@@ -45,6 +43,8 @@ spec:
     - ports:
       - port: "53"
         protocol: UDP
+      - port: "53"
+        protocol: TCP
       rules:
         dns:
         - matchPattern: "*"
