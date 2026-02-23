@@ -34,6 +34,7 @@ spec:
   nodeSelector:
     matchLabels:
       kubernetes.io/hostname: talos-worker-untrusted-1
+    endpointSelector: {}  # All pods on this node
   egressDeny:
   # Block Home LAN / Management network
   - toCIDR:
