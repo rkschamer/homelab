@@ -18,6 +18,14 @@ spec:
     matchLabels:
       kubernetes.io/hostname: talos-controlplane-1
   ingress:
+  # Allow external traffic reaching API server through IP forwarding
+  # External connectivity is identified as "world" in Cilium
+  - fromEntities:
+    - world
+    toPorts:
+    - ports:
+      - port: "6443"
+        protocol: TCP
   # Allow API server access from management network (including Proxmox gateway for IP forwarding)
   # Traffic from Fritzbox is routed through Proxmox (192.168.123.9) which IP forwards to control plane
   - fromCIDR:
