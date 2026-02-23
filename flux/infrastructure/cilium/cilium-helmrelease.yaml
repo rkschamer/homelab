@@ -96,7 +96,7 @@ spec:
 
     # Explicitly set devices to exclude leftover flannel.1 interface
     # which interferes with host firewall BPF programs
-    devices: "ens18"
+    # devices: "ens18"
 
     # Policy Enforcement Mode
     # - default: Endpoints allow all until selected by a policy (deny rules only)
