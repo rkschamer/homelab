@@ -98,9 +98,16 @@ spec:
     # which interferes with host firewall BPF programs
     devices: "ens18"
 
+    # Policy Enforcement Mode
+    # - default: Endpoints allow all until selected by a policy
+    # - always: All endpoints start in default-deny (zero-trust)
+    # - never: Policy enforcement disabled
+    policyEnforcementMode: always
+
     # Policy Audit Mode - logs drops without blocking (for debugging)
     # Set to false once policies are validated
-    policyAuditMode: false
+    # WARNING: Keep enabled until all required allow rules are in place!
+    policyAuditMode: true
 
     # Routing mode (matches ConfigMap)
     routingMode: tunnel
