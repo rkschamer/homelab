@@ -16,163 +16,57 @@
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: host-firewall-test-untrusted
+  name: host-network-test
   namespace: network-testing
-  labels:
-    app: host-firewall-test
-    zone: untrusted
 spec:
   selector:
     matchLabels:
-      app: host-firewall-test
-      zone: untrusted
+      app: host-network-test
   template:
     metadata:
       labels:
-        app: host-firewall-test
-        zone: untrusted
+        app: host-network-test
     spec:
-      # Run on untrusted worker only
-      nodeSelector:
-        kubernetes.io/hostname: talos-worker-untrusted-1
-
-      # CRITICAL: Host network is required for host firewall rules to apply
       hostNetwork: true
       hostPID: true
-
-      # Privileged for network testing tools
+      dnsPolicy: ClusterFirstWithHostNet
+      tolerations:
+        # Allow scheduling on control plane nodes
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+        # For any other taints
+        - operator: Exists
+          effect: NoExecute
+          tolerationSeconds: 300
       containers:
-      - name: tester
-        image: nicolaka/netshoot:latest
-        imagePullPolicy: IfNotPresent
-
-        securityContext:
-          privileged: true
-          capabilities:
-            add:
-            - NET_ADMIN
-            - NET_RAW
-            - SYS_ADMIN
-
-        # Keep container running
-        command:
-        - sleep
-        - "3600"
-
-        resources:
-          requests:
-            cpu: 10m
-            memory: 32Mi
-          limits:
-            cpu: 100m
-            memory: 128Mi
-
----
-apiVersion: apps/v1
-kind: DaemonSet
-metadata:
-  name: host-firewall-test-dmz
-  namespace: network-testing
-  labels:
-    app: host-firewall-test
-    zone: dmz
-spec:
-  selector:
-    matchLabels:
-      app: host-firewall-test
-      zone: dmz
-  template:
-    metadata:
-      labels:
-        app: host-firewall-test
-        zone: dmz
-    spec:
-      # Run on DMZ worker only
-      nodeSelector:
-        kubernetes.io/hostname: talos-worker-dmz-1
-
-      # CRITICAL: Host network is required for host firewall rules to apply
-      hostNetwork: true
-      hostPID: true
-
-      # Privileged for network testing tools
-      containers:
-      - name: tester
-        image: nicolaka/netshoot:latest
-        imagePullPolicy: IfNotPresent
-
-        securityContext:
-          privileged: true
-          capabilities:
-            add:
-            - NET_ADMIN
-            - NET_RAW
-            - SYS_ADMIN
-
-        # Keep container running
-        command:
-        - sleep
-        - "3600"
-
-        resources:
-          requests:
-            cpu: 10m
-            memory: 32Mi
-          limits:
-            cpu: 100m
-            memory: 128Mi
-
----
-apiVersion: apps/v1
-kind: DaemonSet
-metadata:
-  name: host-firewall-test-trusted
-  namespace: network-testing
-  labels:
-    app: host-firewall-test
-    zone: trusted
-spec:
-  selector:
-    matchLabels:
-      app: host-firewall-test
-      zone: trusted
-  template:
-    metadata:
-      labels:
-        app: host-firewall-test
-        zone: trusted
-    spec:
-      # Run on Trusted worker only
-      nodeSelector:
-        kubernetes.io/hostname: talos-worker-trusted-1
-
-      # CRITICAL: Host network is required for host firewall rules to apply
-      hostNetwork: true
-      hostPID: true
-
-      # Privileged for network testing tools
-      containers:
-      - name: tester
-        image: nicolaka/netshoot:latest
-        imagePullPolicy: IfNotPresent
-
-        securityContext:
-          privileged: true
-          capabilities:
-            add:
-            - NET_ADMIN
-            - NET_RAW
-            - SYS_ADMIN
-
-        # Keep container running
-        command:
-        - sleep
-        - "3600"
-
-        resources:
-          requests:
-            cpu: 10m
-            memory: 32Mi
-          limits:
-            cpu: 100m
-            memory: 128Mi
+        - name: host-network-test
+          image: nicolaka/netshoot:latest
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/sh
+            - -c
+            - sleep infinity
+          securityContext:
+            privileged: true
+            capabilities:
+              add:
+                - NET_ADMIN
+                - NET_RAW
+                - SYS_ADMIN
+                - SYS_PTRACE
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+          volumeMounts:
+            - name: host-root
+              mountPath: /host
+      volumes:
+        - name: host-root
+          hostPath:
+            path: /
+            type: Directory
