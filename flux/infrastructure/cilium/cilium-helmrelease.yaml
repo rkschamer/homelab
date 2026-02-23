@@ -109,7 +109,7 @@ spec:
     policyEnforcementMode: default
 
     # Policy Audit Mode disabled - using simple deny rules now
-    policyAuditMode: true
+    policyAuditMode: false
 
     # Routing mode (matches ConfigMap)
     routingMode: tunnel
