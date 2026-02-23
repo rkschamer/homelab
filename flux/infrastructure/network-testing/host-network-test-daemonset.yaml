@@ -1,0 +1,178 @@
+# =============================================================================
+# Host Network Test DaemonSet - Verify Host Firewall Policy Enforcement
+# =============================================================================
+# These privileged pods run on the host network, which allows testing
+# Cilium's host firewall rules (egressDeny/ingressDeny with nodeSelector).
+#
+# Regular pods (default network namespace) are NOT subject to host firewall
+# rules - only hostNetwork pods are affected.
+#
+# Usage:
+#   kubectl exec -it -n network-testing <pod-name> -- ping 192.168.123.5
+#   kubectl exec -it -n network-testing <pod-name> -- curl -v http://192.168.123.1
+# =============================================================================
+
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: host-firewall-test-untrusted
+  namespace: network-testing
+  labels:
+    app: host-firewall-test
+    zone: untrusted
+spec:
+  selector:
+    matchLabels:
+      app: host-firewall-test
+      zone: untrusted
+  template:
+    metadata:
+      labels:
+        app: host-firewall-test
+        zone: untrusted
+    spec:
+      # Run on untrusted worker only
+      nodeSelector:
+        kubernetes.io/hostname: talos-worker-untrusted-1
+
+      # CRITICAL: Host network is required for host firewall rules to apply
+      hostNetwork: true
+      hostPID: true
+
+      # Privileged for network testing tools
+      containers:
+      - name: tester
+        image: nicolaka/netshoot:latest
+        imagePullPolicy: IfNotPresent
+
+        securityContext:
+          privileged: true
+          capabilities:
+            add:
+            - NET_ADMIN
+            - NET_RAW
+            - SYS_ADMIN
+
+        # Keep container running
+        command:
+        - sleep
+        - "3600"
+
+        resources:
+          requests:
+            cpu: 10m
+            memory: 32Mi
+          limits:
+            cpu: 100m
+            memory: 128Mi
+
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: host-firewall-test-dmz
+  namespace: network-testing
+  labels:
+    app: host-firewall-test
+    zone: dmz
+spec:
+  selector:
+    matchLabels:
+      app: host-firewall-test
+      zone: dmz
+  template:
+    metadata:
+      labels:
+        app: host-firewall-test
+        zone: dmz
+    spec:
+      # Run on DMZ worker only
+      nodeSelector:
+        kubernetes.io/hostname: talos-worker-dmz-1
+
+      # CRITICAL: Host network is required for host firewall rules to apply
+      hostNetwork: true
+      hostPID: true
+
+      # Privileged for network testing tools
+      containers:
+      - name: tester
+        image: nicolaka/netshoot:latest
+        imagePullPolicy: IfNotPresent
+
+        securityContext:
+          privileged: true
+          capabilities:
+            add:
+            - NET_ADMIN
+            - NET_RAW
+            - SYS_ADMIN
+
+        # Keep container running
+        command:
+        - sleep
+        - "3600"
+
+        resources:
+          requests:
+            cpu: 10m
+            memory: 32Mi
+          limits:
+            cpu: 100m
+            memory: 128Mi
+
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: host-firewall-test-trusted
+  namespace: network-testing
+  labels:
+    app: host-firewall-test
+    zone: trusted
+spec:
+  selector:
+    matchLabels:
+      app: host-firewall-test
+      zone: trusted
+  template:
+    metadata:
+      labels:
+        app: host-firewall-test
+        zone: trusted
+    spec:
+      # Run on Trusted worker only
+      nodeSelector:
+        kubernetes.io/hostname: talos-worker-trusted-1
+
+      # CRITICAL: Host network is required for host firewall rules to apply
+      hostNetwork: true
+      hostPID: true
+
+      # Privileged for network testing tools
+      containers:
+      - name: tester
+        image: nicolaka/netshoot:latest
+        imagePullPolicy: IfNotPresent
+
+        securityContext:
+          privileged: true
+          capabilities:
+            add:
+            - NET_ADMIN
+            - NET_RAW
+            - SYS_ADMIN
+
+        # Keep container running
+        command:
+        - sleep
+        - "3600"
+
+        resources:
+          requests:
+            cpu: 10m
+            memory: 32Mi
+          limits:
+            cpu: 100m
+            memory: 128Mi
