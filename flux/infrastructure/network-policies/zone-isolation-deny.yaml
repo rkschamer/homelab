@@ -49,9 +49,6 @@ spec:
   # Block other common private ranges (defense in depth)
   - toCIDR:
     - 172.16.0.0/12
-    - 192.168.0.0/16
-    except:
-    - 192.168.123.0/24  # Already blocked above, but explicit
 
 ---
 # -----------------------------------------------------------------------------
@@ -104,11 +101,6 @@ spec:
   # Block Home LAN / Management network
   - toCIDR:
     - 192.168.123.0/24
-  # Block other home network ranges (if any)
-  - toCIDR:
-    - 192.168.0.0/16
-    except:
-    - 192.168.123.0/24  # Already blocked above
 
 ---
 # -----------------------------------------------------------------------------
