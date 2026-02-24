@@ -1,105 +1,156 @@
 # =============================================================================
-# Zone Isolation Deny Policies - Default-Allow with Explicit Blocks
+# Zone Isolation Policies - Namespace-Based Enforcement
 # =============================================================================
-# Instead of default-deny with complex allow rules, we use default-allow
-# and block only the critical boundaries between network zones.
+# Network zones are now logical, enforced via namespace labels and Cilium
+# Network Policies. All worker nodes share the same physical network (10.10.20.0/24).
 #
-# Network Zones:
-# - Management (192.168.123.0/24): Home LAN, Kubernetes API, Proxmox
-# - Trusted (10.10.20.0/24): Internal apps with home LAN access
-# - DMZ (10.10.30.0/24): Public-facing services (Traefik)
-# - Untrusted (10.10.40.0/24): Experimental workloads, internet-only
-# - Monitoring (10.10.50.0/24): Observability infrastructure
+# To use these policies, label namespaces with:
+#   kubectl label namespace my-app network-zone=dmz
+#
+# Network Zones (Pod-Level):
+# - Trusted (network-zone: trusted): Internal apps with home LAN access
+# - DMZ (network-zone: dmz): Public-facing services (Traefik)
+# - Untrusted (network-zone: untrusted): Experimental workloads, internet-only
+# - Monitoring (network-zone: monitoring): Observability infrastructure
 #
 # Key Isolation Rules:
 # 1. Untrusted cannot reach: Home LAN, Trusted, DMZ, Monitoring
 # 2. DMZ cannot reach: Home LAN (except specific backends), Untrusted
+# 3. Monitoring can reach all zones (pull-based metrics collection)
 #
 # =============================================================================
 
 ---
-# -----------------------------------------------------------------------------
+# =============================================================================
 # Untrusted Zone Isolation - Block access to internal networks
-# -----------------------------------------------------------------------------
-# The Untrusted worker node should only have internet access.
-# All pods on this node are blocked from reaching internal networks.
-# No pod labeling required - node-level isolation.
-# -----------------------------------------------------------------------------
+# =============================================================================
+# Pods labeled with network-zone: untrusted should only have internet access.
+# All pods in the untrusted zone are blocked from reaching internal networks.
+# =============================================================================
 apiVersion: cilium.io/v2
 kind: CiliumClusterwideNetworkPolicy
 metadata:
   name: deny-untrusted-to-internal
 spec:
-  description: "Block Untrusted worker node from accessing internal networks"
-  nodeSelector:
+  description: "Block untrusted zone pods from accessing internal networks"
+  endpointSelector:
     matchLabels:
-      kubernetes.io/hostname: talos-worker-untrusted-1
+      io.cilium.k8s.namespace.labels.network-zone: untrusted
   egressDeny:
   # Block Home LAN / Management network
   - toCIDR:
     - 192.168.123.0/24
-  # Block Trusted zone
-  - toCIDR:
-    - 10.10.20.0/24
-  # Block DMZ zone
-  - toCIDR:
-    - 10.10.30.0/24
-  # Block Monitoring zone
-  - toCIDR:
-    - 10.10.50.0/24
+  # Block Trusted zone (other pods in trusted namespace)
+  - toEndpoints:
+    - matchLabels:
+        io.cilium.k8s.namespace.labels.network-zone: trusted
+  # Block DMZ zone (other pods in dmz namespace)
+  - toEndpoints:
+    - matchLabels:
+        io.cilium.k8s.namespace.labels.network-zone: dmz
+  # Block Monitoring zone (other pods in monitoring namespace)
+  - toEndpoints:
+    - matchLabels:
+        io.cilium.k8s.namespace.labels.network-zone: monitoring
   # Block other common private ranges (defense in depth)
   - toCIDR:
     - 172.16.0.0/12
 
 ---
-# -----------------------------------------------------------------------------
+# =============================================================================
 # DMZ Zone Isolation - Block access to Home LAN
-# -----------------------------------------------------------------------------
-# The DMZ worker node can serve internet traffic but should not
-# access the home LAN. All pods on this node are blocked.
-# No pod labeling required - node-level isolation.
-# -----------------------------------------------------------------------------
+# =============================================================================
+# Pods labeled with network-zone: dmz can serve internet traffic but should
+# not access the home LAN or any internal networks.
+# =============================================================================
 apiVersion: cilium.io/v2
 kind: CiliumClusterwideNetworkPolicy
 metadata:
   name: deny-dmz-to-home-lan
 spec:
-  description: "Block DMZ worker node from accessing Home LAN"
-  nodeSelector:
+  description: "Block DMZ zone pods from accessing Home LAN"
+  endpointSelector:
     matchLabels:
-      kubernetes.io/hostname: talos-worker-dmz-1
+      io.cilium.k8s.namespace.labels.network-zone: dmz
   egressDeny:
   # Block Home LAN / Management network
   - toCIDR:
     - 192.168.123.0/24
 
 ---
-# -----------------------------------------------------------------------------
+# =============================================================================
 # DMZ to Untrusted Isolation - Prevent cross-zone leakage
-# -----------------------------------------------------------------------------
-# The DMZ worker node should not communicate with the Untrusted zone.
+# =============================================================================
+# DMZ pods should not communicate with untrusted zone pods.
 # This prevents compromised services from pivoting between zones.
-# No pod labeling required - node-level isolation.
-# -----------------------------------------------------------------------------
+# =============================================================================
 apiVersion: cilium.io/v2
 kind: CiliumClusterwideNetworkPolicy
 metadata:
   name: deny-dmz-to-untrusted
 spec:
-  description: "Block DMZ worker node from reaching Untrusted zone"
-  nodeSelector:
+  description: "Block DMZ zone pods from reaching untrusted zone"
+  endpointSelector:
     matchLabels:
-      kubernetes.io/hostname: talos-worker-dmz-1
+      io.cilium.k8s.namespace.labels.network-zone: dmz
   egressDeny:
-  - toCIDR:
-    - 10.10.40.0/24  # Untrusted network
+  - toEndpoints:
+    - matchLabels:
+        io.cilium.k8s.namespace.labels.network-zone: untrusted
 
 ---
-# -----------------------------------------------------------------------------
-# Monitoring Zone - Allow scraping all zones (no restrictions)
-# -----------------------------------------------------------------------------
-# The Monitoring zone needs to reach all other zones for metrics collection.
-# No deny rules are applied to the monitoring-zone pods.
-# Prometheus, Grafana, Hubble can reach everywhere.
-# -----------------------------------------------------------------------------
-# (No policy needed - default-allow means monitoring can reach everything)
+# =============================================================================
+# Monitoring Zone - Pull-based access (no ingress from other zones)
+# =============================================================================
+# Monitoring pods can reach all other zones for metrics collection (outbound).
+# However, other zones should NOT be able to push data into monitoring.
+# This is a one-directional relationship: monitoring pulls, others don't push.
+# =============================================================================
+
+# No explicit deny rules for monitoring zone - it needs to reach everywhere.
+# Instead, other zones should have egress rules preventing push to monitoring
+# (This could be added if needed, but pull-based is the default pattern).
+
+# Example: Allow monitoring to pull from etcd, API servers, etc.
+# (Usually happens automatically via service DNS resolution)
+
+---
+# =============================================================================
+# Trusted Zone - Allow home LAN access
+# =============================================================================
+# Pods labeled with network-zone: trusted are allowed to access the home LAN
+# and internal services. This is the "safe" zone for home-integrated apps.
+# No explicit deny rules - trusted zone can reach most things.
+# =============================================================================
+
+# No explicit policies needed for trusted - it has default-allow.
+# If more restrictive rules are needed later, add them here.
+
+---
+# =============================================================================
+# Explicit Allow: DMZ to Trusted (for Traefik ingress backends)
+# =============================================================================
+# This is an example policy showing how to allow specific cross-zone traffic.
+# Uncomment and customize for your specific use cases.
+#
+# Example: Allow Traefik (DMZ) to reach Home Assistant service (Trusted)
+# =============================================================================
+
+# apiVersion: cilium.io/v2
+# kind: CiliumNetworkPolicy
+# metadata:
+#   name: allow-dmz-to-homeassistant
+#   namespace: homeassistant
+# spec:
+#   description: "Allow Traefik (DMZ) to route traffic to Home Assistant (Trusted)"
+#   endpointSelector:
+#     matchLabels:
+#       app: homeassistant
+#   ingress:
+#   - from:
+#     - namespaceSelector:
+#         matchLabels:
+#           network-zone: dmz
+#     ports:
+#     - protocol: TCP
+#       port: "8123"

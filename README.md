@@ -59,50 +59,47 @@ git-crypt unlock /path/to/encryption-key
                                  │
         ┌────────────────────────┼────────────────────────┐
         │                        │                        │
-    ┌───▼──────────┐       ┌─────▼──────┐          ┌──────▼─────────┐
-    │vmbr0         │       │ vmbr1-4    │          │   Kubernetes   │
-    │Mgmt          │       │ Workers    │          │    Cluster     │
-    │192.168.123.x │       │ 10.10.x.x  │          │     (Talos)    │
-    └───┬──────────┘       └─────┬──────┘          └────────┬───────┘
+    ┌───▼──────────┐       ┌─────▼──────────────┐  ┌──────▼─────────┐
+    │vmbr0         │       │     vmbr1          │  │   Kubernetes   │
+    │Mgmt          │       │   Workers          │  │    Cluster     │
+    │192.168.123.x │       │  10.10.20.0/24     │  │     (Talos)    │
+    └───┬──────────┘       └─────┬──────────────┘  └────────┬───────┘
         │                        │                          │
     ┌───▼────────────────────────▼──────────────────────────▼────────┐
     │            Control Plane (192.168.123.20)                      │
     │  ┌──────────────────────────────────────────────────────────┐  │
     │  │ Bastion & Router | IP Forwarding: ENABLED                │  │
     │  │ ens18: 192.168.123.20/24 (mgmt)                          │  │
-    │  │ ens19: 10.10.20.2/24 (trusted)                           │  │
-    │  │ ens20: 10.10.30.2/24 (dmz)                               │  │
-    │  │ ens21: 10.10.40.2/24 (untrusted)                         │  │
-    │  │ ens22: 10.10.50.2/24 (monitoring)                        │  │
+    │  │ ens19: 10.10.20.2/24 (workload network)                  │  │
     │  │                                                          │  │
     │  │ Services: Flux CD, Sealed Secrets, MetalLB Speaker       │  │
     │  │ MetalLB Pool: 192.168.123.21-29 (for LoadBalancer)       │  │
     │  └──────────────────────────────────────────────────────────┘  │
-    └──┬──────────────┬──────────────┬──────────────┬────────────────┘
-       │              │              │              │
-    10.10.20.0/24   10.10.30.0/24   10.10.40.0/24  10.10.50.0/24
-   (Trusted)        (DMZ)            (Untrusted)   (Monitoring)
-       │              │              │              │
-    ┌──▼──────────┐ ┌──▼──────────┐ ┌──▼──┐       ┌──▼──┐
-    │ Trusted    │ │ DMZ         │ │ Exp │       │Obs  │
-    │ Workloads  │ │ Traefik +   │ │ Wkr │       │Wkr  │
-    │ (HA, NAS)  │ │ Ingress     │ │.21  │       │.21  │
-    │ .21        │ │ Controllers │ │     │       │     │
-    │            │ │ .21         │ └─────┘       └─────┘
+    └──┬───────────────────────────────────────────────────────────┘
+       │
+    10.10.20.0/24 (Workload Network)
+       │
+    ┌──▼──────────┐ ┌──▼──────────┐
+    │ Worker-1   │ │ Worker-2   │
+    │ Pods with  │ │ Pods with  │
+    │ zone labels│ │ zone labels│
+    │ (trusted,  │ │ (dmz,      │
+    │ dmz, etc)  │ │ untrusted) │
     └────────────┘ └────────────┘
 ```
 
 ## Network Setup
 
-Five isolated networks are created using Linux bridges on Proxmox. The control plane acts as a bastion and router, enabling routing between networks while maintaining strict isolation. See the [Network Architecture](docs/NETWORK_ARCHITECTURE.md) documentation for a detailed overview.
+The cluster uses two physical networks: **Management (vmbr0)** for the control plane and **Workload (vmbr1)** for all worker nodes. Network zone isolation (Trusted, DMZ, Untrusted, Monitoring) is enforced at the **pod level using Cilium Network Policies** based on namespace labels. See the [Network Architecture](docs/NETWORK_ARCHITECTURE.md) documentation for detailed overview.
 
-- **Management     (192.168.123.0/24)** - Control plane, admin access, and MetalLB pool
-- **Trusted        (10.10.20.0/24)**    - Internal applications with home network access (Home Assistant, NAS, etc.)
-- **DMZ            (10.10.30.0/24)**    - **Ingress and Traefik only** - Public-facing services, isolated from internal network
-- **Untrusted      (10.10.40.0/24)**    - Experimental applications isolated from all other networks
-- **Monitoring     (10.10.50.0/24)**    - Observability infrastructure (Prometheus, Grafana, Hubble)
+- **Management (192.168.123.0/24)**  - Control plane, admin access, and MetalLB pool
+- **Workload   (10.10.20.0/24)**     - All worker nodes; pods labeled by zone (trusted, dmz, untrusted, monitoring)
 
-**Security:** Cilium CNI with Hubble observability and default-deny network policies enforce pod-level isolation.
+**Network Isolation:**
+- Physical isolation reduces to 2 networks, eliminating per-zone VM overhead
+- Logical network zones (Trusted, DMZ, Untrusted, Monitoring) are enforced via namespace labels: `network-zone: [trusted|dmz|untrusted|monitoring]`
+- Cilium Network Policies enforce default-deny and explicit inter-zone communication rules at the pod level
+- Host firewall rules provide an additional security layer (optional)
 
 ## Setting up the Cluster
 

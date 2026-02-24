@@ -20,5 +20,8 @@ resources:
   # - Trusted zone: Full access (home LAN connectivity)
   # =============================================================================
 
-  # Zone isolation deny policies (pod and host firewall)
+  # Zone isolation deny policies (namespace-based enforcement)
   - zone-isolation-deny.yaml
+
+  # Namespace labels and reference documentation
+  - namespace-zone-labels.yaml

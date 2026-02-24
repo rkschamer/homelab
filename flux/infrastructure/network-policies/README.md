@@ -1,43 +1,46 @@
-# Network Policies - Default-Allow with Zone Isolation
+# Network Policies - Pod-Level Zone Isolation
 
 This directory contains CiliumNetworkPolicy resources for zone isolation in the homelab Kubernetes cluster.
 
-## Approach: Default-Allow with Explicit Deny
+## Approach: Namespace-Based Pod-Level Isolation
 
-Instead of a zero-trust default-deny approach (which requires complex allow rules for every legitimate flow), we use **default-allow with explicit deny rules** for critical zone boundaries.
+All worker nodes (2 nodes) share the same physical network (10.10.20.0/24). **Network zones are now enforced at the pod level** using:
+1. **Namespace labels:** `network-zone: [trusted|dmz|untrusted|monitoring]`
+2. **Cilium Network Policies:** Rules match on namespace labels to enforce isolation
 
 **Why this approach:**
-- Simpler to maintain - only deny rules needed
-- Network-level segmentation (VLANs) already provides primary isolation
-- Appropriate security for a homelab threat model
-- No more AUDITED verdicts from missing allow rules
+- Reduced infrastructure overhead: 2 VMs instead of 4
+- Pod scheduling is fully flexible - any pod can run on any worker
+- Industry-standard Kubernetes pattern (namespace + NetworkPolicy)
+- Cilium policies provide deep packet inspection and zero-trust enforcement
+- Easy to scale: add more workers without network reconfiguration
+- Better for high availability and rolling updates
 
-## Network Zones
+## Network Zones (Logical, Pod-Level)
 
-| Zone | Network | Worker Node | Purpose |
-|------|---------|-------------|---------|
-| Management | 192.168.123.0/24 | - | Home LAN, Kubernetes API, Proxmox |
-| Trusted | 10.10.20.0/24 | talos-worker-trusted-1 | Internal apps with home LAN access |
-| DMZ | 10.10.30.0/24 | talos-worker-dmz-1 | Public-facing services (Traefik) |
-| Untrusted | 10.10.40.0/24 | talos-worker-untrusted-1 | Experimental workloads, internet-only |
-| Monitoring | 10.10.50.0/24 | talos-worker-monitoring-1 | Observability (Prometheus, Grafana, Hubble) |
+| Zone | Namespace Label | Purpose | Pod Connectivity |
+|------|-----------------|---------|----------------------|
+| **Trusted** | `network-zone: trusted` | Internal services (Home Assistant, NAS, databases) with home LAN access | Can reach: Home LAN, Management, Internet |
+| **DMZ** | `network-zone: dmz` | Public-facing services (Traefik Ingress). Isolated from home LAN | Can reach: Internet, explicit Trusted backends; Blocked: Home LAN |
+| **Untrusted** | `network-zone: untrusted` | Experimental workloads, development, testing, sandboxing | Can reach: Internet only; Blocked: Home LAN, Trusted, DMZ, Monitoring |
+| **Monitoring** | `network-zone: monitoring` | Observability infrastructure (Prometheus, Grafana, Hubble) | Can reach: All zones (pull-only); Others cannot push to Monitoring |
 
 ## Zone Isolation Rules
 
-The `zone-isolation-deny.yaml` file enforces these boundaries:
+The `zone-isolation-deny.yaml` file enforces these boundaries using Cilium Network Policies with namespace selectors:
 
 ### Untrusted Zone (Most Restricted)
 - ❌ Cannot reach Home LAN (192.168.123.0/24)
-- ❌ Cannot reach Trusted zone (10.10.20.0/24)
-- ❌ Cannot reach DMZ zone (10.10.30.0/24)
-- ❌ Cannot reach Monitoring zone (10.10.50.0/24)
+- ❌ Cannot reach Trusted zone pods
+- ❌ Cannot reach DMZ zone pods
+- ❌ Cannot reach Monitoring zone pods
 - ✅ Can reach Internet only
 
 ### DMZ Zone (Public-Facing)
-- ❌ Cannot reach Home LAN (192.168.123.0/24)
-- ❌ Cannot reach Untrusted zone (10.10.40.0/24)
-- ✅ Can reach Trusted zone (for backend services)
-- ✅ Can reach Monitoring zone
+- ❌ Cannot reach Home LAN (192.168.123.0/24) - **CRITICAL: Protects private network**
+- ❌ Cannot reach Untrusted zone pods
+- ✅ Can reach Trusted zone pods (for backend services, via explicit policies)
+- ✅ Can reach Monitoring zone pods
 - ✅ Can reach Internet
 
 ### Monitoring Zone (Observability)
@@ -46,6 +49,67 @@ The `zone-isolation-deny.yaml` file enforces these boundaries:
 
 ### Trusted Zone (Internal Services)
 - ✅ Full access including Home LAN
+
+## How to Use
+
+### 1. Label Namespaces
+
+Apply the `namespace-zone-labels.yaml` to create labeled namespaces, or label existing ones:
+
+```bash
+# Create labeled namespaces
+kubectl apply -f namespace-zone-labels.yaml
+
+# Or label existing namespaces
+kubectl label namespace traefik network-zone=dmz
+kubectl label namespace homeassistant network-zone=trusted
+kubectl label namespace experimental network-zone=untrusted
+kubectl label namespace monitoring network-zone=monitoring
+```
+
+### 2. Deploy Pods to Labeled Namespaces
+
+No `nodeSelector` needed! Deploy pods normally; Cilium enforces isolation:
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: traefik
+  namespace: traefik  # Already labeled network-zone=dmz
+spec:
+  template:
+    spec:
+      containers:
+      - name: traefik
+        image: traefik:v2.x
+      # Cilium automatically enforces DMZ zone policies
+      # Pod can run on any worker; isolation still enforced
+```
+
+### 3. Allow Cross-Zone Traffic (Optional)
+
+For legitimate cross-zone communication (e.g., Traefik → backend services), create specific allow policies:
+
+```yaml
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-dmz-to-homeassistant
+  namespace: homeassistant
+spec:
+  endpointSelector:
+    matchLabels:
+      app: homeassistant
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          network-zone: dmz
+    ports:
+    - protocol: TCP
+      port: "8123"
+```
 
 ## Structure
 
