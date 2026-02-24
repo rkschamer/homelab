@@ -33,5 +33,6 @@ addresses:
 apiVersion: v1alpha1
 kind: ResolverConfig
 nameservers:
+  - address: 192.168.123.1
   - address: 8.8.8.8
   - address: 1.1.1.1
