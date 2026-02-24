@@ -2,9 +2,9 @@
 
 ## Overview
 
-This homelab uses a **bastion node pattern** where the control plane node acts as a router and bastion host, enabling management access to isolated worker networks from the home network.
+This homelab uses a **simplified two-network architecture** where the control plane manages **physical isolation** and workers run on a single workload network. **Network zone isolation** (Trusted, DMZ, Untrusted, Monitoring) is enforced at the **pod level using Cilium Network Policies** with namespace labels.
 
-The entire cluster relies on **five isolated networks** created using Linux bridges on the Proxmox host, acting as a "software VLAN" setup that does not require a managed switch.
+The cluster relies on **two isolated networks** created using Linux bridges on the Proxmox host: Management (vmbr0) for the control plane and Workload (vmbr1) for all workers.
 
 ### Network Topology
 
@@ -18,9 +18,6 @@ The entire cluster relies on **five isolated networks** created using Linux brid
     ┌──────▼──────────────┐
     │   Fritzbox Router   │  Static Routes:
     │  192.168.123.1      │  - 10.10.20.0/24 → 192.168.123.20
-    │                     │  - 10.10.30.0/24 → 192.168.123.20
-    │                     │  - 10.10.40.0/24 → 192.168.123.20
-    │                     │  - 10.10.50.0/24 → 192.168.123.20
     └──────┬──────────────┘
            │ ens18: 192.168.123.20/24
     ┌──────▼──────────────────────────────────────────┐
@@ -29,22 +26,23 @@ The entire cluster relies on **five isolated networks** created using Linux brid
     │  IP Forwarding: ENABLED                         │
     │                                                 │
     │  ens18 (mgmt): 192.168.123.20/24                │
-    │  ens19 (trusted): 10.10.20.2/24                 │
-    │  ens20 (dmz): 10.10.30.2/24                     │
-    │  ens21 (untrusted): 10.10.40.2/24               │
-    │  ens22 (monitoring): 10.10.50.2/24              │
-    └──┬──────────────┬──────────────┬──────────────┬─┘
-       │              │              │              │
-    ens19         ens20          ens21          ens22
- 10.10.20.2   10.10.30.2     10.10.40.2     10.10.50.2
-  (bridge)     (bridge)       (bridge)       (bridge)
-       │              │              │              │
-       │              │              │              │
-    ┌──▼──┐       ┌──▼──┐       ┌──▼──┐       ┌──▼──┐
-    │Wrkr │       │Wrkr │       │Wrkr │       │Wrkr │
-    │Trstd│       │DMZ  │       │Untst│       │Mon  │
-    │.21  │       │.21  │       │.21  │       │.21  │
-    └─────┘       └─────┘       └─────┘       └─────┘
+    │  ens19 (workload): 10.10.20.2/24                │
+    └──┬──────────────────────────────────────────────┘
+       │
+    ens19: 10.10.20.2
+     (bridge)
+       │
+       ├─────────────────────────────────────────────┐
+       │                                             │
+    ┌──▼──┐                                       ┌──▼──┐
+    │ Wrkr │                                       │ Wrkr │
+    │  1   │                                       │  2   │
+    │.21   │  Pods with zone labels:               │.22   │
+    │      │  - network-zone: trusted              │      │
+    │      │  - network-zone: dmz                  │      │
+    │      │  - network-zone: untrusted            │      │
+    │      │  - network-zone: monitoring           │      │
+    └──────┘                                       └──────┘
 ```
 
 
@@ -102,7 +100,7 @@ Your Machine (192.168.123.x)
 
 ## Network Setup Details
 
-We create five distinct, isolated networks using **Linux Bridges** on the Proxmox host:
+We create **two distinct networks** using **Linux Bridges** on the Proxmox host:
 
 ### vmbr0: Management Network (192.168.123.0/24)
 
@@ -121,83 +119,44 @@ We create five distinct, isolated networks using **Linux Bridges** on the Proxmo
 Internet ← FritzBox (80/443→192.168.123.21-29) ← vmbr0 ← MetalLB/Traefik
 ```
 
-### vmbr1: Trusted Network (10.10.20.0/24)
+### vmbr1: Workload Network (10.10.20.0/24)
 
-**Purpose:** For internal, trusted services like Home Assistant, file servers, databases. Can initiate traffic to the home LAN.
+**Purpose:** All worker nodes run on this single network. **Network isolation** (Trusted, DMZ, Untrusted, Monitoring) is enforced at the **pod level** using Cilium Network Policies with namespace labels.
 
 **Configuration:**
 - Gateway IP on Proxmox host: 10.10.20.1
 - Control Plane interface: 10.10.20.2 (acts as gateway for workers)
-- Trusted Worker Node (Talos): 10.10.20.21
+- Worker Node 1 (Talos): 10.10.20.21
+- Worker Node 2 (Talos): 10.10.20.22
 - All nodes can reach: 192.168.123.0/24 (management) and internet
 
-**Security Model:**
-- Workers isolated from home LAN at VM level
-- Pod-level isolation enforced by Cilium network policies
-- Can communicate with management network and internet
+**Network Zones (Pod-Level Isolation):**
 
-### vmbr2: DMZ Network (10.10.30.0/24)
+Namespace labels define security zones; Cilium Network Policies enforce isolation:
 
-**Purpose:** For public-facing services like reverse proxies, web servers, API gateways. Isolated from the home LAN.
-
-**Configuration:**
-- Gateway IP on Proxmox host: 10.10.30.1
-- Control Plane interface: 10.10.30.2 (acts as gateway for workers)
-- DMZ Worker Node (Talos): 10.10.30.21
-- Traffic from internet routes through MetalLB pool to Traefik on this network
-- Can reach control plane (192.168.123.20) and trusted network (10.10.20.0/24)
-- **Cannot** directly access home LAN (192.168.123.0/24)
+| Zone | Namespace Label | Purpose | Pod Connectivity |
+|------|-----------------|---------|----------------------|
+| **Trusted** | `network-zone: trusted` | Internal services (Home Assistant, NAS, file servers) with home LAN access | Can reach: Home LAN, Management, Internet |
+| **DMZ** | `network-zone: dmz` | Public-facing services (Traefik Ingress). Must be isolated from home LAN | Can reach: Internet, explicit Trusted pods; Blocked: Home LAN, Untrusted |
+| **Untrusted** | `network-zone: untrusted` | Experimental workloads, development, testing, sandboxing | Can reach: Internet only; Blocked: Home LAN, Trusted, DMZ, Monitoring |
+| **Monitoring** | `network-zone: monitoring` | Observability infrastructure (Prometheus, Grafana, Hubble). Pull-based metrics collection | Can reach: All zones (pull-only); Others cannot push to Monitoring |
 
 **Security Model:**
-- Completely isolated from home LAN at VM level
-- Pods must explicitly request access to trusted network via Cilium policies
-- Cannot reach home machines accidentally due to network isolation
-
-### vmbr3: Untrusted Network (10.10.40.0/24)
-
-**Purpose:** For experiments, testing, and untrusted workloads. Completely isolated with internet-only egress.
-
-**Configuration:**
-- Gateway IP on Proxmox host: 10.10.40.1
-- Control Plane interface: 10.10.40.2 (acts as gateway for workers)
-- Untrusted Worker Node (Talos): 10.10.40.21
-- Can reach: Control plane (for cluster management) and internet
-- **Cannot** reach: Home LAN (192.168.123.0/24) or trusted network (10.10.20.0/24)
-
-**Security Model:**
-- Strict network isolation at both VM and pod level
-- Untrusted workloads cannot compromise home network
-- Useful for development, testing, and sandboxing
-
-### vmbr4: Monitoring Network (10.10.50.0/24)
-
-**Purpose:** For monitoring and observability services (Prometheus, Grafana, etc.). Can observe all networks but is isolated from general workloads.
-
-**Configuration:**
-- Gateway IP on Proxmox host: 10.10.50.1
-- Control Plane interface: 10.10.50.2 (acts as gateway for workers)
-- Monitoring Worker Node (Talos): 10.10.50.21
-- Can initiate connections to: All other networks and internet
-- **Cannot receive** unsolicited inbound traffic from other networks
-
-**Security Model:**
-- One-directional access: monitoring pulls metrics from other networks
-- Other networks don't push data to monitoring network
-- Only exception: external monitoring systems can access Grafana dashboard explicitly
+- **Physical isolation**: Single network reduces VM overhead while maintaining security via Cilium
+- **Pod-level isolation**: Namespace labels + Cilium Network Policies enforce zone boundaries
+- **Deep packet inspection**: Cilium eBPF monitors all pod traffic by zone
+- **Defense in depth**: Optional host firewall rules provide additional layer
 
 ## Network Routing Architecture
 
 ### Proxmox Host as Router
 
-The Proxmox host acts as a **software router** between all networks:
+The Proxmox host acts as a **software router** between the two networks:
 
 ```
 Proxmox Host (192.168.123.8)
 ├─ vmbr0 (192.168.123.8/24)    ← Management network
-├─ vmbr1 (10.10.20.1/24)       ← Trusted worker network
-├─ vmbr2 (10.10.30.1/24)       ← DMZ worker network
-├─ vmbr3 (10.10.40.1/24)       ← Untrusted worker network
-└─ vmbr4 (10.10.50.1/24)       ← Monitoring network
+└─ vmbr1 (10.10.20.1/24)       ← Workload network (all workers)
 
 IP Forwarding: ENABLED
 ```
@@ -206,38 +165,29 @@ IP Forwarding: ENABLED
 
 ### Static Routes on Admin Machine
 
-Your admin machine needs static routes to reach isolated worker networks:
+Your admin machine needs static routes to reach worker nodes:
 
 ```bash
 # From admin machine on home LAN
-ip route add 10.10.20.0/24 via 192.168.123.20  # Trusted network via control plane
-ip route add 10.10.30.0/24 via 192.168.123.20  # DMZ network via control plane
-ip route add 10.10.40.0/24 via 192.168.123.20  # Untrusted network via control plane
-ip route add 10.10.50.0/24 via 192.168.123.20  # Monitoring network via control plane
+ip route add 10.10.20.0/24 via 192.168.123.20  # Workload network via control plane
 ```
 
 Or configure in your home router (FritzBox):
 - Destination: 10.10.20.0/24 → Gateway: 192.168.123.20
-- Destination: 10.10.30.0/24 → Gateway: 192.168.123.20
-- Destination: 10.10.40.0/24 → Gateway: 192.168.123.20
-- Destination: 10.10.50.0/24 → Gateway: 192.168.123.20
 
 ### Control Plane Routing
 
-The control plane node has connections to **all five networks** and routes traffic between them:
+The control plane node has connections to **both networks** and routes traffic between them:
 
 ```
 Control Plane Node (192.168.123.20)
 ├─ ens18: 192.168.123.20/24  (vmbr0 - management)
-├─ ens19: 10.10.20.2/24      (vmbr1 - trusted)
-├─ ens20: 10.10.30.2/24      (vmbr2 - dmz)
-├─ ens21: 10.10.40.2/24      (vmbr3 - untrusted)
-└─ ens22: 10.10.50.2/24      (vmbr4 - monitoring)
+└─ ens19: 10.10.20.2/24      (vmbr1 - workload)
 
 All interfaces with IP forwarding enabled
 ```
 
-Worker nodes on isolated networks use the control plane's interface IP (e.g., 10.10.20.2) as their default gateway.
+Worker nodes use the control plane's workload interface IP (10.10.20.2) as their default gateway.
 
 ### Traffic Flow Examples
 
@@ -314,49 +264,52 @@ Backend Pod
 
 ---
 
-### Worker Nodes (Trusted, DMZ, Untrusted, Monitoring)
+### Worker Nodes (talos-worker-1, talos-worker-2)
 
-All worker nodes follow the same pattern. Example for DMZ Worker:
+All worker nodes run on the same workload network. **Network isolation** (Trusted, DMZ, Untrusted, Monitoring) is enforced at the **pod level** via namespace labels and Cilium Network Policies.
 
-**Node:** talos-worker-dmz-1
-**IP Address:** 10.10.30.21
-**Network:** 10.10.30.0/24 (DMZ)
+**Worker Node 1:** talos-worker-1
+**IP Address:** 10.10.20.21
+**Network:** 10.10.20.0/24 (Workload)
 
-**Network Interfaces:**
+**Worker Node 2:** talos-worker-2
+**IP Address:** 10.10.20.22
+**Network:** 10.10.20.0/24 (Workload)
+
+**Network Interfaces (identical for all workers):**
 
 | Interface | Network | IP Address | Subnet | Gateway | Purpose |
-|-----------|---------|-----------|--------|---------|---------|
-| ens18 | DMZ | 10.10.30.21 | 10.10.30.0/24 | 10.10.30.1 | Worker node communication |
+|-----------|---------|-----------|--------|---------|----------|
+| ens18 | Workload | 10.10.20.21 (or .22) | 10.10.20.0/24 | 10.10.20.1 | Worker node communication |
 
 **Routes:**
 
 | Destination | Next Hop | Gateway | Interface | Purpose |
 |------------|----------|---------|-----------|---------|
-| 0.0.0.0/0 | - | 10.10.30.1 | ens18 | Default: traffic to unknown networks goes to Proxmox bridge (external internet) |
-| 192.168.123.0/24 | - | **10.10.30.2** | ens18 | **CRITICAL:** Management network traffic routed to control plane (bastion) |
+| 0.0.0.0/0 | - | 10.10.20.1 | ens18 | Default: traffic to unknown networks goes to Proxmox bridge (external internet) |
+| 192.168.123.0/24 | - | **10.10.20.2** | ens18 | **CRITICAL:** Management network traffic routed to control plane (bastion) |
 
-**Why 10.10.30.2 for Management Network?**
+**Why 10.10.20.2 for Management Network?**
 
-The worker must route replies back through the control plane (10.10.30.2) instead of the Proxmox bridge (10.10.30.1) because:
+The worker must route replies back through the control plane (10.10.20.2) instead of the Proxmox bridge (10.10.20.1) because:
 1. The bridge connects to Proxmox VMs, not to the management network
 2. Only the control plane has the ens18 interface connected to 192.168.123.0/24
 3. Without this route, replies from workers to 192.168.123.x would be lost
 
-#### Trusted Worker (talos-worker-trusted-1)
-- IP: 10.10.20.21
-- Gateway for management: 10.10.20.2 (control plane ens19)
+**Pod-Level Network Zones:**
 
-#### DMZ Worker (talos-worker-dmz-1)
-- IP: 10.10.30.21
-- Gateway for management: 10.10.30.2 (control plane ens20)
+Network isolation (Trusted, DMZ, Untrusted, Monitoring) is enforced via namespace labels, not physically separate workers. Apply labels to namespaces:
 
-#### Untrusted Worker (talos-worker-untrusted-1)
-- IP: 10.10.40.21
-- Gateway for management: 10.10.40.2 (control plane ens21)
+```bash
+kubectl label namespace traefik network-zone=dmz
+kubectl label namespace homeassistant network-zone=trusted
+kubectl label namespace experimental network-zone=untrusted
+kubectl label namespace monitoring network-zone=monitoring
+```
 
-#### Monitoring Worker (talos-worker-monitoring-1)
-- IP: 10.10.50.21
-- Gateway for management: 10.10.50.2 (control plane ens22)
+Cilium Network Policies read these labels and enforce isolation rules.
+
+
 
 ---
 
@@ -364,13 +317,10 @@ The worker must route replies back through the control plane (10.10.30.2) instea
 
 ### Static Routes
 
-The Fritzbox must have static routes pointing to the control plane for all worker networks:
+The Fritzbox must have a static route pointing to the control plane for the workload network:
 
 ```
 Destination Network: 10.10.20.0/24  → Gateway: 192.168.123.20 (Control Plane)
-Destination Network: 10.10.30.0/24  → Gateway: 192.168.123.20 (Control Plane)
-Destination Network: 10.10.40.0/24  → Gateway: 192.168.123.20 (Control Plane)
-Destination Network: 10.10.50.0/24  → Gateway: 192.168.123.20 (Control Plane)
 ```
 
 **How to Configure:**
@@ -387,21 +337,21 @@ Destination Network: 10.10.50.0/24  → Gateway: 192.168.123.20 (Control Plane)
 
 ```
 Management (192.168.123.x)
-  └─ Destination: 10.10.30.21 (worker)
-     └─ Fritzbox lookup: "10.10.30.0/24 → 192.168.123.20"
+  └─ Destination: 10.10.20.21 (worker)
+     └─ Fritzbox lookup: "10.10.20.0/24 → 192.168.123.20"
         └─ Control Plane (192.168.123.20)
-           └─ Destination: 10.10.30.21
-              └─ Local route: "10.10.30.0/24 on ens20"
-                 └─ Forwards via ens20 to Worker (10.10.30.21)
+           └─ Destination: 10.10.20.21
+              └─ Local route: "10.10.20.0/24 on ens19"
+                 └─ Forwards via ens19 to Worker (10.10.20.21)
 ```
 
 ### Scenario 2: Worker Node → Management Machine (e.g., reply to talosctl)
 
 ```
-Worker (10.10.30.21)
+Worker (10.10.20.21)
   └─ Destination: 192.168.123.x
-     └─ Local route: "192.168.123.0/24 via 10.10.30.2"
-        └─ Control Plane (192.168.123.20, ens20)
+     └─ Local route: "192.168.123.0/24 via 10.10.20.2"
+        └─ Control Plane (192.168.123.20, ens19)
            └─ Destination: 192.168.123.x
               └─ Local route: "192.168.123.0/24 on ens18"
                  └─ Forwards via ens18 to Management (192.168.123.x)
@@ -410,10 +360,10 @@ Worker (10.10.30.21)
 ### Scenario 3: Worker Node → Internet (e.g., software updates)
 
 ```
-Worker (10.10.30.21)
+Worker (10.10.20.21)
   └─ Destination: 8.8.8.8 (external)
-     └─ Local route: "0.0.0.0/0 via 10.10.30.1"
-        └─ Proxmox Bridge (10.10.30.1)
+     └─ Local route: "0.0.0.0/0 via 10.10.20.1"
+        └─ Proxmox Bridge (10.10.20.1)
            └─ [Proxmox host networking]
               └─ Internet
 ```
@@ -423,16 +373,23 @@ Worker (10.10.30.21)
 ## Security Implications
 
 ### Network Isolation
-- Worker networks (10.10.x.0/24) are not directly accessible from the management network
+- The workload network (10.10.20.0/24) is not directly accessible from the management network
 - All management access must go through the control plane bastion
-- This creates an additional security checkpoint for accessing sensitive nodes
+- Pod-level isolation (Cilium policies) enforces zone boundaries within the workload network
+- This creates multiple security checkpoints: physical network + pod-level policies
+
+### Pod-Level Security (Cilium)
+- Default-deny network policies block all inter-pod traffic unless explicitly allowed
+- Namespace labels (`network-zone: [trusted|dmz|untrusted|monitoring]`) define security zones
+- Cilium policies can enforce zone-to-zone  rules (e.g., DMZ blocked from Home LAN)
+- Violations are logged and visible via Hubble network observability
 
 ### Control Plane as Single Point of Access
 - If the control plane goes down, management access to workers is lost
 - Mitigation: Use SSH ProxyJump/tunneling, or implement secondary bastion
 
 ### Default Routes Matter
-- Workers use `0.0.0.0/0 → 10.10.30.1` for internet access
+- Workers use `0.0.0.0/0 → 10.10.20.1` for internet access
 - This keeps external traffic separate from management network traffic
 - Management network traffic explicitly routed to control plane ensures return path
 
@@ -449,15 +406,16 @@ talosctl read /proc/sys/net/ipv4/ip_forward --nodes 192.168.123.20
 
 ### Check Worker Routing
 ```bash
-talosctl -n 10.10.30.21 get routes
-talosctl -n 10.10.30.21 get addresses
+talosctl -n 10.10.20.21 get routes
+talosctl -n 10.10.20.21 get addresses
 ```
 
 ### Test Connectivity
 ```bash
 # From management network
-ping 10.10.30.2           # Control plane DMZ interface
-ping 10.10.30.21          # DMZ worker node
+ping 10.10.20.2           # Control plane workload interface
+ping 10.10.20.21          # Worker 1
+ping 10.10.20.22          # Worker 2
 talosctl apply-config --insecure --nodes 10.10.30.21 --file talos-worker-dmz-1.yaml
 ```
 

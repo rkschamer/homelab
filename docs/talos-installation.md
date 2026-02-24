@@ -1,6 +1,6 @@
 # Talos Installation
 
-This guide walks through creating VMs on Proxmox and bootstrapping a Talos Kubernetes cluster with network-isolated worker nodes using the control plane as a bastion host for accessing workers.
+This guide walks through creating VMs on Proxmox and bootstrapping a Talos Kubernetes cluster on a single workload network, with pod-level network isolation enforced via Cilium Network Policies.
 
 ## Architecture Overview
 
@@ -13,14 +13,12 @@ Home LAN (192.168.123.0/24)
   ├─ Proxmox Host (192.168.123.8)
   │  └─ Kubernetes Cluster
   │     ├─ Control Plane (192.168.123.20 on vmbr0)
-  │     ├─ Worker-Trusted (10.10.20.x on vmbr1)
-  │     ├─ Worker-DMZ (10.10.30.x on vmbr2)
-  │     ├─ Worker-Untrusted (10.10.40.x on vmbr3)
-  │     └─ Worker-Monitoring (10.10.50.x on vmbr4)
+  │     ├─ Worker-1 (10.10.20.21 on vmbr1)
+  │     └─ Worker-2 (10.10.20.22 on vmbr1)
 
 Bootstrap Flow:
 1. Admin machine boots control plane (accessible on 192.168.123.20)
-2. Workers boot from ISO → won't receive a DHCP address; initial IP addresses must be set manually (10.10.x.21)
+2. Workers boot from ISO → won't receive a DHCP address; initial IP addresses must be set manually (10.10.20.21, 10.10.20.22)
 3. talosctl reaches workers via bastion tunnel for apply-config commands
 4. After bootstrap, workers use LinkConfig for inter-network routing
 ```
@@ -37,10 +35,8 @@ Bootstrap Flow:
 
    | Worker | IP Address | Gateway | CIDR |
    |--------|-----------|---------|------|
-   | talos-worker-trusted-1 | 10.10.20.21 | 10.10.20.2 | /24 |
-   | talos-worker-dmz-1 | 10.10.30.21 | 10.10.30.2 | /24 |
-   | talos-worker-untrusted-1 | 10.10.40.21 | 10.10.40.2 | /24 |
-   | talos-worker-monitoring-1 | 10.10.50.21 | 10.10.50.2 | /24 |
+   | talos-worker-1 | 10.10.20.21 | 10.10.20.2 | /24 |
+   | talos-worker-2 | 10.10.20.22 | 10.10.20.2 | /24 |
 
 
 ## Step 2: `talosctl apply-config`
@@ -59,26 +55,17 @@ Bootstrap Flow:
 - Apply the configuration to worker nodes:
 
   ```bash
-  # Replace with actual IPs from the Proxmox console
+  # Worker 1
   talosctl apply-config \
     --insecure \
     --nodes 10.10.20.21 \
-    --file ./talos/gen/talos-worker-trusted-1.yaml
+    --file ./talos/gen/talos-worker-1.yaml
 
+  # Worker 2
   talosctl apply-config \
     --insecure \
-    --nodes 10.10.30.21 \
-    --file ./talos/gen/talos-worker-dmz-1.yaml
-
-  talosctl apply-config \
-    --insecure \
-    --nodes 10.10.40.21 \
-    --file ./talos/gen/talos-worker-untrusted-1.yaml
-
-  talosctl apply-config \
-    --insecure \
-    --nodes 10.10.50.21 \
-    --file ./talos/gen/talos-worker-monitoring-1.yaml
+    --nodes 10.10.20.22 \
+    --file ./talos/gen/talos-worker-2.yaml
   ```
 - Verify cluster health: `talosctl health`
 - Retrieve the kubeconfig:
@@ -93,73 +80,75 @@ Bootstrap Flow:
 Normally the setup is designed to follow GitOps prinicple. However a few things need to be installed manually to get this to work.
 All these commands are scripted in [../talos/bootstrap/bootstrap.sh](../talos/bootstrap/bootstrap.sh) and here only kept for explanation.
 
-# Workload Placement via Hostname
+# Workload Placement via Namespace Labels
 
-Use `nodeSelector` with the node hostname to schedule pods on specific workers.
+**Network zones are now enforced at the pod level, not at the node level.** All workers run on the same network (`10.10.20.0/24`), and Cilium Network Policies enforce isolation based on namespace labels.
 
-**Available Nodes:**
+## Workload Placement Strategy
 
-| Node Hostname | Network | Use Case |
-|---------------|---------|----------|
-| talos-worker-trusted-1 | Trusted (10.10.20.0/24) | Internal services (Home Assistant, NAS, file servers) with home LAN access |
-| talos-worker-dmz-1 | DMZ (10.10.30.0/24) | **Traefik Ingress Controller and public-facing services ONLY** - isolated from home network |
-| talos-worker-untrusted-1 | Untrusted (10.10.40.0/24) | Experimental workloads with no trusted network access |
-| talos-worker-monitoring-1 | Monitoring (10.10.50.0/24) | Observability infrastructure (Prometheus, Grafana, Hubble UI) |
+Apply the `network-zone` label to namespaces to define security zones:
 
-**Using Hostname in Pod Deployments:**
+```bash
+# Trusted zone (internal services with home LAN access)
+kubectl create namespace homeassistant
+kubectl label namespace homeassistant network-zone=trusted
 
-```yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: my-app
-spec:
-  template:
-    spec:
-      nodeSelector:
-        kubernetes.io/hostname: talos-worker-dmz-1  # Schedule Traefik/Ingress on DMZ worker
-      # ... pod spec
+# DMZ zone (public-facing services like Traefik)
+kubectl create namespace traefik
+kubectl label namespace traefik network-zone=dmz
+
+# Untrusted zone (experimental workloads, internet-only)
+kubectl create namespace experimental
+kubectl label namespace experimental network-zone=untrusted
+
+# Monitoring zone (observability infrastructure)
+kubectl create namespace monitoring
+kubectl label namespace monitoring network-zone=monitoring
 ```
 
-**Important: DMZ Worker Isolation and Access Control**
+## Network Zone Isolation
 
-The DMZ worker (`talos-worker-dmz-1`) is the **only** location where public-facing services should run. This includes:
-- ✅ **Traefik Ingress Controller** (MUST run here)
-- ✅ **Any ingress rules** that expose services to the internet
-- ✅ **Public APIs** that should be internet-accessible
+| Zone | Namespace Label | Purpose | Pod Connectivity |
+|------|-----------------|---------|----------------------|
+| **Trusted** | `network-zone: trusted` | Internal services (Home Assistant, NAS, file servers) with home LAN access | Can reach: Home LAN, Management, Internet |
+| **DMZ** | `network-zone: dmz` | Public-facing services (Traefik Ingress). Must be isolated from home LAN | Can reach: Internet, explicit Trusted pods; Blocked: Home LAN |
+| **Untrusted** | `network-zone: untrusted` | Experimental workloads, development, testing, sandboxing | Can reach: Internet only; Blocked: Home LAN, Trusted, DMZ, Monitoring |
+| **Monitoring** | `network-zone: monitoring` | Observability infrastructure (Prometheus, Grafana, Hubble). Pull-based metrics collection | Can reach: All zones (pull-only); Others cannot push to Monitoring |
 
-**Internal services on other networks (Trusted, Untrusted, Monitoring) CANNOT be exposed publicly** without an explicit network policy.
+## Why No NodeSelector?
 
-**Accessing Trusted Network Services from DMZ**
+**Before:** Each worker node was dedicated to a single network zone. Deployments used `nodeSelector` to pin pods to specific nodes.
 
-When Traefik or other DMZ services need to reach backends on the Trusted network (e.g., proxying to Home Assistant, NAS), create a `CiliumNetworkPolicy` to allow the traffic:
+**Now:** All workers share the same network. Pod placement is determined by **Cilium Network Policies**, not node affinity. Pods can run on any worker and Cilium still enforces zone boundaries via namespace labels.
+
+## Benefits of Pod-Level Isolation
+
+1. **Flexible Scheduling:** Pods can run on any worker; Cilium enforces isolation
+2. **Node Scaling:** Easy to add more workers without network reconfiguration
+3. **High Availability:** Can cordon/drain workers during upgrades; pods reschedule freely
+4. **Industry Standard:** Namespace + NetworkPolicy is the common Kubernetes pattern
+5. **Reduced Overhead:** 2 VMs instead of 4; half the memory, CPU, and disk usage on Proxmox
+
+## Important: DMZ Pod Isolation
+
+The DMZ zone (Traefik, public APIs) must be isolated from the Home LAN at the pod level. When creating Cilium policies, ensure:
 
 ```yaml
----
+# Example: Block DMZ pods from accessing Home LAN
 apiVersion: cilium.io/v2
-kind: CiliumNetworkPolicy
+kind: CiliumClusterwideNetworkPolicy
 metadata:
-  name: dmz-to-homeassistant
-  namespace: homeassistant
+  name: deny-dmz-to-home-lan
 spec:
   endpointSelector:
     matchLabels:
-      app: homeassistant  # Service on Trusted worker
-  ingress:
-  - from:
-    - podSelector:
-        matchLabels:
-          app: traefik  # DMZ Traefik pod
-    ports:
-    - protocol: TCP
-      port: "8123"
+      io.cilium.k8s.namespace.labels.network-zone: dmz
+  egressDeny:
+    - toCIDR:
+        - 192.168.123.0/24  # Home LAN
 ```
 
-This pattern ensures:
-- ✅ Traefik is isolated on DMZ worker
-- ✅ Only explicit policies allow DMZ↔Trusted communication
-- ✅ Default-deny prevents accidental exposure of internal services
-- ✅ All access rules are version-controlled in Git (GitOps)
+This ensures public-facing services cannot accidentally access home machines even though they share the same physical network.
 
 
 

@@ -24,30 +24,31 @@ For detailed platform architecture and network topology, see [README.md](../READ
 
 ## Security & Network Architecture
 
-**Network Segmentation:** Five isolated networks enforce workload isolation:
-- **Management (192.168.123.0/24):** Kubernetes API, Proxmox admin
-- **Trusted (10.10.20.0/24):** Internal applications with home network access
-- **DMZ (10.10.30.0/24):** Public-facing services (Traefik)
-- **Untrusted (10.10.40.0/24):** Experimental workloads, internet-only
-- **Monitoring (10.10.50.0/24):** Observability infrastructure
+**Network Segmentation:** Network zone isolation (Trusted, DMZ, Untrusted, Monitoring) is enforced at the **pod level**:
+- **Workload Network (10.10.20.0/24):** All worker nodes share this single network
+- **Namespace Labels:** Apply `network-zone: [trusted|dmz|untrusted|monitoring]` to segregate workloads
+- **Cilium Network Policies:** Enforce isolation rules based on namespace labels, not VM boundaries
 
-**Workload Placement:** Use `nodeSelector` with the node hostname to schedule pods on specific workers:
-- `talos-worker-trusted-1` — Internal services with home LAN access
-- `talos-worker-dmz-1` — Public-facing services (Traefik, Ingress)
-- `talos-worker-untrusted-1` — Experimental workloads, no trusted network access
-- `talos-worker-monitoring-1` — Observability infrastructure
+**Workload Placement:** Pod scheduling is **unrestricted** across all workers. Network isolation is enforced via:
+1. Namespace labels: `kubectl label namespace my-app network-zone=dmz`
+2. Cilium Network Policies: Rules match on namespace label selectors
+3. Host firewall rules: Optional additional layer (configure via Cilium host policies)
 
-Example deployment:
+Example deployment (no nodeSelector needed):
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: traefik
+  namespace: traefik  # Label this namespace network-zone=dmz
 spec:
+  # Cilium policies automatically enforce isolation based on namespace label
+  # No nodeSelector required; pod can run on any worker
   template:
     spec:
-      nodeSelector:
-        kubernetes.io/hostname: talos-worker-dmz-1  # Schedule on DMZ worker
+      containers:
+      - name: traefik
+        image: traefik:latest
 ```
 
 See [Talos Manifests Documentation](../docs/talos-installation.md#workload-placement-via-hostname) for complete details.
