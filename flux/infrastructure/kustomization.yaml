@@ -7,6 +7,7 @@ metadata:
 
 resources:
   - cilium
+  - longhorn
   - network-policies
   - network-testing
 #  - metallb-release.yaml
