@@ -28,31 +28,29 @@ Each subdirectory is named after a node and contains YAML manifest files that ex
 **Example structure for workers:**
 ```
 manifests/
-├── talos-worker-trusted-1/
+├── talos-worker-1/
 │   └── linkconfig.yaml
-├── talos-worker-dmz-1/
-│   └── linkconfig.yaml
-├── talos-worker-untrusted-1/
-│   └── linkconfig.yaml
-└── talos-worker-monitoring-1/
+└── talos-worker-2/
     └── linkconfig.yaml
 ```
+
+Both worker nodes share the same workload network (10.10.20.0/24). Network isolation is enforced at the **pod level** via namespace labels and Cilium Network Policies, not at the node level.
 
 ## Manifest Format
 
 Each manifest file contains one or more Talos API objects in YAML format, separated by `---`.
 
-## LinkConfig Manifests for Network Isolation
+## LinkConfig Manifests for Workload Network
 
-LinkConfig resources define network interface configuration for isolated worker nodes.
+LinkConfig resources define network interface configuration for the workload network. Both workers attach to the same workload network (vmbr1, 10.10.20.0/24) and are isolated via pod-level policies.
 
 Each worker node has a `linkconfig.yaml` containing:
 - **LinkConfig**: Defines eth0 interface with static IP and routes
 - **ResolverConfig**: DNS server configuration
 
-### Example: DMZ Worker LinkConfig
+### Example: Worker Node LinkConfig
 
-**File:** `talos-worker-dmz-1/linkconfig.yaml`
+**File:** `talos-worker-1/linkconfig.yaml`
 
 ```yaml
 apiVersion: net.talos.dev/v1alpha1
@@ -63,12 +61,12 @@ spec:
   name: eth0
   up: true
   addresses:
-    - address: 10.10.30.21/24
+    - address: 10.10.20.21/24
   routes:
     - destination: 0.0.0.0/0
-      gateway: 10.10.30.1
+      gateway: 10.10.20.1
     - destination: 192.168.123.0/24
-      gateway: 10.10.30.1
+      gateway: 10.10.20.1
 ---
 apiVersion: net.talos.dev/v1alpha1
 kind: ResolverConfig
@@ -86,18 +84,19 @@ spec:
 - `addresses`: Static IP addresses (CIDR notation)
 - `routes`: Static routes with destination and gateway
 
-### Network Isolation via Static Routes
+### Network Isolation via Pod-Level Policies
 
-This LinkConfig approach enables network isolation:
+Network isolation is now enforced at the **pod level**, not the node level:
 
-1. **Worker attaches only to its workload network** (eth0 on vmbr2 for DMZ)
-2. **Default route** directs external traffic through the workload gateway
-3. **Control plane route** (192.168.123.0/24) reaches the control plane through the Proxmox host
-4. **Proxmox host routing** forwards traffic between bridges, enabling this scheme
+1. **Workers attach to shared workload network** (eth0 on vmbr1, 10.10.20.0/24)
+2. **Namespace labels** define network zones: `network-zone: [trusted|dmz|untrusted|monitoring]`
+3. **Cilium Network Policies** enforce pod-to-pod isolation based on namespace labels
+4. **Default-deny** policy blocks all traffic except explicitly allowed connections
+5. **Scheduling is unrestricted** - pods can run on any worker; isolation is independent of node placement
 
-## Manifest Format
+See [../../flux/infrastructure/network-policies/](../../flux/infrastructure/network-policies/) for current Cilium policies and [../../docs/network-architecture.md](../../docs/network-architecture.md) for detailed architecture documentation.
 
-Each manifest file contains one or more Talos API objects in YAML format, separated by `---`.
+## Supported Manifest Objects
 
 **Example manifest:**
 ```yaml

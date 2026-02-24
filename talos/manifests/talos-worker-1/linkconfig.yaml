@@ -3,13 +3,14 @@ kind: LinkConfig
 name: ens18
 up: true
 addresses:
-  - address: 10.10.40.21/24
+  - address: 10.10.20.21/24
 routes:
   - destination: 192.168.123.20/32
-    gateway: 10.10.40.2
+    gateway: 10.10.20.1
 ---
 apiVersion: v1alpha1
 kind: ResolverConfig
 nameservers:
+  - address: 192.168.123.1
   - address: 8.8.8.8
   - address: 1.1.1.1
