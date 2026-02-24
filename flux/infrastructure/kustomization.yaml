@@ -6,9 +6,9 @@ metadata:
   namespace: flux-system
 
 resources:
-  - cilium
-  - longhorn
   - network-policies
   - network-testing
+  - cilium-release.yaml
+  - longhorn-release.yaml
 #  - metallb-release.yaml
 #  - sealed-secrets-release.yaml
