@@ -1,0 +1,34 @@
+apiVersion: cilium.io/v2
+kind: CiliumClusterwideNetworkPolicy
+metadata:
+  name: deny-untrusted-to-internal-test
+spec:
+  description: "Block Untrusted worker node from accessing internal networks"
+  nodeSelector:
+    matchLabels:
+      # this kubernetes.io/hostname label is not present on Cilium endpoint list; for this reason
+      # we must use a different label to target the untrusted node
+      network-zone: untrusted
+  enableDefaultDeny:
+    egress: true
+    ingress: false
+  egressDeny:
+  - toCIDR:
+    - 192.168.123.5/32
+  egress:
+  - toEntities:
+      - world
+  ingress:
+  - fromEntities:
+    - remote-node
+    - health
+  - toPorts:
+    - ports:
+      - port: "6443"
+        protocol: TCP
+      - port: "2379"
+        protocol: TCP
+      - port: "4240"
+        protocol: TCP
+      - port: "8472"
+        protocol: UDP
