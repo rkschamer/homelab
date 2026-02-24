@@ -101,7 +101,7 @@ resource "local_file" "controlplane_config" {
                 {
                   stableHostname = false
                   hostDNS = {
-                    enabled              = true
+                    enabled = true
                     // When forwardKubeDNSToHost is enabled, Talos Linux allocates IP address 169.254.116.108 for the host DNS server,
                     // and kube-dns service is configured to use this IP address as the upstream DNS server
                     // https://docs.siderolabs.com/talos/v1.12/networking/host-dns
@@ -109,7 +109,7 @@ resource "local_file" "controlplane_config" {
                     // Host DNS can be configured to resolve Talos cluster member names to IP addresses, so that the
                     // host can communicate with the cluster members by name
                     // https://docs.siderolabs.com/talos/v1.12/networking/host-dns#resolving-talos-cluster-member-names
-                    resolveMemberNames   = true
+                    resolveMemberNames = true
 
                   }
                 }
@@ -151,6 +151,29 @@ resource "local_file" "worker_config" {
                 local.controlplane_config_patched.machine.features,
                 {
                   stableHostname = false
+                }
+              ),
+              // required for longhorn (and data engine V2)
+              sysctls = {
+                "vm.nr_hugepages" = "1024"
+              },
+              kernel = {
+                modules = [
+                  { name = "nvme_tcp" },
+                  { name = "vfio_pci" },
+                ]
+              },
+              kubelet = merge(
+                local.worker_config_patched.machine.kubelet,
+                {
+                  extraMounts = [
+                    {
+                      destination = "/var/lib/longhorn"
+                      type        = "bind"
+                      source      = "/var/lib/longhorn"
+                      options     = ["bind", "rshared", "rw"]
+                    },
+                  ]
                 }
               )
             }
