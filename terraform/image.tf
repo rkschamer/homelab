@@ -4,7 +4,10 @@ data "talos_image_factory_extensions_versions" "this" {
     names = [
       "siderolabs/amd-ucode",
       "siderolabs/amdgpu",
-      "siderolabs/qemu-guest-agent"
+      "siderolabs/qemu-guest-agent",
+      // required for longhorn:
+      "siderolabs/iscsi-tools",
+      "siderolabs/util-linux-tools"
     ]
   }
 }
