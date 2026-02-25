@@ -91,10 +91,13 @@ resource "local_file" "controlplane_config" {
                   image = "factory.talos.dev/installer/${talos_image_factory_schematic.this.id}:${var.talos_version}" # Custom image with qemu-guest-agent from Image Factory
                   wipe  = false                                                                                       # Indicates if the installation disk should be wiped at installation time.
                 }
-              )
+              ),
               sysctls = {
                 "net.ipv4.ip_forward"          = "1"
-                "net.ipv6.conf.all.forwarding" = "1" # Optional: for IPv6                                                                                    # Indicates if the installation disk should be wiped at installation time.
+                "net.ipv6.conf.all.forwarding" = "1" # Optional: for IPv6
+                # Swap tuning for performance
+                "vm.swappiness"   = "130"  # Increased from default 60 - makes kernel more willing to use swap
+                "vm.page-cluster" = "0"    # Disable swap read-ahead for non-rotational devices
               },
               features = merge(
                 local.controlplane_config_patched.machine.features,
@@ -156,6 +159,9 @@ resource "local_file" "worker_config" {
               // required for longhorn (and data engine V2)
               sysctls = {
                 "vm.nr_hugepages" = "1024"
+                # Swap tuning for performance
+                "vm.swappiness"   = "130"  # Increased from default 60 - makes kernel more willing to use swap
+                "vm.page-cluster" = "0"    # Disable swap read-ahead for non-rotational devices
               },
               kernel = {
                 modules = [
@@ -166,6 +172,11 @@ resource "local_file" "worker_config" {
               kubelet = merge(
                 local.worker_config_patched.machine.kubelet,
                 {
+                  extraConfig = {
+                    memorySwap = {
+                      swapBehavior = "LimitedSwap"  # Allow containers to use swap
+                    }
+                  },
                   extraMounts = [
                     {
                       destination = "/var/lib/longhorn"

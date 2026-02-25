@@ -39,6 +39,18 @@ resource "proxmox_virtual_environment_vm" "control_plane" {
     datastore_id = "local-zfs"
     interface    = "virtio0"
     size         = each.value.disk_size_gb
+    # ssd          = true
+    # discard      = "on"
+  }
+
+  # Secondary disk for swap device
+  disk {
+    datastore_id = "local-zfs"
+    interface    = "virtio1"
+    size         = each.value.swap_disk_size_gb
+    ssd          = true
+    discard      = "on"
+    backup       = false
   }
 
   operating_system {
@@ -98,6 +110,18 @@ resource "proxmox_virtual_environment_vm" "workers" {
     datastore_id = "local-zfs"
     interface    = "virtio0"
     size         = each.value.disk_size_gb
+    # ssd          = true
+    # discard      = "on"
+  }
+
+  # Secondary disk for swap device
+  disk {
+    datastore_id = "local-zfs"
+    interface    = "virtio1"
+    size         = each.value.swap_disk_size_gb
+    ssd          = true
+    discard      = "on"
+    backup       = false
   }
 
   operating_system {
