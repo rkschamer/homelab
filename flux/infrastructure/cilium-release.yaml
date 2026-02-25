@@ -74,8 +74,6 @@ spec:
       enabled: true
       relay:
         enabled: true
-        nodeSelector:
-          kubernetes.io/hostname: talos-worker-monitoring-1
         tls:
           server:
             enabled: true
@@ -84,8 +82,6 @@ spec:
             certValidation: background
       ui:
         enabled: true
-        nodeSelector:
-          kubernetes.io/hostname: talos-worker-monitoring-1
         tls:
           server:
             enabled: true
