@@ -21,108 +21,108 @@
 # Examples: Home Assistant, NAS, file servers, databases, internal dashboards
 # Connectivity: Can reach home LAN (192.168.123.0/24), other internal services
 # =============================================================================
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: homeassistant
-  labels:
-    network-zone: trusted
+# apiVersion: v1
+# kind: Namespace
+# metadata:
+#   name: homeassistant
+#   labels:
+#     network-zone: trusted
 
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: storage
-  labels:
-    network-zone: trusted
+# ---
+# apiVersion: v1
+# kind: Namespace
+# metadata:
+#   name: storage
+#   labels:
+#     network-zone: trusted
 
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: databases
-  labels:
-    network-zone: trusted
+# ---
+# apiVersion: v1
+# kind: Namespace
+# metadata:
+#   name: databases
+#   labels:
+#     network-zone: trusted
 
----
-# =============================================================================
-# DMZ Zone
-# =============================================================================
-# Purpose: Public-facing services isolated from home LAN
-# Examples: Traefik Ingress Controller, public APIs, reverse proxies
-# Connectivity: Can reach internet, explicit backends on trusted network
-#               BLOCKED from: Home LAN (192.168.123.0/24)
-# =============================================================================
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: traefik
-  labels:
-    network-zone: dmz
+# ---
+# # =============================================================================
+# # DMZ Zone
+# # =============================================================================
+# # Purpose: Public-facing services isolated from home LAN
+# # Examples: Traefik Ingress Controller, public APIs, reverse proxies
+# # Connectivity: Can reach internet, explicit backends on trusted network
+# #               BLOCKED from: Home LAN (192.168.123.0/24)
+# # =============================================================================
+# apiVersion: v1
+# kind: Namespace
+# metadata:
+#   name: traefik
+#   labels:
+#     network-zone: dmz
 
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: ingress-nginx
-  labels:
-    network-zone: dmz
+# ---
+# apiVersion: v1
+# kind: Namespace
+# metadata:
+#   name: ingress-nginx
+#   labels:
+#     network-zone: dmz
 
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: public-api
-  labels:
-    network-zone: dmz
+# ---
+# apiVersion: v1
+# kind: Namespace
+# metadata:
+#   name: public-api
+#   labels:
+#     network-zone: dmz
 
----
-# =============================================================================
-# Untrusted Zone
-# =============================================================================
-# Purpose: Experimental workloads, development, testing, sandboxing
-# Examples: Dev environments, test deployments, untrusted workloads
-# Connectivity: Internet-only
-#               BLOCKED from: Home LAN, Trusted, DMZ, Monitoring
-# =============================================================================
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: experimental
-  labels:
-    network-zone: untrusted
+# ---
+# # =============================================================================
+# # Untrusted Zone
+# # =============================================================================
+# # Purpose: Experimental workloads, development, testing, sandboxing
+# # Examples: Dev environments, test deployments, untrusted workloads
+# # Connectivity: Internet-only
+# #               BLOCKED from: Home LAN, Trusted, DMZ, Monitoring
+# # =============================================================================
+# apiVersion: v1
+# kind: Namespace
+# metadata:
+#   name: experimental
+#   labels:
+#     network-zone: untrusted
 
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: dev
-  labels:
-    network-zone: untrusted
+# ---
+# apiVersion: v1
+# kind: Namespace
+# metadata:
+#   name: dev
+#   labels:
+#     network-zone: untrusted
 
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: testing
-  labels:
-    network-zone: untrusted
+# ---
+# apiVersion: v1
+# kind: Namespace
+# metadata:
+#   name: testing
+#   labels:
+#     network-zone: untrusted
 
----
-# =============================================================================
-# Monitoring Zone
-# =============================================================================
-# Purpose: Observability infrastructure, metrics collection
-# Examples: Prometheus, Grafana, Hubble, Alertmanager, Loki
-# Connectivity: Can reach all zones (pull-based metrics collection)
-#               Others cannot push to monitoring
-# =============================================================================
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: monitoring
-  labels:
-    network-zone: monitoring
+# ---
+# # =============================================================================
+# # Monitoring Zone
+# # =============================================================================
+# # Purpose: Observability infrastructure, metrics collection
+# # Examples: Prometheus, Grafana, Hubble, Alertmanager, Loki
+# # Connectivity: Can reach all zones (pull-based metrics collection)
+# #               Others cannot push to monitoring
+# # =============================================================================
+# apiVersion: v1
+# kind: Namespace
+# metadata:
+#   name: monitoring
+#   labels:
+#     network-zone: monitoring
 
 ---
 # =============================================================================

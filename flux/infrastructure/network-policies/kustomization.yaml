@@ -23,5 +23,8 @@ resources:
   # Zone isolation deny policies (namespace-based enforcement)
   - zone-isolation-deny.yaml
 
+  # Sealed Secrets policies
+  - sealed-secrets-policies.yaml
+
   # Namespace labels and reference documentation
   - namespace-zone-labels.yaml
