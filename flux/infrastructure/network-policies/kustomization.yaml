@@ -5,7 +5,7 @@ metadata:
   name: network-policies
   namespace: flux-system
 
-resources:
+resources: []
   # =============================================================================
   # Default-Allow with Zone Isolation Deny Rules
   # =============================================================================
@@ -21,10 +21,10 @@ resources:
   # =============================================================================
 
   # Zone isolation deny policies (namespace-based enforcement)
-  - zone-isolation-deny.yaml
+  #- zone-isolation-deny.yaml
 
   # Sealed Secrets policies
-  - sealed-secrets-policies.yaml
+  #- sealed-secrets-policies.yaml
 
   # Namespace labels and reference documentation
-  - namespace-zone-labels.yaml
+  #- namespace-zone-labels.yaml
