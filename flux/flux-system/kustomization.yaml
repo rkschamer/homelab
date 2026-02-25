@@ -3,19 +3,3 @@ kind: Kustomization
 resources:
   - gotk-components.yaml
   - gotk-sync.yaml
-
-patches:
-  # Constrain all Flux controllers to the DMZ worker node
-  - patch: |
-      apiVersion: apps/v1
-      kind: Deployment
-      metadata:
-        name: all
-      spec:
-        template:
-          spec:
-            nodeSelector:
-              kubernetes.io/hostname: talos-worker-dmz-1
-    target:
-      kind: Deployment
-      labelSelector: "app.kubernetes.io/part-of=flux"
