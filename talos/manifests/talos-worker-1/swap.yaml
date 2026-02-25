@@ -1,0 +1,13 @@
+# Zswap is a compressed cache for swap pages that can help reduce the performance impact of swapping by keeping frequently accessed pages in memory.
+apiVersion: v1alpha1
+kind: ZswapConfig
+maxPoolPercent: 20
+---
+apiVersion: v1alpha1
+kind: SwapVolumeConfig
+name: swap0
+provisioning:
+  diskSelector:
+    match: 'disk.transport == "virtio"'
+  minSize: 8GB
+  maxSize: 8GB
