@@ -22,6 +22,21 @@ resource "proxmox_virtual_environment_vm" "control_plane" {
     enabled = true
   }
 
+  # UEFI with SecureBoot
+  bios = "ovmf"
+  machine = "q35"
+
+  efi_disk {
+    datastore_id      = "local-zfs"
+    pre_enrolled_keys = true
+    type              = "4m"
+  }
+
+  tpm_state {
+    datastore_id = "local-zfs"
+    version      = "v2.0"
+  }
+
   # Network devices from configuration
   dynamic "network_device" {
     for_each = each.value.network_devices
@@ -93,6 +108,21 @@ resource "proxmox_virtual_environment_vm" "workers" {
     # they're isolated to workload networks, which are not reachable by the management network
     # since terraform would wait for an IP for 15m (default), we set a relatively short timeout
     timeout = "10s"
+  }
+
+  # UEFI with SecureBoot
+  bios = "ovmf"
+  machine = "q35"
+
+  efi_disk {
+    datastore_id      = "local-zfs"
+    pre_enrolled_keys = true
+    type              = "4m"
+  }
+
+  tpm_state {
+    datastore_id = "local-zfs"
+    version      = "v2.0"
   }
 
   # Production networks only - workers isolated to their designated networks

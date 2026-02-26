@@ -7,7 +7,7 @@ data "talos_image_factory_extensions_versions" "this" {
       "siderolabs/qemu-guest-agent",
       // required for longhorn:
       "siderolabs/iscsi-tools",
-      "siderolabs/util-linux-tools"
+      "siderolabs/util-linux-tools",
     ]
   }
 }
@@ -29,8 +29,8 @@ resource "proxmox_virtual_environment_download_file" "talos_iso" {
   content_type = "iso"
   datastore_id = "local"
   node_name    = var.proxmox_node
-  file_name    = "talos-${var.talos_version}-metal-amd64.iso"
-  url          = "https://factory.talos.dev/image/${talos_image_factory_schematic.this.id}/${var.talos_version}/metal-amd64.iso"
+  file_name    = "talos-${var.talos_version}-nocloud-amd64-secureboot.iso"
+  url          = "https://factory.talos.dev/image/${talos_image_factory_schematic.this.id}/${var.talos_version}/nocloud-amd64-secureboot.iso"
   overwrite    = false
 }
 
