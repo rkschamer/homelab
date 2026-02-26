@@ -37,13 +37,15 @@ variable "cluster_name" {
 variable "control_plane" {
   description = "List of control plane node configurations."
   type = list(object({
-    name              = string
-    vmid              = number
-    ip_address        = string
-    disk_size_gb      = number
-    swap_disk_size_gb = number
-    memory            = number
-    cores             = number
+    name       = string
+    vmid       = number
+    ip_address = string
+    disks = object({
+      system_size_in_gb = number
+      swap_size_in_gb   = number
+    })
+    memory = number
+    cores  = number
     network_devices = list(object({
       bridge      = string
       mac_address = string
@@ -56,12 +58,15 @@ variable "control_plane" {
 variable "worker_nodes" {
   description = "List of worker node configurations."
   type = list(object({
-    name              = string
-    vmid              = number
-    disk_size_gb      = number
-    swap_disk_size_gb = number
-    memory            = number
-    cores             = number
+    name = string
+    vmid = number
+    disks = object({
+      system_size_in_gb = number
+      swap_size_in_gb   = number
+      user_size_in_gb   = number
+    })
+    memory = number
+    cores  = number
     network_devices = list(object({
       bridge      = string
       mac_address = string

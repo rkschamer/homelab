@@ -35,19 +35,18 @@ resource "proxmox_virtual_environment_vm" "control_plane" {
     file_id = proxmox_virtual_environment_download_file.talos_iso.id
   }
 
+  # System disk
   disk {
     datastore_id = "local-zfs"
     interface    = "virtio0"
-    size         = each.value.disk_size_gb
-    # ssd          = true
-    # discard      = "on"
+    size         = each.value.disks.system_size_in_gb
   }
 
-  # Secondary disk for swap device
+  # Swap disk
   disk {
     datastore_id = "local-zfs"
     interface    = "virtio1"
-    size         = each.value.swap_disk_size_gb
+    size         = each.value.disks.swap_size_in_gb
     ssd          = true
     discard      = "on"
     backup       = false
@@ -106,22 +105,31 @@ resource "proxmox_virtual_environment_vm" "workers" {
     file_id = proxmox_virtual_environment_download_file.talos_iso.id
   }
 
+  # System disk
   disk {
     datastore_id = "local-zfs"
     interface    = "virtio0"
-    size         = each.value.disk_size_gb
-    # ssd          = true
-    # discard      = "on"
+    size         = each.value.disks.system_size_in_gb
   }
 
-  # Secondary disk for swap device
+  # Swap disk
   disk {
     datastore_id = "local-zfs"
     interface    = "virtio1"
-    size         = each.value.swap_disk_size_gb
+    size         = each.value.disks.swap_size_in_gb
     ssd          = true
     discard      = "on"
     backup       = false
+  }
+
+  # User volume disk (for Longhorn CSI)
+  disk {
+    datastore_id = "local-zfs"
+    interface    = "virtio2"
+    size         = each.value.disks.user_size_in_gb
+    ssd          = true
+    discard      = "on"
+    backup       = false # Longhorn handles replication
   }
 
   operating_system {
