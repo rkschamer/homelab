@@ -10,3 +10,11 @@ provisioning:
     # This excludes the system disk (64GB) and swap disk (8GB)
     match: '!system_disk && disk.transport == "virtio" && disk.size > 100GB'
   grow: true  # Use all available space on the disk
+encryption:
+  provider: luks2
+  keys:
+    - tpm:
+        options:
+          pcrs: [7]
+      slot: 0
+      lockToState: true
