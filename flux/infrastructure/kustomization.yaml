@@ -7,6 +7,7 @@ metadata:
 
 resources:
   - network-policies
+  - metrics-server-release.yaml
   - cilium-release.yaml
   - longhorn-release.yaml
   - sealed-secrets
