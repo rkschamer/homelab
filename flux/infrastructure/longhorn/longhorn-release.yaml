@@ -22,6 +22,7 @@ metadata:
   name: longhorn
   namespace: longhorn-system
 spec:
+  interval: 1m0s
   chart:
     spec:
       chart: longhorn
@@ -30,8 +31,11 @@ spec:
         kind: HelmRepository
         name: longhorn-repo
       version: v1.11.0
-  interval: 1m0s
+  install:
+    crds: Create
+  upgrade:
+    crds: CreateReplace
   values:
-    defaultDataPath: /var/mnt/longhorn
-    defaultBackupStore:
+    defaultSettings:
+      defaultDataPath: /var/mnt/longhorn
       backupTargetCredentialSecret: longhorn-backup-secret
