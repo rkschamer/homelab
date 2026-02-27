@@ -1,9 +1,6 @@
 #!/bin/bash
 set -euo pipefail
 
-echo "Removing agent-not-ready taint from nodes..."
-kubectl taint nodes --all node.cilium.io/agent-not-ready- --overwrite || true
-
 echo "Installing Cilium CLI..."
 echo "Installing Cilium with eBPF, Hubble and host firewall enabled..."
 cilium install \

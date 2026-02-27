@@ -56,7 +56,7 @@ resource "proxmox_virtual_environment_vm" "control_plane" {
     datastore_id = "local-zfs"
     interface    = "virtio0"
     size         = each.value.disks.system_size_in_gb
-    ssd          = true
+    #ssd          = true
     discard      = "on"
     backup       = false
   }
@@ -66,7 +66,7 @@ resource "proxmox_virtual_environment_vm" "control_plane" {
     datastore_id = "local-zfs"
     interface    = "virtio1"
     size         = each.value.disks.swap_size_in_gb
-    ssd          = true
+    #ssd          = true
     discard      = "on"
     backup       = false
   }
@@ -88,7 +88,7 @@ resource "proxmox_virtual_environment_vm" "workers" {
 
   name        = each.value.name
   description = "Managed by Terraform"
-  tags        = ["terraform", "talos", "worker", each.value.network_zone]
+  tags        = ["terraform", "talos", "worker"]
   node_name   = var.proxmox_node
   vm_id       = each.value.vmid
   on_boot     = true
@@ -127,6 +127,18 @@ resource "proxmox_virtual_environment_vm" "workers" {
     version      = "v2.0"
   }
 
+  # Cloud-init network configuration
+  initialization {
+    datastore_id = "local-zfs"
+
+    ip_config {
+      ipv4 {
+        address = "${each.value.ip_address}/24"
+        gateway = each.value.gateway
+      }
+    }
+  }
+
   # Production networks only - workers isolated to their designated networks
   dynamic "network_device" {
     for_each = each.value.network_devices
@@ -145,7 +157,7 @@ resource "proxmox_virtual_environment_vm" "workers" {
     datastore_id = "local-zfs"
     interface    = "virtio0"
     size         = each.value.disks.system_size_in_gb
-    ssd          = true
+    #ssd          = true
     discard      = "on"
     backup       = false
   }
@@ -155,7 +167,7 @@ resource "proxmox_virtual_environment_vm" "workers" {
     datastore_id = "local-zfs"
     interface    = "virtio1"
     size         = each.value.disks.swap_size_in_gb
-    ssd          = true
+    #ssd          = true
     discard      = "on"
     backup       = false
   }
@@ -165,7 +177,7 @@ resource "proxmox_virtual_environment_vm" "workers" {
     datastore_id = "local-zfs"
     interface    = "virtio2"
     size         = each.value.disks.user_size_in_gb
-    ssd          = true
+    #ssd          = true
     discard      = "on"
     backup       = false # Longhorn handles replication
   }
