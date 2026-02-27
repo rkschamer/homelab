@@ -58,8 +58,9 @@ variable "control_plane" {
 variable "worker_nodes" {
   description = "List of worker node configurations."
   type = list(object({
-    name = string
-    vmid = number
+    name       = string
+    vmid       = number
+    ip_address = string
     disks = object({
       system_size_in_gb = number
       swap_size_in_gb   = number
@@ -71,7 +72,6 @@ variable "worker_nodes" {
       bridge      = string
       mac_address = string
     }))
-    network_zone  = string
     gateway       = string
     subnet_prefix = number
   }))

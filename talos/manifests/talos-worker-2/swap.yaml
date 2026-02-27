@@ -9,6 +9,6 @@ name: swap0
 provisioning:
   diskSelector:
     # Match the dedicated swap disk: non-system virtio disk exactly 8GB
-    match: '!system_disk && disk.transport == "virtio" && disk.size <= 10GB'
+    match: '!system_disk && disk.transport == "virtio" && disk.size <= 10u * GB'
   minSize: 8GB
   maxSize: 8GB
