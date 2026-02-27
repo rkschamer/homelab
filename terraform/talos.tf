@@ -88,8 +88,8 @@ resource "local_file" "controlplane_config" {
                 local.controlplane_config_patched.machine.install,
                 {
                   disk  = "/dev/vda"
-                  image = "factory.talos.dev/installer/${talos_image_factory_schematic.this.id}:${var.talos_version}" # Custom image with qemu-guest-agent from Image Factory
-                  wipe  = false                                                                                       # Indicates if the installation disk should be wiped at installation time.
+                  image = "factory.talos.dev/installer-secureboot/${talos_image_factory_schematic.this.id}:${var.talos_version}" # SecureBoot installer with qemu-guest-agent from Image Factory
+                  wipe  = false                                                                                                   # Indicates if the installation disk should be wiped at installation time.
                 }
               ),
               sysctls = {
@@ -146,8 +146,8 @@ resource "local_file" "worker_config" {
                 local.worker_config_patched.machine.install,
                 {
                   disk  = "/dev/vda"
-                  image = "factory.talos.dev/installer/${talos_image_factory_schematic.this.id}:${var.talos_version}" # Custom image with qemu-guest-agent from Image Factory
-                  wipe  = false                                                                                       # Indicates if the installation disk should be wiped at installation time.
+                  image = "factory.talos.dev/installer-secureboot/${talos_image_factory_schematic.this.id}:${var.talos_version}" # SecureBoot installer with qemu-guest-agent from Image Factory
+                  wipe  = false                                                                                                   # Indicates if the installation disk should be wiped at installation time.
                 }
               ),
               features = merge(

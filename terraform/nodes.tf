@@ -23,12 +23,13 @@ resource "proxmox_virtual_environment_vm" "control_plane" {
   }
 
   # UEFI with SecureBoot
+  # pre_enrolled_keys = false allows Talos to auto-enroll its own Secure Boot keys
   bios = "ovmf"
   machine = "q35"
 
   efi_disk {
     datastore_id      = "local-zfs"
-    pre_enrolled_keys = true
+    pre_enrolled_keys = false
     type              = "4m"
   }
 
@@ -111,12 +112,13 @@ resource "proxmox_virtual_environment_vm" "workers" {
   }
 
   # UEFI with SecureBoot
+  # pre_enrolled_keys = false allows Talos to auto-enroll its own Secure Boot keys
   bios = "ovmf"
   machine = "q35"
 
   efi_disk {
     datastore_id      = "local-zfs"
-    pre_enrolled_keys = true
+    pre_enrolled_keys = false
     type              = "4m"
   }
 
