@@ -32,5 +32,6 @@ spec:
       version: v1.11.0
   interval: 1m0s
   values:
+    defaultDataPath: /var/mnt/longhorn
     defaultBackupStore:
       backupTargetCredentialSecret: longhorn-backup-secret
