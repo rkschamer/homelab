@@ -7,9 +7,9 @@ metadata:
 
 resources:
   - network-policies
+  - longhorn
   - metrics-server-release.yaml
   - cilium-release.yaml
-  - longhorn-release.yaml
   - sealed-secrets-release.yaml
 #  - network-testing
 #  - metallb-release.yaml
