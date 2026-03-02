@@ -6,10 +6,10 @@ metadata:
   namespace: flux-system
 
 resources:
+  - sealed-secrets-release.yaml # need to come first, because others depend on it
   - network-policies
   - longhorn
   - metrics-server-release.yaml
   - cilium-release.yaml
-  - sealed-secrets-release.yaml
 #  - network-testing
 #  - metallb-release.yaml
