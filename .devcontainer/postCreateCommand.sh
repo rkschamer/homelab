@@ -56,6 +56,7 @@ cat >> /home/vscode/.bashrc << 'EOF'
 # History configuration
 HISTSIZE=100000
 HISTFILESIZE=100000
+HISTFILE=/workspaces/homelab/.devcontainer/bash_history
 
 # kubectl editor configuration
 export KUBE_EDITOR="code --wait"
