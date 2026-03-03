@@ -1,3 +1,5 @@
+tmp/**
+
 # Terraform files
 .terraform/
 *.tfstate.backup
