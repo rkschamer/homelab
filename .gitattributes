@@ -6,3 +6,4 @@
 
 /**/kubeconfig* filter=git-crypt diff=git-crypt
 /**/talosconfig* filter=git-crypt diff=git-crypt
+/**/*bash_history* filter=git-crypt diff=git-crypt
