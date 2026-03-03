@@ -38,3 +38,4 @@ spec:
   values:
     defaultSettings:
       defaultDataPath: /var/mnt/longhorn
+      defaultReplicaCount: "2"
