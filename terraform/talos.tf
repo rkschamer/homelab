@@ -156,10 +156,8 @@ resource "local_file" "worker_config" {
                   stableHostname = false
                 }
               ),
-              // required for longhorn (and data engine V2)
+              // Swap tuning for performance
               sysctls = {
-                "vm.nr_hugepages" = "1024"
-                # Swap tuning for performance
                 "vm.swappiness"   = "130"  # Increased from default 60 - makes kernel more willing to use swap
                 "vm.page-cluster" = "0"    # Disable swap read-ahead for non-rotational devices
               },
