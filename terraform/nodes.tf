@@ -56,7 +56,6 @@ resource "proxmox_virtual_environment_vm" "control_plane" {
     datastore_id = "local-zfs"
     interface    = "virtio0"
     size         = each.value.disks.system_size_in_gb
-    #ssd          = true
     discard      = "on"
     backup       = false
   }
@@ -66,7 +65,6 @@ resource "proxmox_virtual_environment_vm" "control_plane" {
     datastore_id = "local-zfs"
     interface    = "virtio1"
     size         = each.value.disks.swap_size_in_gb
-    #ssd          = true
     discard      = "on"
     backup       = false
   }
@@ -157,7 +155,6 @@ resource "proxmox_virtual_environment_vm" "workers" {
     datastore_id = "local-zfs"
     interface    = "virtio0"
     size         = each.value.disks.system_size_in_gb
-    #ssd          = true
     discard      = "on"
     backup       = false
   }
@@ -167,7 +164,6 @@ resource "proxmox_virtual_environment_vm" "workers" {
     datastore_id = "local-zfs"
     interface    = "virtio1"
     size         = each.value.disks.swap_size_in_gb
-    #ssd          = true
     discard      = "on"
     backup       = false
   }
@@ -177,7 +173,6 @@ resource "proxmox_virtual_environment_vm" "workers" {
     datastore_id = "local-zfs"
     interface    = "virtio2"
     size         = each.value.disks.user_size_in_gb
-    #ssd          = true
     discard      = "on"
     backup       = false # Longhorn handles replication
   }
