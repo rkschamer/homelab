@@ -5,6 +5,6 @@ metadata:
   name: default
   namespace: longhorn-system
 spec:
-  #backupTargetURL: s3://longhorn@nas/
-  #credentialSecret: "backup-secret"
+  backupTargetURL: ""
+  credentialSecret: ""
   pollInterval: 5m0s
