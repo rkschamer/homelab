@@ -1,7 +1,7 @@
 # Use a Microsoft-provided base image with common tools
 FROM mcr.microsoft.com/devcontainers/base:ubuntu-24.04
 
-ARG KUBERNETES_VERSION="1.34"
+ARG KUBERNETES_VERSION="1.35"
 
 # Install system dependencies, git
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
