@@ -7,3 +7,5 @@
 /**/kubeconfig* filter=git-crypt diff=git-crypt
 /**/talosconfig* filter=git-crypt diff=git-crypt
 /**/*bash_history* filter=git-crypt diff=git-crypt
+# tmp might contained secrets, so it's encrypted for the sake of security (even though it should be in .gitignore)
+/**/tmp/* filter=git-crypt diff=git-crypt
