@@ -22,9 +22,6 @@ resource "proxmox_virtual_environment_vm" "control_plane" {
     enabled = true
   }
 
-  # Boot order: disk first, then CDROM
-  boot = "order=virtio0;ide2"
-
   # UEFI with SecureBoot
   # pre_enrolled_keys = false allows Talos to auto-enroll its own Secure Boot keys
   bios = "ovmf"
@@ -111,9 +108,6 @@ resource "proxmox_virtual_environment_vm" "workers" {
     # since terraform would wait for an IP for 15m (default), we set a relatively short timeout
     timeout = "10s"
   }
-
-  # Boot order: disk first, then CDROM
-  boot = "order=virtio0;ide2"
 
   # UEFI with SecureBoot
   # pre_enrolled_keys = false allows Talos to auto-enroll its own Secure Boot keys
