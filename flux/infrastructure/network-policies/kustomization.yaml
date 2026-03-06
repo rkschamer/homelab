@@ -5,26 +5,7 @@ metadata:
   name: network-policies
   namespace: flux-system
 
-resources: []
-  # =============================================================================
-  # Default-Allow with Zone Isolation Deny Rules
-  # =============================================================================
-  # With policyEnforcementMode=default, all traffic is allowed unless
-  # explicitly blocked. These deny-only policies enforce critical zone
-  # boundaries while keeping the configuration simple.
-  #
-  # Key isolation rules:
-  # - Untrusted zone: No access to Home LAN, Trusted, DMZ, or Monitoring
-  # - DMZ zone: No access to Home LAN or Untrusted
-  # - Monitoring zone: Can reach all zones (for metrics scraping)
-  # - Trusted zone: Full access (home LAN connectivity)
-  # =============================================================================
-
-  # Zone isolation deny policies (namespace-based enforcement)
-  #- zone-isolation-deny.yaml
-
-  # Sealed Secrets policies
-  #- sealed-secrets-policies.yaml
-
-  # Namespace labels and reference documentation
-  #- namespace-zone-labels.yaml
+resources:
+  - zone-isolation-deny.yaml
+  - namespace-zone-labels.yaml
+  - host-firewall-policies.yaml
