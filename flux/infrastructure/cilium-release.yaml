@@ -38,6 +38,13 @@ spec:
     ipam:
       mode: kubernetes
 
+    # Identity-Relevant Labels
+    # Include node-role labels for host firewall policy node selection
+    # By default, Cilium excludes node-role.kubernetes.io/* labels
+    # Reference: https://docs.cilium.io/en/stable/operations/performance/scalability/identity-relevant-labels/
+    extraConfig:
+      labels: "node-role.kubernetes.io/.* "
+
     # kube-proxy replacement
     kubeProxyReplacement: true
     k8sServiceHost: localhost
