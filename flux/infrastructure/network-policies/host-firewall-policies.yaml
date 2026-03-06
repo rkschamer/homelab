@@ -15,8 +15,8 @@
 # Network Architecture:
 # - Control Plane (192.168.123.20): Runs on management network with ens18
 #   Also has ens19 interface on workload network (10.10.20.2)
-# - Worker-1 (10.10.20.21): Workload network only (ens19)
-# - Worker-2 (10.10.20.22): Workload network only (ens19)
+# - Worker-1 (10.10.20.21): Workload network only (ens18)
+# - Worker-2 (10.10.20.22): Workload network only (ens18)
 #
 # =============================================================================
 
@@ -103,6 +103,16 @@ spec:
       - port: "8472"      # VXLAN
         protocol: UDP
 
+  # Allow from cluster pods (for pod -> host-networked service communication)
+  - fromEntities:
+    - cluster
+    toPorts:
+    - ports:
+      - port: "6443"      # kube-apiserver
+        protocol: TCP
+      - port: "10250"     # kubelet API
+        protocol: TCP
+
 ---
 # =============================================================================
 # Control Plane - Egress Host Policy
@@ -111,6 +121,7 @@ spec:
 # This includes:
 # - Outbound to management network (admin operations)
 # - Outbound to worker nodes (cluster communication)
+# - Outbound to cluster pods (system components)
 # - Outbound to external networks (system services, updates)
 # =============================================================================
 apiVersion: cilium.io/v2
@@ -137,33 +148,74 @@ spec:
       - port: "4240"      # Cilium health checks
         protocol: UDP
 
-  # Allow ICMP to other nodes
+  # Allow ICMP to other nodes (both request and reply)
   - toEntities:
     - remote-node
     icmps:
     - fields:
       - type: EchoRequest
         family: IPv4
+      - type: EchoReply
+        family: IPv4
 
-  # Allow host-networked Cilium/Hubble components to reach in-cluster Hubble UI/relay pods
+  # Allow host-networked components (Cilium, Hubble, kubelet) to reach all cluster pods
+  # This is necessary because host-networked system components need to:
+  # - Collect metrics from pods
+  # - Perform health checks
+  # - Manage network policies
+  # - Access DNS, logging, monitoring services
   - toEntities:
     - cluster
-    toPorts:
-    - ports:
-      - port: "8080"      # Hubble UI frontend/backend
-        protocol: TCP
-      - port: "8181"      # Hubble UI backend/API
-        protocol: TCP
 
   # Allow all outbound to management network
   - toCIDR:
     - 192.168.123.0/24
 
+  # Allow ICMP replies to management network
+  - toCIDR:
+    - 192.168.123.0/24
+    icmps:
+    - fields:
+      - type: EchoRequest
+        family: IPv4
+      - type: EchoReply
+        family: IPv4
+
   # Allow all outbound to workload network (worker nodes)
   - toCIDR:
     - 10.10.20.0/24
 
-  # Allow DNS resolution to anywhere
+  # Allow ICMP to workload network
+  - toCIDR:
+    - 10.10.20.0/24
+    icmps:
+    - fields:
+      - type: EchoRequest
+        family: IPv4
+      - type: EchoReply
+        family: IPv4
+
+  # Allow DNS resolution to cluster DNS service (CoreDNS)
+  - toEntities:
+    - cluster
+    toPorts:
+    - ports:
+      - port: "53"
+        protocol: UDP
+      - port: "53"
+        protocol: TCP
+
+  # Allow DNS to service ClusterIP range (includes kube-dns service)
+  - toCIDR:
+    - 10.96.0.0/12        # Service ClusterIP range
+    toPorts:
+    - ports:
+      - port: "53"
+        protocol: UDP
+      - port: "53"
+        protocol: TCP
+
+  # Allow DNS to anywhere (for external DNS resolution)
   - toPorts:
     - ports:
       - port: "53"
@@ -192,6 +244,7 @@ spec:
 # - VXLAN tunnel communication from other nodes (8472/UDP)
 # - Cilium health checks (4240/TCP)
 # - Talos API for administration from management network
+# - Longhorn communication from other workers (9500, 9502/TCP)
 # =============================================================================
 apiVersion: cilium.io/v2
 kind: CiliumClusterwideNetworkPolicy
@@ -209,6 +262,8 @@ spec:
     toPorts:
     - ports:
       - port: "50000"    # Talos API (talosctl)
+        protocol: TCP
+      - port: "10250"    # kubelet API (for kubectl logs, exec, etc.)
         protocol: TCP
 
   # Allow ICMP echo requests (ping) from management network
@@ -231,6 +286,10 @@ spec:
         protocol: TCP
       - port: "8472"     # VXLAN
         protocol: UDP
+      - port: "9500"     # Longhorn manager (inter-node communication)
+        protocol: TCP
+      - port: "9502"     # Longhorn admission webhook
+        protocol: TCP
 
   # Allow ICMP echo requests (ping) from workload network
   - fromCIDR:
@@ -240,6 +299,16 @@ spec:
       - type: EchoRequest
         family: IPv4
 
+  # Allow from cluster pods (for pod -> host-networked service communication)
+  - fromEntities:
+    - cluster
+    toPorts:
+    - ports:
+      - port: "10250"    # kubelet API (for metrics, logs)
+        protocol: TCP
+      - port: "9500"     # Longhorn manager
+        protocol: TCP
+
 ---
 # =============================================================================
 # Worker Nodes - Egress Host Policy
@@ -247,7 +316,8 @@ spec:
 # Allows required egress traffic from worker nodes.
 # This includes:
 # - Outbound to control plane (kube-apiserver, etcd)
-# - Outbound to other workers (VXLAN, health checks)
+# - Outbound to other workers (VXLAN, health checks, Longhorn)
+# - Outbound to cluster pods (system components)
 # - DNS resolution
 # - External network access (container image pulls, external services)
 # =============================================================================
@@ -272,18 +342,31 @@ spec:
         protocol: TCP
       - port: "4240"      # Cilium health checks
         protocol: UDP
+      - port: "9500"      # Longhorn manager (inter-node communication)
+        protocol: TCP
+      - port: "9502"      # Longhorn admission webhook
+        protocol: TCP
 
-  # Allow host-networked Cilium/Hubble components to reach in-cluster Hubble UI/relay pods
+  # Allow ICMP to other nodes (both request and reply)
+  - toEntities:
+    - remote-node
+    icmps:
+    - fields:
+      - type: EchoRequest
+        family: IPv4
+      - type: EchoReply
+        family: IPv4
+
+  # Allow host-networked components (Cilium, kubelet, Longhorn) to reach all cluster pods
+  # This is necessary because host-networked system components need to:
+  # - Collect metrics from pods
+  # - Perform health checks
+  # - Manage network policies
+  # - Access DNS, logging, monitoring services
   - toEntities:
     - cluster
-    toPorts:
-    - ports:
-      - port: "8080"      # Hubble UI frontend/backend
-        protocol: TCP
-      - port: "8181"      # Hubble UI backend/API
-        protocol: TCP
 
-  # Allow outbound to management network (admin, monitoring)
+  # Allow outbound to management network (admin, monitoring, control plane)
   - toCIDR:
     - 192.168.123.0/24
     toPorts:
@@ -295,11 +378,51 @@ spec:
       - port: "50000"    # Talos API (talosctl)
         protocol: TCP
 
+  # Allow ICMP to management network
+  - toCIDR:
+    - 192.168.123.0/24
+    icmps:
+    - fields:
+      - type: EchoRequest
+        family: IPv4
+      - type: EchoReply
+        family: IPv4
+
   # Allow outbound to workload network (other nodes, VXLAN)
   - toCIDR:
     - 10.10.20.0/24
 
-  # Allow DNS resolution to anywhere
+  # Allow ICMP to workload network
+  - toCIDR:
+    - 10.10.20.0/24
+    icmps:
+    - fields:
+      - type: EchoRequest
+        family: IPv4
+      - type: EchoReply
+        family: IPv4
+
+  # Allow DNS resolution to cluster DNS service (CoreDNS)
+  - toEntities:
+    - cluster
+    toPorts:
+    - ports:
+      - port: "53"
+        protocol: UDP
+      - port: "53"
+        protocol: TCP
+
+  # Allow DNS to service ClusterIP range (includes kube-dns service)
+  - toCIDR:
+    - 10.96.0.0/12        # Service ClusterIP range
+    toPorts:
+    - ports:
+      - port: "53"
+        protocol: UDP
+      - port: "53"
+        protocol: TCP
+
+  # Allow DNS to anywhere (for external DNS resolution)
   - toCIDR:
     - 0.0.0.0/0
     toPorts:
@@ -367,4 +490,6 @@ spec:
     icmps:
     - fields:
       - type: EchoRequest
+        family: IPv4
+      - type: EchoReply
         family: IPv4
