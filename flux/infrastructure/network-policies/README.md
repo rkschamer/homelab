@@ -116,6 +116,8 @@ spec:
 ```
 network-policies/
 ├── zone-isolation-deny.yaml    # All deny rules for zone isolation
+├── namespace-zone-labels.yaml  # Namespace labels for zone classification
+├── host-firewall-policies.yaml # Node host firewall policies (CCNP + nodeSelector)
 ├── kustomization.yaml          # Kustomize manifest
 └── README.md                   # This file
 ```
@@ -140,6 +142,89 @@ The Cilium HelmRelease uses:
 - `policyEnforcementMode: default` - Allow all unless policy selects endpoint
 - `policyAuditMode: false` - Deny rules enforce immediately
 - `hostFirewall.enabled: true` - Node-level isolation in addition to pod policies
+
+## Host Firewall Policies (Node-Level)
+
+This directory also includes host firewall policies in `host-firewall-policies.yaml`.
+
+These are `CiliumClusterwideNetworkPolicy` resources using `nodeSelector`, and they apply to the node host namespace (including host-networked pods), not regular workload pods.
+
+### Scope
+
+- Control plane host ingress/egress rules
+- Worker host ingress/egress rules
+- Cilium health endpoint traffic rules
+
+### Key Allow Rules
+
+- Management network to Talos API (`50000/TCP`) on selected nodes
+- Worker/control-plane cluster control traffic (`6443/TCP`, `2379/TCP`, `2380/TCP`, `10250/TCP` as applicable)
+- VXLAN and Cilium health between nodes (`8472/UDP`, `4240/TCP|UDP`)
+- Node egress DNS (`53/TCP|UDP`) and outbound web access (`80/443`) for image pulls and updates
+
+### Notes
+
+- `CiliumClusterwideNetworkPolicy` is cluster-scoped, so no `metadata.namespace` is set.
+- Host policy rollout should ideally use host endpoint `PolicyAuditMode=Enabled` first, then switch to `Disabled` after validating verdicts.
+
+### Host Endpoint Audit Mode Commands
+
+Enable `PolicyAuditMode` on a single node (non-enforcing, observe-only):
+
+```bash
+# Choose the node you want to test first
+NODE_NAME="talos-worker-1"
+CILIUM_NAMESPACE="kube-system"
+
+CILIUM_POD_NAME=$(kubectl -n "$CILIUM_NAMESPACE" get pods -l "k8s-app=cilium" -o jsonpath="{.items[?(@.spec.nodeName=='$NODE_NAME')].metadata.name}")
+HOST_EP_ID=$(kubectl -n "$CILIUM_NAMESPACE" exec "$CILIUM_POD_NAME" -- cilium-dbg endpoint get -l reserved:host -o jsonpath='{[0].id}')
+
+kubectl -n "$CILIUM_NAMESPACE" exec "$CILIUM_POD_NAME" -- cilium-dbg endpoint config "$HOST_EP_ID" PolicyAuditMode=Enabled
+kubectl -n "$CILIUM_NAMESPACE" exec "$CILIUM_POD_NAME" -- cilium-dbg endpoint config "$HOST_EP_ID" | grep PolicyAuditMode
+```
+
+Disable `PolicyAuditMode` on that node (enforcement enabled):
+
+```bash
+kubectl -n "$CILIUM_NAMESPACE" exec "$CILIUM_POD_NAME" -- cilium-dbg endpoint config "$HOST_EP_ID" PolicyAuditMode=Disabled
+kubectl -n "$CILIUM_NAMESPACE" exec "$CILIUM_POD_NAME" -- cilium-dbg endpoint config "$HOST_EP_ID" | grep PolicyAuditMode
+```
+
+Observe policy verdicts for that host endpoint:
+
+```bash
+# Stream verdicts (allow/audit/deny) for the selected host endpoint
+kubectl -n "$CILIUM_NAMESPACE" exec "$CILIUM_POD_NAME" -- \
+
+   "$HOST_EP_ID"
+```
+
+Expected behavior while testing:
+
+- With `PolicyAuditMode=Enabled`: non-allowed traffic appears with `action audit`.
+- With `PolicyAuditMode=Disabled`: non-allowed traffic appears with `action deny`.
+- Allowed traffic appears with `action allow` in both modes.
+
+Enable or disable on all nodes:
+
+```bash
+# Enable on all nodes
+for p in $(kubectl -n kube-system get pods -l k8s-app=cilium -o jsonpath='{.items[*].metadata.name}'); do
+  ep=$(kubectl -n kube-system exec "$p" -- cilium-dbg endpoint get -l reserved:host -o jsonpath='{[0].id}')
+  kubectl -n kube-system exec "$p" -- cilium-dbg endpoint config "$ep" PolicyAuditMode=Enabled
+done
+
+# Disable on all nodes
+for p in $(kubectl -n kube-system get pods -l k8s-app=cilium -o jsonpath='{.items[*].metadata.name}'); do
+  ep=$(kubectl -n kube-system exec "$p" -- cilium-dbg endpoint get -l reserved:host -o jsonpath='{[0].id}')
+  kubectl -n kube-system exec "$p" -- cilium-dbg endpoint config "$ep" PolicyAuditMode=Disabled
+done
+```
+
+Important:
+
+- `PolicyAuditMode=Enabled` means host policy verdicts are logged but not enforced for that host endpoint.
+- This setting is not persistent across `cilium-agent` restarts.
 
 ## Testing Zone Isolation
 

@@ -1,0 +1,370 @@
+# =============================================================================
+# Host Firewall Policies - Node-Level Network Security
+# =============================================================================
+# These policies protect the host namespaces of nodes from unauthorized
+# network access. They work in conjunction with pod-level network policies
+# to enforce a comprehensive security posture.
+#
+# Host policies apply only to:
+# - The host network namespace on selected nodes
+# - Host-networking pods on those nodes
+#
+# They do NOT apply to:
+# - Regular pods (use CiliumNetworkPolicy for pod isolation)
+#
+# Network Architecture:
+# - Control Plane (192.168.123.20): Runs on management network with ens18
+#   Also has ens19 interface on workload network (10.10.20.2)
+# - Worker-1 (10.10.20.21): Workload network only (ens19)
+# - Worker-2 (10.10.20.22): Workload network only (ens19)
+#
+# =============================================================================
+
+---
+# =============================================================================
+# Control Plane - Ingress Host Policy
+# =============================================================================
+# Allows required ingress traffic to the control plane node.
+# This includes:
+# - Management network access (192.168.123.0/24) for admin/monitoring
+# - Kubelet API access from worker nodes (10250/TCP)
+# - VXLAN tunnel traffic from worker nodes (8472/UDP)
+# - Cilium health checks (4240/TCP)
+# - Required node/cluster control-plane traffic only
+# =============================================================================
+apiVersion: cilium.io/v2
+kind: CiliumClusterwideNetworkPolicy
+metadata:
+  name: allow-control-plane-ingress
+spec:
+  description: "Allow required ingress traffic to the control plane host"
+  nodeSelector:
+    matchLabels:
+      node-role.kubernetes.io/control-plane: ""
+  ingress:
+  # Allow management network access for admin operations
+  - fromCIDR:
+    - 192.168.123.0/24
+    toPorts:
+    - ports:
+      - port: "50000"     # Talos API (talosctl)
+        protocol: TCP
+      - port: "6443"      # kube-apiserver
+        protocol: TCP
+      - port: "2379"      # etcd client API
+        protocol: TCP
+      - port: "2380"      # etcd peer communication
+        protocol: TCP
+
+  # Allow ICMP echo requests (ping) from management network
+  - fromCIDR:
+    - 192.168.123.0/24
+    icmps:
+    - fields:
+      - type: EchoRequest
+        family: IPv4
+
+  # Allow worker nodes to access control plane services
+  - fromCIDR:
+    - 10.10.20.0/24      # Workload network
+    toPorts:
+    - ports:
+      - port: "6443"      # kube-apiserver
+        protocol: TCP
+      - port: "2379"      # etcd (needed for some bootstrap operations)
+        protocol: TCP
+      - port: "10250"     # kubelet API (for metrics/logs)
+        protocol: TCP
+      - port: "4240"      # Cilium health checks
+        protocol: TCP
+      - port: "8472"      # VXLAN tunnel
+        protocol: UDP
+
+  # Allow ICMP echo requests (ping) from workload network
+  - fromCIDR:
+    - 10.10.20.0/24
+    icmps:
+    - fields:
+      - type: EchoRequest
+        family: IPv4
+
+  # Allow from other nodes in cluster (remote-node)
+  - fromEntities:
+    - remote-node
+    - health
+    toPorts:
+    - ports:
+      - port: "6443"      # kube-apiserver
+        protocol: TCP
+      - port: "10250"     # kubelet API
+        protocol: TCP
+      - port: "4240"      # Cilium health
+        protocol: TCP
+      - port: "8472"      # VXLAN
+        protocol: UDP
+
+---
+# =============================================================================
+# Control Plane - Egress Host Policy
+# =============================================================================
+# Allows required egress traffic from the control plane node.
+# This includes:
+# - Outbound to management network (admin operations)
+# - Outbound to worker nodes (cluster communication)
+# - Outbound to external networks (system services, updates)
+# =============================================================================
+apiVersion: cilium.io/v2
+kind: CiliumClusterwideNetworkPolicy
+metadata:
+  name: allow-control-plane-egress
+spec:
+  description: "Allow required egress traffic from the control plane host"
+  nodeSelector:
+    matchLabels:
+      node-role.kubernetes.io/control-plane: ""
+  egress:
+  # Allow to other nodes by identity (preferred for host/node traffic)
+  - toEntities:
+    - remote-node
+    toPorts:
+    - ports:
+      - port: "10250"     # kubelet API
+        protocol: TCP
+      - port: "8472"      # VXLAN tunnel
+        protocol: UDP
+      - port: "4240"      # Cilium health checks
+        protocol: TCP
+      - port: "4240"      # Cilium health checks
+        protocol: UDP
+
+  # Allow ICMP to other nodes
+  - toEntities:
+    - remote-node
+    icmps:
+    - fields:
+      - type: EchoRequest
+        family: IPv4
+
+  # Allow host-networked Cilium/Hubble components to reach in-cluster Hubble UI/relay pods
+  - toEntities:
+    - cluster
+    toPorts:
+    - ports:
+      - port: "8080"      # Hubble UI frontend/backend
+        protocol: TCP
+      - port: "8181"      # Hubble UI backend/API
+        protocol: TCP
+
+  # Allow all outbound to management network
+  - toCIDR:
+    - 192.168.123.0/24
+
+  # Allow all outbound to workload network (worker nodes)
+  - toCIDR:
+    - 10.10.20.0/24
+
+  # Allow DNS resolution to anywhere
+  - toPorts:
+    - ports:
+      - port: "53"
+        protocol: UDP
+      - port: "53"
+        protocol: TCP
+
+  # Allow external connectivity for system services
+  # (software updates, pulling images, etc.)
+  - toEntities:
+    - world
+    toPorts:
+    - ports:
+      - port: "80"       # HTTP
+        protocol: TCP
+      - port: "443"      # HTTPS
+        protocol: TCP
+
+---
+# =============================================================================
+# Worker Nodes - Ingress Host Policy
+# =============================================================================
+# Allows required ingress traffic to worker nodes.
+# This includes:
+# - Kubelet API from control plane and other workers (10250/TCP)
+# - VXLAN tunnel communication from other nodes (8472/UDP)
+# - Cilium health checks (4240/TCP)
+# - Talos API for administration from management network
+# =============================================================================
+apiVersion: cilium.io/v2
+kind: CiliumClusterwideNetworkPolicy
+metadata:
+  name: allow-worker-ingress
+spec:
+  description: "Allow required ingress traffic to worker nodes"
+  nodeSelector:
+    matchLabels:
+      node-role.kubernetes.io/worker: ""
+  ingress:
+  # Allow management network for Talos API access
+  - fromCIDR:
+    - 192.168.123.0/24
+    toPorts:
+    - ports:
+      - port: "50000"    # Talos API (talosctl)
+        protocol: TCP
+
+  # Allow ICMP echo requests (ping) from management network
+  - fromCIDR:
+    - 192.168.123.0/24
+    icmps:
+    - fields:
+      - type: EchoRequest
+        family: IPv4
+
+  # Allow from other nodes in cluster
+  - fromEntities:
+    - remote-node
+    - health
+    toPorts:
+    - ports:
+      - port: "10250"    # kubelet API
+        protocol: TCP
+      - port: "4240"     # Cilium health
+        protocol: TCP
+      - port: "8472"     # VXLAN
+        protocol: UDP
+
+  # Allow ICMP echo requests (ping) from workload network
+  - fromCIDR:
+    - 10.10.20.0/24
+    icmps:
+    - fields:
+      - type: EchoRequest
+        family: IPv4
+
+---
+# =============================================================================
+# Worker Nodes - Egress Host Policy
+# =============================================================================
+# Allows required egress traffic from worker nodes.
+# This includes:
+# - Outbound to control plane (kube-apiserver, etcd)
+# - Outbound to other workers (VXLAN, health checks)
+# - DNS resolution
+# - External network access (container image pulls, external services)
+# =============================================================================
+apiVersion: cilium.io/v2
+kind: CiliumClusterwideNetworkPolicy
+metadata:
+  name: allow-worker-egress
+spec:
+  description: "Allow required egress traffic from worker nodes"
+  nodeSelector:
+    matchLabels:
+      node-role.kubernetes.io/worker: ""
+  egress:
+  # Allow to other nodes by identity (preferred for host/node traffic)
+  - toEntities:
+    - remote-node
+    toPorts:
+    - ports:
+      - port: "8472"      # VXLAN tunnel
+        protocol: UDP
+      - port: "4240"      # Cilium health checks
+        protocol: TCP
+      - port: "4240"      # Cilium health checks
+        protocol: UDP
+
+  # Allow host-networked Cilium/Hubble components to reach in-cluster Hubble UI/relay pods
+  - toEntities:
+    - cluster
+    toPorts:
+    - ports:
+      - port: "8080"      # Hubble UI frontend/backend
+        protocol: TCP
+      - port: "8181"      # Hubble UI backend/API
+        protocol: TCP
+
+  # Allow outbound to management network (admin, monitoring)
+  - toCIDR:
+    - 192.168.123.0/24
+    toPorts:
+    - ports:
+      - port: "6443"     # kube-apiserver on control plane
+        protocol: TCP
+      - port: "2379"     # etcd (for some operations)
+        protocol: TCP
+      - port: "50000"    # Talos API (talosctl)
+        protocol: TCP
+
+  # Allow outbound to workload network (other nodes, VXLAN)
+  - toCIDR:
+    - 10.10.20.0/24
+
+  # Allow DNS resolution to anywhere
+  - toCIDR:
+    - 0.0.0.0/0
+    toPorts:
+    - ports:
+      - port: "53"
+        protocol: UDP
+      - port: "53"
+        protocol: TCP
+
+  # Allow external connectivity for image pulls and external services
+  - toEntities:
+    - world
+    toPorts:
+    - ports:
+      - port: "80"       # HTTP
+        protocol: TCP
+      - port: "443"      # HTTPS
+        protocol: TCP
+
+---
+# =============================================================================
+# Health Check Endpoints - Allow Cilium Health Traffic
+# =============================================================================
+# Explicitly allow Cilium health check endpoint to communicate with all nodes.
+# This is critical for cluster health monitoring.
+# =============================================================================
+apiVersion: cilium.io/v2
+kind: CiliumClusterwideNetworkPolicy
+metadata:
+  name: allow-host-health-checks
+spec:
+  description: "Allow Cilium health checks between host endpoints"
+  nodeSelector: {}  # Apply to all nodes
+  ingress:
+  - fromEntities:
+    - health
+    toPorts:
+    - ports:
+      - port: "4240"     # Cilium health checks
+        protocol: TCP
+      - port: "4240"     # Cilium health checks
+        protocol: UDP
+
+  # Allow ICMP from health endpoints
+  - fromEntities:
+    - health
+    icmps:
+    - fields:
+      - type: EchoRequest
+        family: IPv4
+
+  egress:
+  - toEntities:
+    - health
+    toPorts:
+    - ports:
+      - port: "4240"     # Cilium health checks
+        protocol: TCP
+      - port: "4240"     # Cilium health checks
+        protocol: UDP
+
+  # Allow ICMP to health endpoints
+  - toEntities:
+    - health
+    icmps:
+    - fields:
+      - type: EchoRequest
+        family: IPv4
