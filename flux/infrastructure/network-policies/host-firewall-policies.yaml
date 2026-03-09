@@ -233,6 +233,8 @@ spec:
         protocol: TCP
       - port: "443"      # HTTPS
         protocol: TCP
+      - port: "123"      # NTP
+        protocol: UDP
 
 ---
 # =============================================================================
@@ -243,6 +245,7 @@ spec:
 # - Kubelet API from control plane and other workers (10250/TCP)
 # - VXLAN tunnel communication from other nodes (8472/UDP)
 # - Cilium health checks (4240/TCP)
+# - Hubble peer service (4244/TCP)
 # - Talos API for administration from management network
 # - Longhorn communication from other workers (9500, 9502/TCP)
 # =============================================================================
@@ -253,8 +256,9 @@ metadata:
 spec:
   description: "Allow required ingress traffic to worker nodes"
   nodeSelector:
-    matchLabels:
-      node-role.kubernetes.io/worker: ""
+    matchExpressions:
+    - key: node-role.kubernetes.io/control-plane
+      operator: DoesNotExist
   ingress:
   # Allow management network for Talos API access
   - fromCIDR:
@@ -264,6 +268,8 @@ spec:
       - port: "50000"    # Talos API (talosctl)
         protocol: TCP
       - port: "10250"    # kubelet API (for kubectl logs, exec, etc.)
+        protocol: TCP
+      - port: "4244"     # Hubble peer service
         protocol: TCP
 
   # Allow ICMP echo requests (ping) from management network
@@ -280,9 +286,13 @@ spec:
     - health
     toPorts:
     - ports:
+      - port: "50000"    # Talos API between nodes
+        protocol: TCP
       - port: "10250"    # kubelet API
         protocol: TCP
       - port: "4240"     # Cilium health
+        protocol: TCP
+      - port: "4244"     # Hubble peer service
         protocol: TCP
       - port: "8472"     # VXLAN
         protocol: UDP
@@ -306,6 +316,8 @@ spec:
     - ports:
       - port: "10250"    # kubelet API (for metrics, logs)
         protocol: TCP
+      - port: "4244"     # Hubble peer service
+        protocol: TCP
       - port: "9500"     # Longhorn manager
         protocol: TCP
 
@@ -328,14 +340,17 @@ metadata:
 spec:
   description: "Allow required egress traffic from worker nodes"
   nodeSelector:
-    matchLabels:
-      node-role.kubernetes.io/worker: ""
+    matchExpressions:
+    - key: node-role.kubernetes.io/control-plane
+      operator: DoesNotExist
   egress:
   # Allow to other nodes by identity (preferred for host/node traffic)
   - toEntities:
     - remote-node
     toPorts:
     - ports:
+      - port: "50000"      # Talos API between nodes
+        protocol: TCP
       - port: "8472"      # VXLAN tunnel
         protocol: UDP
       - port: "4240"      # Cilium health checks
@@ -441,6 +456,8 @@ spec:
         protocol: TCP
       - port: "443"      # HTTPS
         protocol: TCP
+      - port: "123"      # NTP
+        protocol: UDP
 
 ---
 # =============================================================================
