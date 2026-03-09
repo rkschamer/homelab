@@ -29,7 +29,7 @@ spec:
       persistence:
         enabled: true
         storageClassName: longhorn
-        size: 10Gi
+        size: 1Gi
       resources:
         requests:
           cpu: 100m
@@ -51,8 +51,8 @@ spec:
       service:
         type: ClusterIP
       prometheusSpec:
-        retention: 30d
-        retentionSize: 45GB
+        retention: 7d
+        retentionSize: 6GB
         scrapeInterval: 30s
         evaluationInterval: 30s
         storageSpec:
@@ -63,7 +63,7 @@ spec:
                 - ReadWriteOnce
               resources:
                 requests:
-                  storage: 50Gi
+                  storage: 8Gi
         resources:
           requests:
             cpu: 300m
@@ -83,7 +83,7 @@ spec:
                 - ReadWriteOnce
               resources:
                 requests:
-                  storage: 10Gi
+                  storage: 1Gi
         resources:
           requests:
             cpu: 50m
