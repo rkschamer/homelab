@@ -1,0 +1,26 @@
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: enforce-namespace-network-zone
+spec:
+  failurePolicy: Fail
+  matchConstraints:
+    resourceRules:
+    - apiGroups: [""]
+      apiVersions: ["v1"]
+      operations: ["CREATE"]
+      resources: ["namespaces"]
+  validations:
+  - expression: "object.metadata.name in ['kube-system', 'flux-system', 'longhorn-system'] || (object.metadata.labels != null && 'network-zone' in object.metadata.labels)"
+    message: "Namespace must include label 'network-zone' (except kube-system, flux-system, longhorn-system)."
+  - expression: "object.metadata.name in ['kube-system', 'flux-system', 'longhorn-system'] || (object.metadata.labels != null && object.metadata.labels['network-zone'] in ['trusted', 'untrusted', 'dmz', 'monitoring'])"
+    message: "Label 'network-zone' must be one of: trusted, untrusted, dmz, monitoring."
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: enforce-namespace-network-zone-binding
+spec:
+  policyName: enforce-namespace-network-zone
+  validationActions: [Deny]

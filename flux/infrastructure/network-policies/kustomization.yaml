@@ -6,6 +6,6 @@ metadata:
   namespace: flux-system
 
 resources:
+  - namespace-zone-admission-policy.yaml
   - zone-isolation-deny.yaml
-  - namespace-zone-labels.yaml
   - host-firewall-policies.yaml
