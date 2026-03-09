@@ -108,6 +108,10 @@ spec:
     - cluster
     toPorts:
     - ports:
+      - port: "53"        # Host-local DNS resolver
+        protocol: UDP
+      - port: "53"        # Host-local DNS resolver
+        protocol: TCP
       - port: "6443"      # kube-apiserver
         protocol: TCP
       - port: "10250"     # kubelet API
@@ -314,6 +318,10 @@ spec:
     - cluster
     toPorts:
     - ports:
+      - port: "53"       # Host-local DNS resolver
+        protocol: UDP
+      - port: "53"       # Host-local DNS resolver
+        protocol: TCP
       - port: "10250"    # kubelet API (for metrics, logs)
         protocol: TCP
       - port: "4244"     # Hubble peer service
