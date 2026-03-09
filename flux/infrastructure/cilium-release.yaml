@@ -130,7 +130,7 @@ spec:
     prometheus:
       enabled: true
       serviceMonitor:
-        enabled: false # Set to true if you have Prometheus Operator
+        enabled: true
 
     # PriorityClass for critical system component
     priorityClassName: system-node-critical
