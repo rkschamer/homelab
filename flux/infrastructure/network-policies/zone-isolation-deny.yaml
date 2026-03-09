@@ -37,9 +37,16 @@ spec:
     matchLabels:
       io.cilium.k8s.namespace.labels.network-zone: untrusted
   egressDeny:
-  # Block Home LAN / Management network
+  # Strict internet-only: block private RFC1918 ranges.
+  # DNS exception: allow access to kube-dns service (10.96.0.10/32).
+  - toCIDRSet:
+    - cidr: 10.0.0.0/8
+      except:
+      - 10.96.0.10/32
   - toCIDR:
-    - 192.168.123.0/24
+    - 172.16.0.0/12
+  - toCIDR:
+    - 192.168.0.0/16
   # Block Trusted zone (other pods in trusted namespace)
   - toEndpoints:
     - matchLabels:
@@ -52,9 +59,6 @@ spec:
   - toEndpoints:
     - matchLabels:
         io.cilium.k8s.namespace.labels.network-zone: monitoring
-  # Block other common private ranges (defense in depth)
-  - toCIDR:
-    - 172.16.0.0/12
 
 ---
 # =============================================================================
@@ -97,6 +101,42 @@ spec:
   - toEndpoints:
     - matchLabels:
         io.cilium.k8s.namespace.labels.network-zone: untrusted
+
+---
+# =============================================================================
+# DMZ to Monitoring Isolation - Enforce pull-only monitoring model
+# =============================================================================
+apiVersion: cilium.io/v2
+kind: CiliumClusterwideNetworkPolicy
+metadata:
+  name: deny-dmz-to-monitoring
+spec:
+  description: "Block DMZ zone pods from pushing traffic to monitoring zone"
+  endpointSelector:
+    matchLabels:
+      io.cilium.k8s.namespace.labels.network-zone: dmz
+  egressDeny:
+  - toEndpoints:
+    - matchLabels:
+        io.cilium.k8s.namespace.labels.network-zone: monitoring
+
+---
+# =============================================================================
+# Trusted to Monitoring Isolation - Enforce pull-only monitoring model
+# =============================================================================
+apiVersion: cilium.io/v2
+kind: CiliumClusterwideNetworkPolicy
+metadata:
+  name: deny-trusted-to-monitoring
+spec:
+  description: "Block trusted zone pods from pushing traffic to monitoring zone"
+  endpointSelector:
+    matchLabels:
+      io.cilium.k8s.namespace.labels.network-zone: trusted
+  egressDeny:
+  - toEndpoints:
+    - matchLabels:
+        io.cilium.k8s.namespace.labels.network-zone: monitoring
 
 ---
 # =============================================================================
