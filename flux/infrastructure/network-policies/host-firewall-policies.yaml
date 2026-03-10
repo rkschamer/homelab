@@ -69,6 +69,8 @@ spec:
     - 10.10.20.0/24      # Workload network
     toPorts:
     - ports:
+      - port: "50001"     # Talos trustd (worker -> control-plane)
+        protocol: TCP
       - port: "6443"      # kube-apiserver
         protocol: TCP
       - port: "2379"      # etcd (needed for some bootstrap operations)
@@ -94,6 +96,8 @@ spec:
     - health
     toPorts:
     - ports:
+      - port: "50001"     # Talos trustd (worker -> control-plane)
+        protocol: TCP
       - port: "6443"      # kube-apiserver
         protocol: TCP
       - port: "10250"     # kubelet API
@@ -359,6 +363,8 @@ spec:
     - ports:
       - port: "50000"      # Talos API between nodes
         protocol: TCP
+      - port: "50001"      # Talos trustd (worker -> control-plane)
+        protocol: TCP
       - port: "8472"      # VXLAN tunnel
         protocol: UDP
       - port: "4240"      # Cilium health checks
@@ -399,6 +405,8 @@ spec:
       - port: "2379"     # etcd (for some operations)
         protocol: TCP
       - port: "50000"    # Talos API (talosctl)
+        protocol: TCP
+      - port: "50001"    # Talos trustd (worker -> control-plane)
         protocol: TCP
 
   # Allow ICMP to management network
