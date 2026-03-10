@@ -36,6 +36,17 @@ spec:
   upgrade:
     crds: CreateReplace
   values:
+    # StorageClass default used by Kubernetes PVC provisioning.
+    # This sets `numberOfReplicas` on the generated `longhorn` StorageClass.
+    # IMPORTANT:  this number MUST NOT exceed the number of available Longhorn nodes,
+    #             otherwise provisioning will fail.
+    persistence:
+      defaultClassReplicaCount: 2
+
+    # Longhorn manager default used by Longhorn UI/API volume creation paths.
+    # Keep aligned with `persistence.defaultClassReplicaCount` to avoid drift.
+    # IMPORTANT:  this number MUST NOT exceed the number of available Longhorn nodes,
+    #             otherwise provisioning will fail.
     defaultSettings:
       defaultDataPath: /var/mnt/longhorn
       defaultReplicaCount: "2"
