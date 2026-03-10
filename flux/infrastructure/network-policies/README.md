@@ -158,7 +158,7 @@ These are `CiliumClusterwideNetworkPolicy` resources using `nodeSelector`, and t
 ### Key Allow Rules
 
 - Management network to Talos API (`50000/TCP`) on selected nodes
-- Worker/control-plane cluster control traffic (`6443/TCP`, `2379/TCP`, `2380/TCP`, `10250/TCP` as applicable)
+- Worker/control-plane cluster control traffic (`50001/TCP` trustd, `6443/TCP`, `2379/TCP`, `2380/TCP`, `10250/TCP` as applicable)
 - VXLAN and Cilium health between nodes (`8472/UDP`, `4240/TCP|UDP`)
 - Node egress DNS (`53/TCP|UDP`) and outbound web access (`80/443`) for image pulls and updates
 
@@ -195,8 +195,7 @@ Observe policy verdicts for that host endpoint:
 ```bash
 # Stream verdicts (allow/audit/deny) for the selected host endpoint
 kubectl -n "$CILIUM_NAMESPACE" exec "$CILIUM_POD_NAME" -- \
-
-   "$HOST_EP_ID"
+  cilium-dbg monitor -t policy-verdict --related-to "$HOST_EP_ID"
 ```
 
 Expected behavior while testing:
