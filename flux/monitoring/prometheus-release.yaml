@@ -26,6 +26,11 @@ spec:
 
     grafana:
       enabled: true
+      # set admin credentials from Kubernetes Secret
+      admin:
+        existingSecret: admin-secret
+        userKey: admin-user
+        passwordKey: admin-password
       persistence:
         enabled: true
         storageClassName: longhorn

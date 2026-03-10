@@ -7,6 +7,7 @@ metadata:
 resources:
   - namespace.yaml
   - repositories.yaml
+  - admin-secret.yaml
   - prometheus-release.yaml
   - loki-release.yaml
   - fluent-bit-release.yaml
