@@ -8,8 +8,7 @@ metadata:
 resources:
   - sealed-secrets-release.yaml # need to come first, because others depend on it
   - cilium-release.yaml
-  #- network-policies
+  - network-policies
   - longhorn
   - metrics-server-release.yaml
-#  - network-testing
 #  - metallb-release.yaml
