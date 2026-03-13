@@ -12,9 +12,9 @@ spec:
       operations: ["CREATE"]
       resources: ["namespaces"]
   validations:
-  - expression: "object.metadata.name in ['kube-system', 'flux-system', 'longhorn-system'] || (object.metadata.labels != null && 'network-zone' in object.metadata.labels)"
-    message: "Namespace must include label 'network-zone' (except kube-system, flux-system, longhorn-system)."
-  - expression: "object.metadata.name in ['kube-system', 'flux-system', 'longhorn-system'] || (object.metadata.labels != null && object.metadata.labels['network-zone'] in ['trusted', 'untrusted', 'dmz', 'monitoring'])"
+  - expression: "object.metadata.name in ['kube-system', 'flux-system', 'longhorn-system', 'metallb-system'] || (object.metadata.labels != null && 'network-zone' in object.metadata.labels)"
+    message: "Namespace must include label 'network-zone' (except kube-system, flux-system, longhorn-system, metallb-system)."
+  - expression: "object.metadata.name in ['kube-system', 'flux-system', 'longhorn-system', 'metallb-system'] || (object.metadata.labels != null && object.metadata.labels['network-zone'] in ['trusted', 'untrusted', 'dmz', 'monitoring'])"
     message: "Label 'network-zone' must be one of: trusted, untrusted, dmz, monitoring."
 ---
 apiVersion: admissionregistration.k8s.io/v1
