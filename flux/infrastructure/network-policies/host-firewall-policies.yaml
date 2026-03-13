@@ -135,6 +135,19 @@ spec:
       - port: "10250"     # kubelet API
         protocol: TCP
 
+  # Allow monitoring zone to scrape control-plane host endpoints
+  - fromEndpoints:
+    - matchLabels:
+        io.cilium.k8s.namespace.labels.network-zone: monitoring
+    toPorts:
+    - ports:
+      - port: "9100"      # Node exporter metrics
+        protocol: TCP
+      - port: "10257"     # kube-controller-manager metrics
+        protocol: TCP
+      - port: "10259"     # kube-scheduler metrics
+        protocol: TCP
+
 ---
 # =============================================================================
 # Control Plane - Egress Host Policy
@@ -349,6 +362,15 @@ spec:
       - port: "4244"     # Hubble peer service
         protocol: TCP
       - port: "9500"     # Longhorn manager
+        protocol: TCP
+
+  # Allow monitoring zone to scrape worker host endpoints
+  - fromEndpoints:
+    - matchLabels:
+        io.cilium.k8s.namespace.labels.network-zone: monitoring
+    toPorts:
+    - ports:
+      - port: "9100"     # Node exporter metrics
         protocol: TCP
 
 ---
