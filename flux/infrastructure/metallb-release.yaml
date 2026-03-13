@@ -61,5 +61,6 @@ spec:
   ipAddressPools:
   - traefik
   nodeSelectors:
-  - matchLabels:
-      kubernetes.io/hostname: talos-controlplane-1
+  - matchExpressions:
+    - key: node-role.kubernetes.io/control-plane
+      operator: Exists
