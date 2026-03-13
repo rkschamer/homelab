@@ -67,9 +67,9 @@ spec:
       # secretName: metallb-memberlist
 
     # Prometheus monitoring
-    prometheus:
-      serviceAccount: prometheus-release-kube-pr-prometheus
-      serviceMonitor:
-        enabled: true
-      prometheusRule:
-        enabled: true
+    # prometheus:
+    #   serviceAccount: prometheus-release-kube-pr-prometheus
+    #   serviceMonitor:
+    #     enabled: true
+    #   prometheusRule:
+    #     enabled: true
