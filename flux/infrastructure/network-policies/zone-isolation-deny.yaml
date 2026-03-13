@@ -83,6 +83,54 @@ spec:
 
 ---
 # =============================================================================
+# DMZ Baseline Allow - DNS, Kubernetes API, and Internet Egress
+# =============================================================================
+# DMZ endpoints are selected by deny policies, which puts them under egress
+# enforcement. Provide explicit baseline allows required for ingress controllers
+# and public-facing workloads.
+# =============================================================================
+apiVersion: cilium.io/v2
+kind: CiliumClusterwideNetworkPolicy
+metadata:
+  name: allow-dmz-essential-egress
+spec:
+  description: "Allow DMZ pods to reach DNS, Kubernetes API, and Internet"
+  endpointSelector:
+    matchLabels:
+      io.cilium.k8s.namespace.labels.network-zone: dmz
+  egress:
+  # Allow DNS to kube-dns service
+  - toCIDR:
+    - 10.96.0.10/32
+    toPorts:
+    - ports:
+      - port: "53"
+        protocol: UDP
+      - port: "53"
+        protocol: TCP
+
+  # Allow Kubernetes API access for controllers running in DMZ namespace
+  - toEntities:
+    - kube-apiserver
+    toPorts:
+    - ports:
+      - port: "443"
+        protocol: TCP
+
+  # Allow outbound internet access (e.g. ACME, upstream dependencies)
+  - toEntities:
+    - world
+    toPorts:
+    - ports:
+      - port: "80"
+        protocol: TCP
+      - port: "443"
+        protocol: TCP
+      - port: "123"
+        protocol: UDP
+
+---
+# =============================================================================
 # DMZ to Untrusted Isolation - Prevent cross-zone leakage
 # =============================================================================
 # DMZ pods should not communicate with untrusted zone pods.
