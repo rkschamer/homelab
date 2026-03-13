@@ -81,6 +81,10 @@ spec:
         protocol: TCP
       - port: "8472"      # VXLAN tunnel
         protocol: UDP
+      - port: "7946"      # MetalLB speaker memberlist
+        protocol: TCP
+      - port: "7946"      # MetalLB speaker memberlist
+        protocol: UDP
 
   # Allow ICMP echo requests (ping) from workload network
   - fromCIDR:
@@ -105,6 +109,10 @@ spec:
       - port: "4240"      # Cilium health
         protocol: TCP
       - port: "8472"      # VXLAN
+        protocol: UDP
+      - port: "7946"      # MetalLB speaker memberlist
+        protocol: TCP
+      - port: "7946"      # MetalLB speaker memberlist
         protocol: UDP
 
   # Allow from cluster pods (for pod -> host-networked service communication)
@@ -308,6 +316,10 @@ spec:
         protocol: TCP
       - port: "9502"     # Longhorn admission webhook
         protocol: TCP
+      - port: "7946"     # MetalLB speaker memberlist
+        protocol: TCP
+      - port: "7946"     # MetalLB speaker memberlist
+        protocol: UDP
 
   # Allow ICMP echo requests (ping) from workload network
   - fromCIDR:
