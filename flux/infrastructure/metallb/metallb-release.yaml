@@ -58,6 +58,7 @@ spec:
         limits:
           cpu: 200m
           memory: 128Mi
+      ignoreExcludeLB: true
       # Tolerate control-plane nodes if needed
       tolerations:
         - key: node-role.kubernetes.io/control-plane
