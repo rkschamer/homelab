@@ -4,4 +4,4 @@ kind: Kustomization
 
 resources:
   - metallb-release.yaml
-  - metallb-config.yaml
+#  - metallb-config.yaml
