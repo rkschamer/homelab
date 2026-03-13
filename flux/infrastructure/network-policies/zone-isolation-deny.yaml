@@ -99,6 +99,11 @@ spec:
     matchLabels:
       io.cilium.k8s.namespace.labels.network-zone: dmz
   egress:
+  # Allow in-cluster traffic (service and pod backends). Cross-zone denies
+  # below still block DMZ -> monitoring and DMZ -> untrusted.
+  - toEntities:
+    - cluster
+
   # Allow DNS to kube-dns service
   - toCIDR:
     - 10.96.0.10/32
@@ -115,6 +120,8 @@ spec:
     toPorts:
     - ports:
       - port: "443"
+        protocol: TCP
+      - port: "6443"
         protocol: TCP
 
   # Allow outbound internet access (e.g. ACME, upstream dependencies)
