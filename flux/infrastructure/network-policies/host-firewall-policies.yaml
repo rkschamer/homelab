@@ -18,6 +18,12 @@
 # - Worker-1 (10.10.20.21): Workload network only (ens18)
 # - Worker-2 (10.10.20.22): Workload network only (ens18)
 #
+# MetalLB speaker note:
+# - MetalLB speaker uses memberlist gossip on port 7946 (TCP and UDP).
+# - Because speaker is host-networked, host firewall policies must allow
+#   7946 between node host namespaces.
+# - Rules are included in control-plane and worker ingress policies below.
+#
 # =============================================================================
 
 ---
