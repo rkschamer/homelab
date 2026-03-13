@@ -6,6 +6,7 @@ metadata:
   namespace: longhorn-system
 
 resources:
+  - snapshot-controller-release.yaml
   - longhorn-release.yaml
   - backup-secret.yaml
   - backup-target.yaml
