@@ -1,0 +1,62 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: traefik
+  labels:
+    network-zone: dmz
+
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: traefik
+  namespace: traefik
+spec:
+  interval: 1h
+  url: https://helm.traefik.io/traefik
+
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: traefik
+  namespace: traefik
+spec:
+  interval: 30m
+  releaseName: traefik
+  chart:
+    spec:
+      chart: traefik
+      sourceRef:
+        kind: HelmRepository
+        name: traefik
+        namespace: traefik
+      version: "39.0.5"
+  values:
+    deployment:
+      replicas: 2
+
+    ingressClass:
+      enabled: true
+      isDefaultClass: true
+      name: traefik
+
+    service:
+      enabled: true
+      type: LoadBalancer
+      annotations:
+        metallb.io/address-pool: traefik
+      loadBalancerIP: 192.168.123.21
+
+    ports:
+      web:
+        exposedPort: 80
+      websecure:
+        exposedPort: 443
+
+    providers:
+      kubernetesCRD:
+        enabled: true
+      kubernetesIngress:
+        enabled: true
