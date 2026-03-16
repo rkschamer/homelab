@@ -5,7 +5,7 @@ ARG KUBERNETES_VERSION="1.35"
 
 # Install system dependencies, git
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
-    && apt-get -y install --no-install-recommends curl iputils-ping wget git gnupg lsb-release software-properties-common openssl git-crypt traceroute netcat-openbsd
+    && apt-get -y install --no-install-recommends curl iputils-ping wget git gnupg lsb-release software-properties-common openssl git-crypt traceroute netcat-openbsd ripgrep
 
 
 # Terraform installation
