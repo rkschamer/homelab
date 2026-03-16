@@ -58,8 +58,8 @@ spec:
       prometheusSpec:
         retention: 7d
         retentionSize: 6GB
-        scrapeInterval: 30s
-        evaluationInterval: 30s
+        scrapeInterval: 60s
+        evaluationInterval: 60s
         storageSpec:
           volumeClaimTemplate:
             spec:
@@ -76,6 +76,9 @@ spec:
           limits:
             cpu: 1500m
             memory: 4Gi
+
+    kubeProxy:
+      enabled: false
 
     alertmanager:
       enabled: true
