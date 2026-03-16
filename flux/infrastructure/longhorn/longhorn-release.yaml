@@ -43,6 +43,13 @@ spec:
     persistence:
       defaultClassReplicaCount: 2
 
+    csi:
+      # Homelab sizing: reduce CSI control-plane replica fan-out to lower steady CPU load.
+      attacherReplicaCount: 1
+      provisionerReplicaCount: 1
+      resizerReplicaCount: 1
+      snapshotterReplicaCount: 1
+
     # Longhorn manager default used by Longhorn UI/API volume creation paths.
     # Keep aligned with `persistence.defaultClassReplicaCount` to avoid drift.
     # IMPORTANT:  this number MUST NOT exceed the number of available Longhorn nodes,
@@ -50,3 +57,5 @@ spec:
     defaultSettings:
       defaultDataPath: /var/mnt/longhorn
       defaultReplicaCount: "2"
+      # Throttle rebuild pressure after node restarts/failures to avoid CPU spikes.
+      concurrentReplicaRebuildPerNodeLimit: "1"
