@@ -2,7 +2,7 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - infrastructure
-  - monitoring
   - flux-system
-  - traefik
+  - infrastructure/flux-kustomization.yaml
+  - monitoring/flux-kustomization.yaml
+  - dmz/flux-kustomization.yaml
