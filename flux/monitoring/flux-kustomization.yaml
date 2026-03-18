@@ -10,7 +10,6 @@ spec:
   interval: 10m0s
   path: ./flux/monitoring
   prune: true
-  wait: true
   timeout: 5m0s
   sourceRef:
     kind: GitRepository
