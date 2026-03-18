@@ -1,0 +1,65 @@
+---
+# =============================================================================
+# Snowflake Proxy Network Policy
+# =============================================================================
+# Snowflake is a Tor pluggable transport proxy. It needs:
+# - DNS resolution (kube-dns)
+# - Outbound HTTPS to broker (snowflake-broker.torproject.net)
+# - Outbound UDP for WebRTC/STUN (various ports for NAT traversal)
+# - Outbound to Tor relays
+#
+# The cluster-wide deny-untrusted-to-internal policy already blocks
+# access to RFC1918 ranges. This policy explicitly allows required egress.
+# =============================================================================
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: snowflake-proxy
+  namespace: snowflake-proxy
+spec:
+  description: "Allow snowflake-proxy minimum required egress"
+  endpointSelector:
+    matchLabels:
+      app: snowflake-proxy
+
+  # Deny all ingress - snowflake-proxy doesn't need inbound connections
+  ingress: []
+
+  egress:
+    # Allow DNS resolution via kube-dns
+    - toCIDR:
+        - 10.96.0.10/32
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: UDP
+            - port: "53"
+              protocol: TCP
+
+    # Allow HTTPS to internet (broker, relay directory)
+    - toEntities:
+        - world
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP
+
+    # Allow STUN/TURN for WebRTC NAT traversal
+    # Common STUN ports: 3478 (standard), 19302 (Google)
+    - toEntities:
+        - world
+      toPorts:
+        - ports:
+            - port: "3478"
+              protocol: UDP
+            - port: "19302"
+              protocol: UDP
+
+    # Allow high-port UDP for WebRTC data channels
+    # WebRTC uses ephemeral ports for peer connections
+    - toEntities:
+        - world
+      toPorts:
+        - ports:
+            - port: "1024-65535"
+              protocol: UDP
