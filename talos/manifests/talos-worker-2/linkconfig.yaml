@@ -5,8 +5,7 @@ up: true
 addresses:
   - address: 10.10.20.22/24
 routes:
-  - destination: 0.0.0.0/0
-    gateway: 10.10.20.2  # Control plane - has internet access
+  - gateway: 10.10.20.2  # Control plane - has internet access
   - destination: 192.168.123.0/24
     gateway: 10.10.20.2  # Management network via control plane
 ---
