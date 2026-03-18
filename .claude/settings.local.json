@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(kubectl get:*)"
+      "Bash(kubectl get:*)",
+      "Bash(kubectl kustomize:*)"
     ]
   }
 }

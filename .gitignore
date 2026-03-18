@@ -1,5 +1,8 @@
 tmp/**
 
+# Dev container temporary files
+.devcontainer/.claude-tmp/
+
 # Terraform files
 .terraform/
 *.tfstate.backup
