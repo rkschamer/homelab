@@ -6,7 +6,7 @@ metadata:
   namespace: flux-system
 spec:
   dependsOn:
-    - name: infrastructure
+    - name: infrastructure-config
   interval: 10m0s
   path: ./flux/dmz
   prune: true

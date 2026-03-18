@@ -1,11 +1,7 @@
 ---
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-metadata:
-  name: longhorn
-  namespace: longhorn-system
-
 resources:
-  - snapshot-controller-release.yaml
-  - longhorn-release.yaml
+  - backup-secret.yaml
+  - backup-target.yaml
   - longhorn-volumeattributesclass-rbac.yaml
