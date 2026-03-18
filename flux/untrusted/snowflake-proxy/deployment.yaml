@@ -1,0 +1,43 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: snowflake-proxy
+  labels:
+    network-zone: untrusted
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: snowflake-proxy
+  namespace: snowflake-proxy
+  labels:
+    app: snowflake-proxy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: snowflake-proxy
+  template:
+    metadata:
+      labels:
+        app: snowflake-proxy
+    spec:
+      containers:
+        - name: snowflake-proxy
+          image: thetorproject/snowflake-proxy:latest
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "200m"
+          securityContext:
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
