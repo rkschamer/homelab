@@ -32,6 +32,14 @@ spec:
               protocol: UDP
 
   egress:
+    # Allow HTTPS on alternate port used by some Snowflake peers/relays.
+    - toEntities:
+        - world
+      toPorts:
+        - ports:
+            - port: "8443"
+              protocol: TCP
+
     # Allow STUN/TURN for WebRTC NAT traversal
     # Common STUN ports: 3478 (standard), 19302 (Google)
     - toEntities:
