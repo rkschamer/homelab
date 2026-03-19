@@ -22,8 +22,16 @@ spec:
     matchLabels:
       app: snowflake-proxy
 
-  # Deny all ingress - snowflake-proxy doesn't need inbound connections
-  ingress: []
+  # Allow inbound UDP peer traffic for WebRTC data channels.
+  # Snowflake relays need to accept peer packets from the internet.
+  ingress:
+    - fromEntities:
+        - world
+      toPorts:
+        - ports:
+            - port: "1024"
+              endPort: 65535
+              protocol: UDP
 
   egress:
     # Allow DNS resolution via kube-dns
@@ -41,6 +49,8 @@ spec:
         - world
       toPorts:
         - ports:
+            - port: "80"
+              protocol: TCP
             - port: "443"
               protocol: TCP
 
@@ -61,5 +71,6 @@ spec:
         - world
       toPorts:
         - ports:
-            - port: "1024-65535"
+            - port: "1024"
+              endPort: 65535
               protocol: UDP
