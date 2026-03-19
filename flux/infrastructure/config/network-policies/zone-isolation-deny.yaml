@@ -38,11 +38,13 @@ spec:
       io.cilium.k8s.namespace.labels.network-zone: untrusted
   egressDeny:
   # Strict internet-only: block private RFC1918 ranges.
-  # DNS exception: allow access to kube-dns service (10.96.0.10/32).
+  # DNS exceptions: allow access to kube-dns service (10.96.0.10/32)
+  # and pod CIDR (10.244.0.0/16) so CoreDNS endpoint IPs are reachable.
   - toCIDRSet:
     - cidr: 10.0.0.0/8
       except:
       - 10.96.0.10/32
+      - 10.244.0.0/16
   - toCIDR:
     - 172.16.0.0/12
   - toCIDR:
