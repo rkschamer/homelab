@@ -24,10 +24,6 @@ spec:
       labels:
         app: snowflake-proxy
     spec:
-      securityContext:
-        runAsNonRoot: false
-        seccompProfile:
-          type: RuntimeDefault
       containers:
         - name: snowflake-proxy
           image: thetorproject/snowflake-proxy:latest
@@ -45,7 +41,7 @@ spec:
               memory: "128Mi"
               cpu: "200m"
           securityContext:
-            runAsNonRoot: true
+            runAsNonRoot: false # Snowflake proxy needs to run as root to bind low ports and use raw sockets
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
             capabilities:
