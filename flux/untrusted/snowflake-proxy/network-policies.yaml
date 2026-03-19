@@ -32,16 +32,6 @@ spec:
               protocol: UDP
 
   egress:
-    # Allow HTTPS to internet (broker, relay directory)
-    - toEntities:
-        - world
-      toPorts:
-        - ports:
-            - port: "80"
-              protocol: TCP
-            - port: "443"
-              protocol: TCP
-
     # Allow STUN/TURN for WebRTC NAT traversal
     # Common STUN ports: 3478 (standard), 19302 (Google)
     - toEntities:

@@ -64,18 +64,18 @@ spec:
 
 ---
 # =============================================================================
-# Untrusted Baseline Allow - DNS resolution
+# Untrusted Baseline Allow - Essential internet egress
 # =============================================================================
 # Any workload selected by an egress allow policy must explicitly allow DNS.
 # Provide a shared baseline for all untrusted namespaces so app policies don't
-# need to duplicate CoreDNS exceptions.
+# need to duplicate common internet bootstrap traffic.
 # =============================================================================
 apiVersion: cilium.io/v2
 kind: CiliumClusterwideNetworkPolicy
 metadata:
   name: allow-untrusted-dns-egress
 spec:
-  description: "Allow untrusted zone pods to send DNS queries"
+  description: "Allow untrusted zone pods DNS plus HTTP/HTTPS internet egress"
   endpointSelector:
     matchLabels:
       io.cilium.k8s.namespace.labels.network-zone: untrusted
@@ -87,6 +87,16 @@ spec:
       - port: "53"
         protocol: UDP
       - port: "53"
+        protocol: TCP
+
+  # Shared outbound web access for untrusted workloads.
+  - toEntities:
+    - world
+    toPorts:
+    - ports:
+      - port: "80"
+        protocol: TCP
+      - port: "443"
         protocol: TCP
 
 ---
