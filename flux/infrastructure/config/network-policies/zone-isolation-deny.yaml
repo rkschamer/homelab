@@ -62,6 +62,46 @@ spec:
 
 ---
 # =============================================================================
+# Untrusted Baseline Allow - DNS resolution
+# =============================================================================
+# Any workload selected by an egress allow policy must explicitly allow DNS.
+# Provide a shared baseline for all untrusted namespaces so app policies don't
+# need to duplicate CoreDNS exceptions.
+# =============================================================================
+apiVersion: cilium.io/v2
+kind: CiliumClusterwideNetworkPolicy
+metadata:
+  name: allow-untrusted-dns-egress
+spec:
+  description: "Allow untrusted zone pods to resolve DNS via CoreDNS"
+  endpointSelector:
+    matchLabels:
+      io.cilium.k8s.namespace.labels.network-zone: untrusted
+  egress:
+  # kube-dns Service ClusterIP
+  - toCIDR:
+    - 10.96.0.10/32
+    toPorts:
+    - ports:
+      - port: "53"
+        protocol: UDP
+      - port: "53"
+        protocol: TCP
+
+  # CoreDNS endpoint pods
+  - toEndpoints:
+    - matchLabels:
+        k8s:io.kubernetes.pod.namespace: kube-system
+        k8s:k8s-app: kube-dns
+    toPorts:
+    - ports:
+      - port: "53"
+        protocol: UDP
+      - port: "53"
+        protocol: TCP
+
+---
+# =============================================================================
 # DMZ Zone Isolation - Block access to Home LAN
 # =============================================================================
 # Pods labeled with network-zone: dmz can serve internet traffic but should
