@@ -18,9 +18,8 @@ metadata:
   namespace: snowflake-proxy
 spec:
   description: "Allow snowflake-proxy minimum required egress"
-  endpointSelector:
-    matchLabels:
-      app: snowflake-proxy
+  # Namespace-scoped policy: apply to all endpoints in snowflake-proxy namespace.
+  endpointSelector: {}
 
   # Allow inbound UDP peer traffic only on the fixed Snowflake relay port.
   ingress:
