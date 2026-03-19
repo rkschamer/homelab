@@ -25,7 +25,7 @@ spec:
         app: snowflake-proxy
     spec:
       securityContext:
-        runAsNonRoot: true
+        runAsNonRoot: false
         seccompProfile:
           type: RuntimeDefault
       containers:
