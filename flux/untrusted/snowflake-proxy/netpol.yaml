@@ -22,15 +22,13 @@ spec:
     matchLabels:
       app: snowflake-proxy
 
-  # Allow inbound UDP peer traffic for WebRTC data channels.
-  # Snowflake relays need to accept peer packets from the internet.
+  # Allow inbound UDP peer traffic only on the fixed Snowflake relay port.
   ingress:
     - fromEntities:
         - world
       toPorts:
         - ports:
-            - port: "1024"
-              endPort: 65535
+            - port: "55000"
               protocol: UDP
 
   egress:
