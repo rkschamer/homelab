@@ -24,9 +24,19 @@ spec:
       labels:
         app: snowflake-proxy
     spec:
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: snowflake-proxy
           image: thetorproject/snowflake-proxy:latest
+          args:
+            - "-ephemeral-ports-range"
+            - "55000:55000"
+          ports:
+            - containerPort: 55000
+              protocol: UDP
           resources:
             requests:
               memory: "64Mi"
@@ -35,6 +45,7 @@ spec:
               memory: "128Mi"
               cpu: "200m"
           securityContext:
+            runAsNonRoot: true
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
             capabilities:
