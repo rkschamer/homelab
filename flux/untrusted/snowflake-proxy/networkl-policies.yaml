@@ -32,16 +32,6 @@ spec:
               protocol: UDP
 
   egress:
-    # Allow DNS resolution via kube-dns
-    - toCIDR:
-        - 10.96.0.10/32
-      toPorts:
-        - ports:
-            - port: "53"
-              protocol: UDP
-            - port: "53"
-              protocol: TCP
-
     # Allow HTTPS to internet (broker, relay directory)
     - toEntities:
         - world
