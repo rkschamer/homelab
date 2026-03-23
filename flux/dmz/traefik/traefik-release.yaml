@@ -47,6 +47,7 @@ spec:
       type: LoadBalancer
       annotations:
         metallb.io/address-pool: traefik
+        metallb.io/allow-shared-ip: homelab-shared
       loadBalancerIP: 192.168.123.21
 
     ports:

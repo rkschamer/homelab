@@ -1,0 +1,88 @@
+---
+# =============================================================================
+# Pi-hole Network Policy - Strict Mode (Untrusted Zone)
+# =============================================================================
+# IMPORTANT: Pi-hole is in untrusted zone which has deny-dmz-to-untrusted policy.
+# This policy creates explicit exceptions for necessary traffic.
+# =============================================================================
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: pihole
+  namespace: pi-hole
+spec:
+  description: "Strict network policy for pi-hole DNS server in untrusted zone"
+  endpointSelector:
+    matchLabels:
+      app: pihole
+
+  # =========================================================================
+  # INGRESS: Who can reach pi-hole
+  # =========================================================================
+  ingress:
+    # DNS (port 53) - allow from home LAN, workload network, and pod CIDR
+    - fromCIDR:
+        - 192.168.123.0/24
+        - 10.10.20.0/24
+        - 10.244.0.0/16
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: TCP
+            - port: "53"
+              protocol: UDP
+
+    # Web UI (port 80) - EXPLICIT ALLOW from Traefik (overrides deny-dmz-to-untrusted)
+    # This is the key exception that allows cross-zone traffic for the admin UI
+    - fromEndpoints:
+        - matchLabels:
+            io.cilium.k8s.namespace.labels.network-zone: dmz
+            app.kubernetes.io/name: traefik
+      toPorts:
+        - ports:
+            - port: "80"
+              protocol: TCP
+
+  # =========================================================================
+  # EGRESS: What pi-hole can reach
+  # =========================================================================
+  # Note: Untrusted zone baseline (allow-untrusted-dns-egress) already covers:
+  # - DNS to any destination (port 53)
+  # - HTTP/HTTPS to world (ports 80/443)
+  # These explicit rules provide defense-in-depth for upstream DNS.
+  # =========================================================================
+  egress:
+    # DNS to upstream resolvers (Cloudflare, Google, Quad9)
+    - toCIDR:
+        - 1.1.1.1/32
+        - 1.0.0.1/32
+        - 8.8.8.8/32
+        - 8.8.4.4/32
+        - 9.9.9.9/32
+        - 149.112.112.112/32
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: UDP
+            - port: "53"
+              protocol: TCP
+            - port: "853"
+              protocol: TCP
+
+    # HTTP/HTTPS for blocklist updates (gravity)
+    - toEntities:
+        - world
+      toPorts:
+        - ports:
+            - port: "80"
+              protocol: TCP
+            - port: "443"
+              protocol: TCP
+
+    # NTP for time sync
+    - toEntities:
+        - world
+      toPorts:
+        - ports:
+            - port: "123"
+              protocol: UDP

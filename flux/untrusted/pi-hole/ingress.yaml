@@ -1,0 +1,57 @@
+---
+# IP Whitelist Middleware - only allow home LAN
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: pihole-ipwhitelist
+  namespace: pi-hole
+spec:
+  ipWhiteList:
+    sourceRange:
+      - 192.168.123.0/24
+      - 10.244.0.0/16
+      - 10.10.20.0/24
+
+---
+# IngressRoute via pihole.kschamer.info (HTTP for now)
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: pihole-web
+  namespace: pi-hole
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: Host(`pihole.kschamer.info`)
+      kind: Rule
+      middlewares:
+        - name: pihole-ipwhitelist
+      services:
+        - name: pihole-web
+          port: 80
+
+# TODO: Enable TLS after migrating Traefik cert resolver from Docker
+# ---
+# apiVersion: traefik.io/v1alpha1
+# kind: IngressRoute
+# metadata:
+#   name: pihole-web-secure
+#   namespace: pi-hole
+# spec:
+#   entryPoints:
+#     - websecure
+#   routes:
+#     - match: Host(`pihole.kschamer.info`)
+#       kind: Rule
+#       middlewares:
+#         - name: pihole-ipwhitelist
+#       services:
+#         - name: pihole-web
+#           port: 80
+#   tls:
+#     certResolver: letsencrypt
+#     domains:
+#       - main: kschamer.info
+#         sans:
+#           - "*.kschamer.info"
