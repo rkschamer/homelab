@@ -17,7 +17,7 @@ metadata:
 spec:
   # Start with 0 replicas for data migration. After copying data to PVCs:
   #   kubectl scale deployment -n pi-hole pihole --replicas=1
-  replicas: 0
+  replicas: 1
   selector:
     matchLabels:
       app: pihole
@@ -60,9 +60,9 @@ spec:
           securityContext:
             capabilities:
               add:
-                - NET_ADMIN
-                - NET_RAW
                 - NET_BIND_SERVICE
+              drop:
+                - ALL
           livenessProbe:
             httpGet:
               path: /admin/
