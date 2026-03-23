@@ -35,6 +35,12 @@ spec:
           env:
             - name: TZ
               value: Europe/Berlin
+            # Required for container networking
+            - name: FTLCONF_dns_listeningMode
+              value: all
+            # Enable dnsmasq.d for v5 migration, can be removed after migration
+            - name: FTLCONF_misc_etc_dnsmasq_d
+              value: "true"
           ports:
             - name: dns-tcp
               containerPort: 53
@@ -58,9 +64,12 @@ spec:
               cpu: 500m
               memory: 512Mi
           securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
             capabilities:
-              add:
-                - NET_BIND_SERVICE
               drop:
                 - ALL
           livenessProbe:
