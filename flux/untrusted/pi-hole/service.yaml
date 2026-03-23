@@ -1,0 +1,42 @@
+---
+# DNS LoadBalancer Service (shared IP with Traefik)
+apiVersion: v1
+kind: Service
+metadata:
+  name: pihole-dns
+  namespace: pi-hole
+  annotations:
+    metallb.io/address-pool: traefik
+    metallb.io/allow-shared-ip: homelab-shared
+spec:
+  type: LoadBalancer
+  loadBalancerIP: 192.168.123.21
+  externalTrafficPolicy: Local
+  selector:
+    app: pihole
+  ports:
+    - name: dns-tcp
+      port: 53
+      targetPort: 53
+      protocol: TCP
+    - name: dns-udp
+      port: 53
+      targetPort: 53
+      protocol: UDP
+
+---
+# Web UI ClusterIP Service (for Traefik backend)
+apiVersion: v1
+kind: Service
+metadata:
+  name: pihole-web
+  namespace: pi-hole
+spec:
+  type: ClusterIP
+  selector:
+    app: pihole
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+      protocol: TCP
