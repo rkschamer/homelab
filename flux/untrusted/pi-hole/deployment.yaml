@@ -41,6 +41,9 @@ spec:
             # Enable dnsmasq.d for v5 migration, can be removed after migration
             - name: FTLCONF_misc_etc_dnsmasq_d
               value: "true"
+            # Run as root to avoid needing CAP_SETFCAP for setcap
+            - name: DNSMASQ_USER
+              value: root
           ports:
             - name: dns-tcp
               containerPort: 53
@@ -75,6 +78,8 @@ spec:
                 - CHOWN
                 - NET_BIND_SERVICE
                 - SETFCAP
+                - SETGID
+                - SETUID
           livenessProbe:
             httpGet:
               path: /admin/
