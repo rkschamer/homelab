@@ -8,12 +8,23 @@
       "(^|/)flux/.+\\.ya?ml$"
     ]
   },
+  "kubernetes": {
+    "fileMatch": [
+      "(^|/)flux/.+\\.ya?ml$"
+    ]
+  },
   "packageRules": [
     {
       "matchManagers": ["flux"],
       "matchDatasources": ["helm"],
       "automerge": false,
       "labels": ["helm", "flux"]
+    },
+    {
+      "matchManagers": ["kubernetes"],
+      "matchDatasources": ["docker"],
+      "automerge": false,
+      "labels": ["docker", "kubernetes"]
     }
   ]
 }
