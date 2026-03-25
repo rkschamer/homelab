@@ -1,0 +1,59 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dnscrypt-proxy-config
+  namespace: pi-hole
+data:
+  dnscrypt-proxy.toml: |
+    # Listen on localhost for Pi-hole to forward queries
+    listen_addresses = ['127.0.0.1:5053']
+
+    # Use DNS-over-HTTPS servers
+    server_names = ['cloudflare', 'cloudflare-ipv6', 'google', 'quad9-dnscrypt-ip4-filter-pri']
+
+    # Require servers to support DNSSEC
+    require_dnssec = true
+
+    # Require servers to not log queries
+    require_nolog = true
+
+    # Require servers to not filter
+    require_nofilter = true
+
+    # Use IPv4 servers
+    ipv4_servers = true
+
+    # Use IPv6 servers (disable if no IPv6 connectivity)
+    ipv6_servers = false
+
+    # Use DNS-over-HTTPS
+    doh_servers = true
+
+    # Use DNSCrypt servers
+    dnscrypt_servers = true
+
+    # Fallback resolvers (used to bootstrap DoH server resolution)
+    fallback_resolvers = ['9.9.9.9:53', '1.1.1.1:53']
+
+    # Cache settings
+    cache = true
+    cache_size = 4096
+    cache_min_ttl = 2400
+    cache_max_ttl = 86400
+    cache_neg_min_ttl = 60
+    cache_neg_max_ttl = 600
+
+    # Timeout settings
+    timeout = 5000
+    keepalive = 30
+
+    # Log level (0-6, 0 = very verbose, 6 = errors only)
+    log_level = 2
+
+    # Sources for public DNS server lists
+    [sources]
+      [sources.public-resolvers]
+        urls = ['https://raw.githubusercontent.com/DNSCrypt/dnscrypt-resolvers/master/v3/public-resolvers.md', 'https://download.dnscrypt.info/resolvers-list/v3/public-resolvers.md']
+        cache_file = '/tmp/public-resolvers.md'
+        minisign_key = 'RWQf6LRCGA9i53mlYecO4IzT51TGPpvWucNSCh1CBM0QTaLn73Y7GFO3'
