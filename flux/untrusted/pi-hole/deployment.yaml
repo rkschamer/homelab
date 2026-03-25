@@ -15,8 +15,6 @@ metadata:
   labels:
     app: pihole
 spec:
-  # Start with 0 replicas for data migration. After copying data to PVCs:
-  #   kubectl scale deployment -n pi-hole pihole --replicas=1
   replicas: 1
   selector:
     matchLabels:
@@ -29,40 +27,14 @@ spec:
         app: pihole
     spec:
       serviceAccountName: pihole
-      # Init container to fix permissions on migrated data
-      # Pi-hole runs as UID/GID 1000 by default
-      initContainers:
-        - name: fix-permissions
-          image: busybox:1.36
-          command:
-            - sh
-            - -c
-            - |
-              echo "Fixing ownership of /etc/pihole..."
-              chown -R 1000:1000 /etc/pihole
-              echo "Fixing ownership of /etc/dnsmasq.d..."
-              chown -R 1000:1000 /etc/dnsmasq.d
-              echo "Done."
-          volumeMounts:
-            - name: config
-              mountPath: /etc/pihole
-            - name: dnsmasq
-              mountPath: /etc/dnsmasq.d
-          securityContext:
-            runAsUser: 0
-            runAsGroup: 0
       containers:
         - name: pihole
           image: pihole/pihole:2026.02.0
           env:
             - name: TZ
               value: Europe/Berlin
-            # Required for container networking
             - name: FTLCONF_dns_listeningMode
               value: all
-            # Enable dnsmasq.d for v5 migration, can be removed after migration
-            - name: FTLCONF_misc_etc_dnsmasq_d
-              value: "true"
           ports:
             - name: dns-tcp
               containerPort: 53
@@ -95,7 +67,6 @@ spec:
                 - ALL
               add:
                 - CHOWN
-                - DAC_OVERRIDE
                 - NET_BIND_SERVICE
                 - SETFCAP
                 - SETGID
