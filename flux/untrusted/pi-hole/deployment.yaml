@@ -35,9 +35,9 @@ spec:
               value: Europe/Berlin
             - name: FTLCONF_dns_listeningMode
               value: all
-            # Use dnscrypt-proxy sidecar for DNS-over-HTTPS
+            # Use Unbound sidecar for recursive DNS resolution
             - name: FTLCONF_dns_upstreams
-              value: "127.0.0.1#5053"
+              value: "127.0.0.1#5335"
           ports:
             - name: dns-tcp
               containerPort: 53
@@ -86,34 +86,25 @@ spec:
               port: http
             initialDelaySeconds: 30
             periodSeconds: 5
-        - name: dnscrypt-proxy
-          image: klutchell/dnscrypt-proxy:2.1.5
-          args:
-            - --config
-            - /config/dnscrypt-proxy.toml
-          ports:
-            - name: dns-proxy
-              containerPort: 5053
-              protocol: UDP
-            - name: dns-proxy-tcp
-              containerPort: 5053
-              protocol: TCP
+        - name: unbound
+          image: mvance/unbound:1.22.0
           volumeMounts:
-            - name: dnscrypt-config
-              mountPath: /config
+            - name: unbound-config
+              mountPath: /opt/unbound/etc/unbound/unbound.conf
+              subPath: unbound.conf
           resources:
             requests:
               cpu: 50m
               memory: 64Mi
             limits:
               cpu: 200m
-              memory: 128Mi
+              memory: 256Mi
           securityContext:
             allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: true
+            readOnlyRootFilesystem: false
             runAsNonRoot: true
-            runAsUser: 65534
-            runAsGroup: 65534
+            runAsUser: 1000
+            runAsGroup: 1000
             seccompProfile:
               type: RuntimeDefault
             capabilities:
@@ -126,6 +117,6 @@ spec:
         - name: dnsmasq
           persistentVolumeClaim:
             claimName: pihole-dnsmasq
-        - name: dnscrypt-config
+        - name: unbound-config
           configMap:
-            name: dnscrypt-proxy-config
+            name: unbound-config
