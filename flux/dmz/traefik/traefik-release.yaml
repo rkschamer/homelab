@@ -32,7 +32,7 @@ spec:
         kind: HelmRepository
         name: traefik
         namespace: traefik
-      version: "39.0.5"
+      version: "39.0.6"
   values:
     deployment:
       replicas: 2
