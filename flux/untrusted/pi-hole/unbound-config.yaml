@@ -1,0 +1,79 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: unbound-config
+  namespace: pi-hole
+data:
+  unbound.conf: |
+    server:
+        # Log only errors
+        verbosity: 0
+
+        # Listen on localhost for Pi-hole to forward queries
+        interface: 127.0.0.1
+        port: 5335
+        do-ip4: yes
+        do-udp: yes
+        do-tcp: yes
+
+        # Disable IPv6 (enable if you have IPv6 connectivity)
+        do-ip6: no
+        prefer-ip6: no
+
+        # Trust glue only if it is within the server's authority
+        harden-glue: yes
+
+        # Require DNSSEC data for trust-anchored zones
+        harden-dnssec-stripped: yes
+
+        # Don't use Capitalization randomization (can cause DNSSEC issues)
+        use-caps-for-id: no
+
+        # Reduce EDNS reassembly buffer size (DNS Flag Day 2020 recommendation)
+        edns-buffer-size: 1232
+
+        # Prefetch close to expired cache entries
+        prefetch: yes
+
+        # Single thread is sufficient for home use
+        num-threads: 1
+
+        # Ensure kernel buffer is large enough
+        so-rcvbuf: 1m
+
+        # Privacy: don't leak local IP ranges
+        private-address: 192.168.0.0/16
+        private-address: 169.254.0.0/16
+        private-address: 172.16.0.0/12
+        private-address: 10.0.0.0/8
+        private-address: fd00::/8
+        private-address: fe80::/10
+
+        # RFC6303 documentation addresses
+        private-address: 192.0.2.0/24
+        private-address: 198.51.100.0/24
+        private-address: 203.0.113.0/24
+        private-address: 255.255.255.255/32
+        private-address: 2001:db8::/32
+
+        # Cache settings
+        cache-min-ttl: 300
+        cache-max-ttl: 86400
+
+        # Security hardening
+        hide-identity: yes
+        hide-version: yes
+        harden-algo-downgrade: yes
+        harden-short-bufsize: yes
+        harden-large-queries: yes
+
+        # Run as non-root user
+        username: ""
+
+        # Don't chroot (running in container)
+        chroot: ""
+
+        # Access control - allow localhost only
+        access-control: 127.0.0.0/8 allow
+        access-control: 0.0.0.0/0 refuse
