@@ -35,6 +35,9 @@ spec:
               value: Europe/Berlin
             - name: FTLCONF_dns_listeningMode
               value: all
+            # Use dnscrypt-proxy sidecar for DNS-over-HTTPS
+            - name: FTLCONF_dns_upstreams
+              value: "127.0.0.1#5053"
           ports:
             - name: dns-tcp
               containerPort: 53
@@ -83,6 +86,39 @@ spec:
               port: http
             initialDelaySeconds: 30
             periodSeconds: 5
+        - name: dnscrypt-proxy
+          image: klutchell/dnscrypt-proxy:2.1.5
+          args:
+            - --config
+            - /config/dnscrypt-proxy.toml
+          ports:
+            - name: dns-proxy
+              containerPort: 5053
+              protocol: UDP
+            - name: dns-proxy-tcp
+              containerPort: 5053
+              protocol: TCP
+          volumeMounts:
+            - name: dnscrypt-config
+              mountPath: /config
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 65534
+            runAsGroup: 65534
+            seccompProfile:
+              type: RuntimeDefault
+            capabilities:
+              drop:
+                - ALL
       volumes:
         - name: config
           persistentVolumeClaim:
@@ -90,3 +126,6 @@ spec:
         - name: dnsmasq
           persistentVolumeClaim:
             claimName: pihole-dnsmasq
+        - name: dnscrypt-config
+          configMap:
+            name: dnscrypt-proxy-config
