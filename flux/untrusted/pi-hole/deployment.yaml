@@ -30,6 +30,7 @@ spec:
     spec:
       serviceAccountName: pihole
       # Init container to fix permissions on migrated data
+      # Pi-hole runs as UID/GID 1000 by default
       initContainers:
         - name: fix-permissions
           image: busybox:1.36
@@ -38,9 +39,9 @@ spec:
             - -c
             - |
               echo "Fixing ownership of /etc/pihole..."
-              chown -R 999:999 /etc/pihole
+              chown -R 1000:1000 /etc/pihole
               echo "Fixing ownership of /etc/dnsmasq.d..."
-              chown -R 999:999 /etc/dnsmasq.d
+              chown -R 1000:1000 /etc/dnsmasq.d
               echo "Done."
           volumeMounts:
             - name: config
@@ -62,9 +63,6 @@ spec:
             # Enable dnsmasq.d for v5 migration, can be removed after migration
             - name: FTLCONF_misc_etc_dnsmasq_d
               value: "true"
-            # Run as root to avoid needing CAP_SETFCAP for setcap
-            - name: DNSMASQ_USER
-              value: root
           ports:
             - name: dns-tcp
               containerPort: 53
@@ -97,6 +95,7 @@ spec:
                 - ALL
               add:
                 - CHOWN
+                - DAC_OVERRIDE
                 - NET_BIND_SERVICE
                 - SETFCAP
                 - SETGID
