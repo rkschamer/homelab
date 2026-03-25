@@ -92,6 +92,10 @@ spec:
             - name: unbound-config
               mountPath: /opt/unbound/etc/unbound/unbound.conf
               subPath: unbound.conf
+            - name: unbound-dev
+              mountPath: /opt/unbound/etc/unbound/dev
+            - name: unbound-var
+              mountPath: /opt/unbound/etc/unbound/var
           resources:
             requests:
               cpu: 50m
@@ -120,3 +124,7 @@ spec:
         - name: unbound-config
           configMap:
             name: unbound-config
+        - name: unbound-dev
+          emptyDir: {}
+        - name: unbound-var
+          emptyDir: {}
