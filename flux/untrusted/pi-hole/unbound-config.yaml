@@ -17,7 +17,7 @@ data:
         do-udp: yes
         do-tcp: yes
 
-        # Disable IPv6 (enable if you have IPv6 connectivity)
+        # IPv6: enable when IPv6 connectivity is available
         do-ip6: no
         prefer-ip6: no
 
