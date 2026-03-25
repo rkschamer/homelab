@@ -29,6 +29,27 @@ spec:
         app: pihole
     spec:
       serviceAccountName: pihole
+      # Init container to fix permissions on migrated data
+      initContainers:
+        - name: fix-permissions
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              echo "Fixing ownership of /etc/pihole..."
+              chown -R 999:999 /etc/pihole
+              echo "Fixing ownership of /etc/dnsmasq.d..."
+              chown -R 999:999 /etc/dnsmasq.d
+              echo "Done."
+          volumeMounts:
+            - name: config
+              mountPath: /etc/pihole
+            - name: dnsmasq
+              mountPath: /etc/dnsmasq.d
+          securityContext:
+            runAsUser: 0
+            runAsGroup: 0
       containers:
         - name: pihole
           image: pihole/pihole:2026.02.0
