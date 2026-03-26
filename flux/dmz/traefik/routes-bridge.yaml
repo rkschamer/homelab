@@ -1,0 +1,151 @@
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: internal-ip-addresses
+  namespace: traefik
+spec:
+  ipWhiteList:
+    sourceRange:
+      - 192.168.123.0/24
+      - 192.168.178.0/24
+
+---
+apiVersion: traefik.io/v1alpha1
+kind: ServersTransport
+metadata:
+  name: skip-tls-verification
+  namespace: traefik
+spec:
+  insecureSkipVerify: true
+
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: homeassistant-secure
+  namespace: traefik
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`ha.kschamer.info`)
+      kind: Rule
+      services:
+        - name: ext-homeassistant
+          port: 8123
+  tls:
+    certResolver: letsencrypt
+    domains:
+      - main: kschamer.info
+        sans:
+          - '*.kschamer.info'
+
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: homeassistant-horsmar-secure
+  namespace: traefik
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`horsmar.kschamer.info`)
+      kind: Rule
+      services:
+        - name: ext-homeassistant-horsmar
+          port: 8123
+  tls:
+    certResolver: letsencrypt
+    domains:
+      - main: kschamer.info
+        sans:
+          - '*.kschamer.info'
+
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: nas-secure
+  namespace: traefik
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`nas.kschamer.info`)
+      kind: Rule
+      services:
+        - name: ext-nas
+          port: 5001
+          scheme: https
+          serversTransport: skip-tls-verification@kubernetescrd
+  tls:
+    certResolver: letsencrypt
+    domains:
+      - main: kschamer.info
+        sans:
+          - '*.kschamer.info'
+
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: pve-secure
+  namespace: traefik
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`pve.kschamer.info`)
+      kind: Rule
+      services:
+        - name: ext-pve
+          port: 8006
+          scheme: https
+          serversTransport: skip-tls-verification@kubernetescrd
+  tls:
+    certResolver: letsencrypt
+    domains:
+      - main: kschamer.info
+        sans:
+          - '*.kschamer.info'
+
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: vaultwarden-secure
+  namespace: traefik
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`vw.kschamer.info`)
+      kind: Rule
+      services:
+        - name: ext-vaultwarden
+          port: 8080
+  tls:
+    certResolver: letsencrypt
+    domains:
+      - main: kschamer.info
+        sans:
+          - '*.kschamer.info'
+
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRouteTCP
+metadata:
+  name: kubernetes-api-passthrough
+  namespace: traefik
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: HostSNI(`k8s.kschamer.info`)
+      services:
+        - name: ext-kubernetes-api
+          port: 6443
+  tls:
+    passthrough: true

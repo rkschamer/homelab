@@ -8,3 +8,5 @@ tmp/**
 *.tfstate.backup
 
 *.key
+
+docker-compose/*
