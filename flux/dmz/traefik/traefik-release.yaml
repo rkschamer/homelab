@@ -55,15 +55,13 @@ spec:
         - name: PORKBUN_API_KEY
           valueFrom:
             secretKeyRef:
-              name: traefik-porkbun-dns
+              name: traefik-dns-porkbun
               key: api-key
-              optional: true
         - name: PORKBUN_SECRET_API_KEY
           valueFrom:
             secretKeyRef:
-              name: traefik-porkbun-dns
+              name: traefik-dns-porkbun
               key: secret-key
-              optional: true
 
     persistence:
       enabled: true
@@ -87,12 +85,13 @@ spec:
     ports:
       web:
         exposedPort: 80
-        http:
-          redirections:
-            entryPoint:
-              to: websecure
-              scheme: https
-              permanent: true
+        # Redirect disabled during migration testing
+        # http:
+        #   redirections:
+        #     entryPoint:
+        #       to: websecure
+        #       scheme: https
+        #       permanent: true
       websecure:
         exposedPort: 443
 
