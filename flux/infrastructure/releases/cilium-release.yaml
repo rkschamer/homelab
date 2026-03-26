@@ -79,19 +79,16 @@ spec:
     # Hubble observability
     hubble:
       enabled: true
+      tls:
+        auto:
+          enabled: true
+          method: cronJob
+          certValidityDuration: 1095
+          schedule: "0 0 1 */4 *"
       relay:
         enabled: true
-        tls:
-          server:
-            enabled: true
-          client:
-            enabled: true
-            certValidation: background
       ui:
         enabled: true
-        tls:
-          server:
-            enabled: true
 
     # Host Firewall for pod-to-pod isolation
     hostFirewall:
