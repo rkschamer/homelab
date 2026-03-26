@@ -51,6 +51,7 @@ spec:
 
     deployment:
       replicas: 1
+      strategy: Recreate
       env:
         - name: PORKBUN_API_KEY
           valueFrom:
