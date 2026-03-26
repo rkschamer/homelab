@@ -41,9 +41,13 @@ spec:
               memory: "128Mi"
               cpu: "200m"
           securityContext:
-            runAsNonRoot: false # Snowflake proxy needs to run as root to bind low ports and use raw sockets
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
             capabilities:
               drop:
                 - ALL
+            seccompProfile:
+              type: RuntimeDefault
