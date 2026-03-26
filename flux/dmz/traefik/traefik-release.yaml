@@ -38,13 +38,13 @@ spec:
       dashboard: true
       basePath: /traefik
 
-    # certificatesResolvers:
-    #   letsencrypt:
-    #     acme:
-    #       email: rene.kschamer@gmail.com
-    #       storage: /data/acme.json
-    #       dnsChallenge:
-    #         provider: porkbun
+    certificatesResolvers:
+      letsencrypt:
+        acme:
+          email: rene.kschamer@gmail.com
+          storage: /data/acme.json
+          dnsChallenge:
+            provider: porkbun
 
     deployment:
       replicas: 1

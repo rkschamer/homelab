@@ -1,12 +1,12 @@
 ---
-# IP Whitelist Middleware - only allow home LAN
+# IP Allowlist Middleware - only allow home LAN
 apiVersion: traefik.io/v1alpha1
 kind: Middleware
 metadata:
   name: pihole-ipwhitelist
   namespace: pi-hole
 spec:
-  ipWhiteList:
+  ipAllowList:
     sourceRange:
       - 192.168.123.0/24
       - 10.244.0.0/16
