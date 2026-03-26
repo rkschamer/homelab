@@ -84,11 +84,12 @@ spec:
     ports:
       web:
         exposedPort: 80
-        redirections:
-          entryPoint:
-            to: websecure
-            scheme: https
-            permanent: true
+        http:
+          redirections:
+            entryPoint:
+              to: websecure
+              scheme: https
+              permanent: true
       websecure:
         exposedPort: 443
 
