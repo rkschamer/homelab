@@ -116,9 +116,14 @@ spec:
     matchLabels:
       io.cilium.k8s.namespace.labels.network-zone: dmz
   egressDeny:
-  # Block Home LAN / Management network
-  - toCIDR:
-    - 192.168.123.0/24
+  # Block Home LAN / Management network except explicit legacy bridge targets.
+  - toCIDRSet:
+    - cidr: 192.168.123.0/24
+      except:
+      - 192.168.123.5/32 # NAS
+      - 192.168.123.8/32 # Proxmox VE
+      - 192.168.123.10/32 # Home Assistant
+      - 192.168.123.20/32 # Kubernetes API server
 
 ---
 # =============================================================================
@@ -161,6 +166,14 @@ spec:
       - port: "443"
         protocol: TCP
       - port: "6443"
+        protocol: TCP
+
+  # Allow Traefik access to external Home Assistant instance (Horsmar)
+  - toCIDR:
+    - 192.168.178.10/32
+    toPorts:
+    - ports:
+      - port: "8123"
         protocol: TCP
 
   # Allow outbound internet access (e.g. ACME, upstream dependencies)

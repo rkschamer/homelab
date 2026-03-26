@@ -4,3 +4,6 @@ kind: Kustomization
 
 resources:
   - traefik-release.yaml
+  - bridge-backends.yaml
+  - routes-bridge.yaml
+  - traefik-porkbun-dns-sealedsecret.yaml

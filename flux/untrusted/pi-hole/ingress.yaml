@@ -31,27 +31,26 @@ spec:
         - name: pihole-web
           port: 80
 
-# TODO: Enable TLS after migrating Traefik cert resolver from Docker
-# ---
-# apiVersion: traefik.io/v1alpha1
-# kind: IngressRoute
-# metadata:
-#   name: pihole-web-secure
-#   namespace: pi-hole
-# spec:
-#   entryPoints:
-#     - websecure
-#   routes:
-#     - match: Host(`pihole.kschamer.info`)
-#       kind: Rule
-#       middlewares:
-#         - name: pihole-ipwhitelist
-#       services:
-#         - name: pihole-web
-#           port: 80
-#   tls:
-#     certResolver: letsencrypt
-#     domains:
-#       - main: kschamer.info
-#         sans:
-#           - "*.kschamer.info"
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: pihole-web-secure
+  namespace: pi-hole
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`pihole.kschamer.info`)
+      kind: Rule
+      middlewares:
+        - name: pihole-ipwhitelist
+      services:
+        - name: pihole-web
+          port: 80
+  tls:
+    certResolver: letsencrypt
+    domains:
+      - main: kschamer.info
+        sans:
+          - "*.kschamer.info"

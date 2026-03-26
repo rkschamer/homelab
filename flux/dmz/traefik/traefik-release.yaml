@@ -34,8 +34,39 @@ spec:
         namespace: traefik
       version: "39.0.6"
   values:
+    api:
+      dashboard: true
+      basePath: /traefik
+
+    # certificatesResolvers:
+    #   letsencrypt:
+    #     acme:
+    #       email: rene.kschamer@gmail.com
+    #       storage: /data/acme.json
+    #       dnsChallenge:
+    #         provider: porkbun
+
     deployment:
-      replicas: 2
+      replicas: 1
+      env:
+        - name: PORKBUN_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: traefik-porkbun-dns
+              key: api-key
+              optional: true
+        - name: PORKBUN_SECRET_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: traefik-porkbun-dns
+              key: secret-key
+              optional: true
+
+    persistence:
+      enabled: true
+      name: data
+      accessMode: ReadWriteOnce
+      size: 1Gi
 
     ingressClass:
       enabled: true
@@ -53,6 +84,11 @@ spec:
     ports:
       web:
         exposedPort: 80
+        redirections:
+          entryPoint:
+            to: websecure
+            scheme: https
+            permanent: true
       websecure:
         exposedPort: 443
 
