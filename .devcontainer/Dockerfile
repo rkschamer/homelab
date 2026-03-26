@@ -42,6 +42,15 @@ RUN ARCH=$(dpkg --print-architecture) && \
     && rm cilium-linux-${ARCH}.tar.gz cilium-linux-${ARCH}.tar.gz.sha256sum
 RUN cilium version
 
+# Install Hubble CLI
+RUN ARCH=$(dpkg --print-architecture) && \
+    HUBBLE_VERSION=$(curl -s https://raw.githubusercontent.com/cilium/hubble/main/stable.txt) && \
+    curl -L --fail --remote-name-all https://github.com/cilium/hubble/releases/download/${HUBBLE_VERSION}/hubble-linux-${ARCH}.tar.gz{,.sha256sum} \
+    && sha256sum --check hubble-linux-${ARCH}.tar.gz.sha256sum \
+    && tar -xzvf hubble-linux-${ARCH}.tar.gz -C /usr/local/bin \
+    && rm hubble-linux-${ARCH}.tar.gz hubble-linux-${ARCH}.tar.gz.sha256sum
+RUN hubble version
+
 # Install kubeseal (for Sealed Secrets)
 RUN ARCH=$(dpkg --print-architecture) && \
     KUBESEAL_VERSION=$(curl -s "https://api.github.com/repos/bitnami-labs/sealed-secrets/releases/latest" | grep -Po '"tag_name": "v\K[0-9.]+') \
