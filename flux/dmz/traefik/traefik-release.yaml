@@ -34,6 +34,9 @@ spec:
         namespace: traefik
       version: "39.0.6"
   values:
+    global:
+      sendAnonymousUsage: true
+
     api:
       dashboard: true
       basePath: /traefik
