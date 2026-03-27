@@ -168,14 +168,6 @@ spec:
       - port: "6443"
         protocol: TCP
 
-  # Allow Traefik access to external Home Assistant instance (Horsmar)
-  - toCIDR:
-    - 192.168.178.10/32
-    toPorts:
-    - ports:
-      - port: "8123"
-        protocol: TCP
-
   # Allow outbound internet access (e.g. ACME, upstream dependencies)
   - toEntities:
     - world
