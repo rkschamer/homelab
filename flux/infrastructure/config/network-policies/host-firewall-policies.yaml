@@ -121,6 +121,15 @@ spec:
       - port: "7946"      # MetalLB speaker memberlist
         protocol: UDP
 
+  # Allow ICMP from other nodes (for health checks)
+  - fromEntities:
+    - remote-node
+    - health
+    icmps:
+    - fields:
+      - type: EchoRequest
+        family: IPv4
+
   # Allow from cluster pods (for pod -> host-networked service communication)
   - fromEntities:
     - cluster
@@ -339,6 +348,15 @@ spec:
         protocol: TCP
       - port: "7946"     # MetalLB speaker memberlist
         protocol: UDP
+
+  # Allow ICMP from other nodes (for health checks)
+  - fromEntities:
+    - remote-node
+    - health
+    icmps:
+    - fields:
+      - type: EchoRequest
+        family: IPv4
 
   # Allow ICMP echo requests (ping) from workload network
   - fromCIDR:
