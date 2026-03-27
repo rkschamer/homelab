@@ -22,7 +22,7 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: authentik
-      version: "2024.12.3"
+      version: "2026.2.1"
   values:
     authentik:
       secret_key:
@@ -83,15 +83,16 @@ spec:
     ingress:
       enabled: false
 
-    # Bootstrap settings
-    env:
-      - name: AUTHENTIK_BOOTSTRAP_PASSWORD
-        valueFrom:
-          secretKeyRef:
-            name: authentik-secrets
-            key: bootstrap-password
-      - name: AUTHENTIK_BOOTSTRAP_EMAIL
-        valueFrom:
-          secretKeyRef:
-            name: authentik-secrets
-            key: bootstrap-email
+    # Bootstrap settings (new format for 2024.12+)
+    global:
+      env:
+        - name: AUTHENTIK_BOOTSTRAP_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: authentik-secrets
+              key: bootstrap-password
+        - name: AUTHENTIK_BOOTSTRAP_EMAIL
+          valueFrom:
+            secretKeyRef:
+              name: authentik-secrets
+              key: bootstrap-email
