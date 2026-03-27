@@ -44,7 +44,7 @@ spec:
     - name: http
       port: 8123
       protocol: TCP
-      targetPort: 8123
+      targetPort: 18123
 
 ---
 apiVersion: v1
@@ -54,10 +54,10 @@ metadata:
   namespace: traefik
 subsets:
   - addresses:
-      - ip: 192.168.178.10
+      - ip: 192.168.123.11  # ha-proxy LXC - TCP proxy to Horsmar
     ports:
       - name: http
-        port: 8123
+        port: 18123
         protocol: TCP
 
 ---
