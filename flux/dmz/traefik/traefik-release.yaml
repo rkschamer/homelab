@@ -53,6 +53,10 @@ spec:
       replicas: 1
       strategy: Recreate
       env:
+        # Disable CNAME support for DNS challenge - ACME/LEGO would otherwise
+        # follow the CNAME for *.kschamer.info to the dynamic IP, causing failure
+        - name: LEGO_DISABLE_CNAME_SUPPORT
+          value: "true"
         - name: PORKBUN_API_KEY
           valueFrom:
             secretKeyRef:
