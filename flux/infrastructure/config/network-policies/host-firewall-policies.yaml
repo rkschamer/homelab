@@ -143,6 +143,8 @@ spec:
         protocol: TCP
       - port: "10250"     # kubelet API
         protocol: TCP
+      - port: "4244"      # Hubble peer service
+        protocol: TCP
 
   # Allow monitoring zone to scrape control-plane host endpoints
   - fromEndpoints:
