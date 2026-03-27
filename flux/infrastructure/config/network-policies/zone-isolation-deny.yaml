@@ -183,27 +183,6 @@ spec:
 
 ---
 # =============================================================================
-# DMZ to Untrusted Isolation - Prevent cross-zone leakage
-# =============================================================================
-# DMZ pods should not communicate with untrusted zone pods.
-# This prevents compromised services from pivoting between zones.
-# =============================================================================
-apiVersion: cilium.io/v2
-kind: CiliumClusterwideNetworkPolicy
-metadata:
-  name: deny-dmz-to-untrusted
-spec:
-  description: "Block DMZ zone pods from reaching untrusted zone"
-  endpointSelector:
-    matchLabels:
-      io.cilium.k8s.namespace.labels.network-zone: dmz
-  egressDeny:
-  - toEndpoints:
-    - matchLabels:
-        io.cilium.k8s.namespace.labels.network-zone: untrusted
-
----
-# =============================================================================
 # DMZ to Monitoring Isolation - Enforce pull-only monitoring model
 # =============================================================================
 apiVersion: cilium.io/v2
