@@ -44,6 +44,9 @@ spec:
         limits:
           cpu: 500m
           memory: 1Gi
+      # Disable built-in ingress (we use Traefik IngressRoute)
+      ingress:
+        enabled: false
 
     worker:
       replicas: 1
@@ -78,10 +81,6 @@ spec:
       master:
         persistence:
           enabled: false
-
-    # Disable built-in ingress (we use Traefik IngressRoute)
-    ingress:
-      enabled: false
 
     # Bootstrap settings (new format for 2024.12+)
     global:
