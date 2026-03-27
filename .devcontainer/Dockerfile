@@ -74,5 +74,11 @@ RUN ARCH=$(dpkg --print-architecture) && \
     rm talisman
 RUN talisman --version
 
+# Install Node.js LTS and Claude Code CLI
+RUN curl -fsSL https://deb.nodesource.com/setup_lts.x | bash - \
+    && apt-get install -y nodejs \
+    && npm install -g @anthropic-ai/claude-code
+RUN echo "Claude Code version:" && claude --version
+
 # Clean up
 RUN apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/*
