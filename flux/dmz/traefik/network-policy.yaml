@@ -1,0 +1,48 @@
+# =============================================================================
+# Traefik Bridge Backend Egress Policy
+# =============================================================================
+# Allow Traefik pods to reach external bridge backends on the management LAN.
+# These are LAN services proxied by Traefik during migration or permanently
+# for workloads that remain outside the cluster.
+# =============================================================================
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: traefik-bridge-egress
+  namespace: traefik
+spec:
+  description: "Allow Traefik to reach bridge backends on management LAN"
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: traefik
+  egress:
+  # Home Assistant (local + Horsmar)
+  - toCIDR:
+    - 192.168.123.10/32 # local
+    - 192.168.178.10/32 # Horsmar
+    toPorts:
+    - ports:
+      - port: "8123"
+        protocol: TCP
+  # NAS (192.168.123.5:5001)
+  - toCIDR:
+    - 192.168.123.5/32
+    toPorts:
+    - ports:
+      - port: "5001"
+        protocol: TCP
+  # Proxmox VE (192.168.123.8:8006)
+  - toCIDR:
+    - 192.168.123.8/32
+    toPorts:
+    - ports:
+      - port: "8006"
+        protocol: TCP
+  # Kubernetes API passthrough (192.168.123.20:6443)
+  - toCIDR:
+    - 192.168.123.20/32
+    toPorts:
+    - ports:
+      - port: "6443"
+        protocol: TCP
