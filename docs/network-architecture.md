@@ -370,6 +370,108 @@ Worker (10.10.20.21)
 
 ---
 
+## TCP Proxy for VPN-Bridged Services
+
+### Problem
+
+Services on remote networks accessed via FritzBox VPN (e.g., Horsmar Home Assistant at 192.168.178.10) cannot be reached directly from Kubernetes pods. The issue is asymmetric routing:
+
+1. Pod traffic is SNATed to worker node IP (10.10.20.x)
+2. Traffic reaches remote service via VPN
+3. Remote service replies to 10.10.20.x
+4. Remote FritzBox doesn't know how to route to 10.10.20.0/24 (can't add static route with VPN gateway)
+
+### Solution: TCP Proxy on Management LAN
+
+Run a lightweight TCP proxy (LXC container) on the management network (192.168.123.x). The proxy:
+- Listens on management LAN (reachable from cluster)
+- Forwards to remote VPN destination
+- Remote service sees traffic from management LAN IP (routable via VPN)
+
+```
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│  Traefik Pod    │────▶│   ha-proxy LXC  │────▶│  FritzBox VPN   │────▶│  Horsmar HA     │
+│  (10.244.x.x)   │     │ 192.168.123.11  │     │                 │     │ 192.168.178.10  │
+└─────────────────┘     └─────────────────┘     └─────────────────┘     └─────────────────┘
+         │                      │                                               │
+         │    SNAT to           │         VPN tunnel                           │
+         │    10.10.20.x        │         routes to                            │
+         │                      │         192.168.178.x                        │
+         │                      │                                               │
+         └──────────────────────┴───────────────────────────────────────────────┘
+                          Reply path works because remote sees
+                          source IP 192.168.123.11 (routable via VPN)
+```
+
+### ha-proxy LXC Setup
+
+**Container:** Alpine Linux LXC on Proxmox
+- IP: 192.168.123.11
+- Resources: 64MB RAM, 1 CPU, 512MB disk
+
+**Installation:**
+```bash
+apk add socat
+
+cat > /etc/init.d/ha-proxy << 'EOF'
+#!/sbin/openrc-run
+command="/usr/bin/socat"
+command_args="TCP-LISTEN:8123,fork,reuseaddr TCP:192.168.178.10:8123"
+command_background=true
+pidfile="/run/ha-proxy.pid"
+EOF
+
+chmod +x /etc/init.d/ha-proxy
+rc-update add ha-proxy default
+service ha-proxy start
+```
+
+### Kubernetes Configuration
+
+**Bridge Backend** (flux/dmz/traefik/bridge-backends.yaml):
+```yaml
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: ext-homeassistant-horsmar
+  namespace: traefik
+subsets:
+  - addresses:
+      - ip: 192.168.123.11  # ha-proxy LXC
+    ports:
+      - name: http
+        port: 8123
+```
+
+**Network Policy Exception** (flux/infrastructure/config/network-policies/zone-isolation-deny.yaml):
+
+Add proxy IP to `deny-dmz-to-home-lan` exceptions:
+```yaml
+except:
+  - 192.168.123.11/32 # ha-proxy LXC (Horsmar HA)
+```
+
+**Traefik Egress Policy** (flux/dmz/traefik/network-policy.yaml):
+```yaml
+- toCIDR:
+  - 192.168.123.11/32
+  toPorts:
+  - ports:
+    - port: "8123"
+      protocol: TCP
+```
+
+### Adding More VPN Services
+
+To proxy additional VPN-bridged services:
+
+1. Add socat listener in ha-proxy LXC (or create dedicated proxy)
+2. Add Kubernetes Service/Endpoints pointing to proxy IP
+3. Add proxy IP to zone isolation exceptions (if needed)
+4. Add port to Traefik network policy
+
+---
+
 ## Security Implications
 
 ### Network Isolation
