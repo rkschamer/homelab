@@ -1,0 +1,21 @@
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: authentik
+  namespace: authentik
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`auth.kschamer.info`)
+      kind: Rule
+      services:
+        - name: authentik-server
+          port: 80
+  tls:
+    certResolver: letsencrypt
+    domains:
+      - main: kschamer.info
+        sans:
+          - "*.kschamer.info"
