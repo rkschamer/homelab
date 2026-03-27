@@ -25,13 +25,8 @@ spec:
       version: "2026.2.1"
   values:
     authentik:
-      secret_key:
-        existingSecret: authentik-secrets
-        secretKey: secret-key
-      postgresql:
-        password:
-          existingSecret: authentik-secrets
-          secretKey: postgres-password
+      # Disable chart-managed secret, we use global.env instead
+      enabled: false
       error_reporting:
         enabled: false
 
@@ -66,6 +61,8 @@ spec:
         secretKeys:
           adminPasswordKey: postgres-password
           userPasswordKey: postgres-password
+        username: authentik
+        database: authentik
       primary:
         persistence:
           enabled: true
@@ -82,9 +79,19 @@ spec:
         persistence:
           enabled: false
 
-    # Bootstrap settings (new format for 2024.12+)
+    # Bootstrap and configuration settings via environment variables
     global:
       env:
+        - name: AUTHENTIK_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: authentik-secrets
+              key: secret-key
+        - name: AUTHENTIK_POSTGRESQL__PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: authentik-secrets
+              key: postgres-password
         - name: AUTHENTIK_BOOTSTRAP_PASSWORD
           valueFrom:
             secretKeyRef:
