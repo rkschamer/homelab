@@ -1,0 +1,152 @@
+---
+# =============================================================================
+# Authentik Network Policy - DMZ Zone
+# =============================================================================
+# Authentik is an identity provider that needs to:
+# - Receive requests from Traefik for the web UI
+# - Receive auth callbacks from services across all zones
+# - Reach external OIDC/OAuth providers (Google, GitHub, etc.)
+# =============================================================================
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: authentik
+  namespace: authentik
+spec:
+  description: "Network policy for Authentik IdP in DMZ zone"
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: authentik
+
+  # =========================================================================
+  # INGRESS: Who can reach Authentik
+  # =========================================================================
+  ingress:
+    # Allow Traefik to reach Authentik server (web UI and forward auth)
+    - fromEndpoints:
+        - matchLabels:
+            io.cilium.k8s.namespace.labels.network-zone: dmz
+            app.kubernetes.io/name: traefik
+      toPorts:
+        - ports:
+            - port: "9000"
+              protocol: TCP
+
+    # Allow services from all zones to reach Authentik for OIDC/OAuth callbacks
+    - fromEndpoints:
+        - matchLabels:
+            io.cilium.k8s.namespace.labels.network-zone: trusted
+        - matchLabels:
+            io.cilium.k8s.namespace.labels.network-zone: dmz
+        - matchLabels:
+            io.cilium.k8s.namespace.labels.network-zone: monitoring
+        - matchLabels:
+            io.cilium.k8s.namespace.labels.network-zone: untrusted
+      toPorts:
+        - ports:
+            - port: "9000"
+              protocol: TCP
+
+  # =========================================================================
+  # EGRESS: What Authentik can reach
+  # =========================================================================
+  egress:
+    # DNS resolution
+    - toEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: kube-system
+            k8s-app: kube-dns
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: UDP
+            - port: "53"
+              protocol: TCP
+
+    # HTTPS for external OIDC/OAuth providers (Google, GitHub, etc.)
+    - toEntities:
+        - world
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP
+
+    # HTTP for potential webhook integrations
+    - toEntities:
+        - world
+      toPorts:
+        - ports:
+            - port: "80"
+              protocol: TCP
+
+---
+# =============================================================================
+# PostgreSQL Network Policy - Internal database traffic only
+# =============================================================================
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: authentik-postgresql
+  namespace: authentik
+spec:
+  description: "Network policy for Authentik PostgreSQL database"
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: postgresql
+
+  ingress:
+    # Only allow Authentik server and worker to connect
+    - fromEndpoints:
+        - matchLabels:
+            app.kubernetes.io/name: authentik
+      toPorts:
+        - ports:
+            - port: "5432"
+              protocol: TCP
+
+  egress:
+    # DNS resolution
+    - toEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: kube-system
+            k8s-app: kube-dns
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: UDP
+
+---
+# =============================================================================
+# Redis Network Policy - Internal cache traffic only
+# =============================================================================
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: authentik-redis
+  namespace: authentik
+spec:
+  description: "Network policy for Authentik Redis cache"
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: redis
+
+  ingress:
+    # Only allow Authentik server and worker to connect
+    - fromEndpoints:
+        - matchLabels:
+            app.kubernetes.io/name: authentik
+      toPorts:
+        - ports:
+            - port: "6379"
+              protocol: TCP
+
+  egress:
+    # DNS resolution
+    - toEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: kube-system
+            k8s-app: kube-dns
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: UDP
