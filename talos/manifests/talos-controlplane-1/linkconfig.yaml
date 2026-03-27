@@ -4,6 +4,12 @@ name: ens18
 ---
 apiVersion: v1alpha1
 kind: LinkConfig
+name: ens18
+routes:
+  - gateway: 192.168.123.1  # FritzBox - default route
+---
+apiVersion: v1alpha1
+kind: LinkConfig
 name: ens19
 up: true
 addresses:
