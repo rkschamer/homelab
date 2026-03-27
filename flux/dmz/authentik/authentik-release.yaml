@@ -22,7 +22,7 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: authentik
-      version: "2024.12.3"
+      version: "2026.2.1"
   values:
     authentik:
       secret_key:
