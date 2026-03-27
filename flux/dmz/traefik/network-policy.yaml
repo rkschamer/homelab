@@ -17,10 +17,9 @@ spec:
     matchLabels:
       app.kubernetes.io/name: traefik
   egress:
-  # Home Assistant (local + Horsmar)
+  # Home Assistant local (192.168.123.10:8123)
   - toCIDR:
-    - 192.168.123.10/32 # local
-    - 192.168.178.10/32 # Horsmar
+    - 192.168.123.10/32
     toPorts:
     - ports:
       - port: "8123"
@@ -38,6 +37,13 @@ spec:
     toPorts:
     - ports:
       - port: "8006"
+        protocol: TCP
+  # Horsmar HA proxy LXC (192.168.123.11:18123)
+  - toCIDR:
+    - 192.168.123.11/32
+    toPorts:
+    - ports:
+      - port: "18123"
         protocol: TCP
   # Kubernetes API passthrough (192.168.123.20:6443)
   - toCIDR:
