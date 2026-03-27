@@ -25,8 +25,10 @@ spec:
       version: "2026.2.1"
   values:
     authentik:
-      # Disable chart-managed secret, we use global.env instead
-      enabled: false
+      # Placeholder values - actual values come from global.env secretKeyRef
+      secret_key: "placeholder-overridden-by-env"
+      postgresql:
+        password: "placeholder-overridden-by-env"
       error_reporting:
         enabled: false
 
