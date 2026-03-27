@@ -44,7 +44,7 @@ spec:
     - name: http
       port: 8123
       protocol: TCP
-      targetPort: 18123
+      targetPort: 8123
 
 ---
 apiVersion: v1
@@ -57,7 +57,7 @@ subsets:
       - ip: 192.168.123.11  # ha-proxy LXC - TCP proxy to Horsmar
     ports:
       - name: http
-        port: 18123
+        port: 8123
         protocol: TCP
 
 ---
