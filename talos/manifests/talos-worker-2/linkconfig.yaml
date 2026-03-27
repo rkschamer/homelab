@@ -8,6 +8,8 @@ routes:
   - gateway: 10.10.20.2  # Control plane - has internet access
   - destination: 192.168.123.0/24
     gateway: 10.10.20.2  # Management network via control plane
+  - destination: 192.168.178.0/24
+    gateway: 10.10.20.2  # Horsmar network via FritzBox VPN
 ---
 apiVersion: v1alpha1
 kind: ResolverConfig
