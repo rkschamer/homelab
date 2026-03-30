@@ -59,9 +59,6 @@ spec:
       enabled: true
       auth:
         existingSecret: authentik-secrets
-        secretKeys:
-          adminPasswordKey: postgres-password
-          userPasswordKey: postgres-password
         username: authentik
         database: authentik
       primary:
