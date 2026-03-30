@@ -85,3 +85,13 @@ spec:
           value: "https://auth.kschamer.info"
         - name: AUTHENTIK_COOKIE_DOMAIN
           value: ".kschamer.info"
+        # Logging and monitoring
+        - name: AUTHENTIK_LOG_LEVEL
+          value: "info"
+        - name: AUTHENTIK_ERROR_REPORTING__ENABLED
+          value: "false"
+        - name: AUTHENTIK_DISABLE_UPDATE_CHECK
+          value: "true"
+        # Avatar configuration
+        - name: AUTHENTIK_AVATARS
+          value: "gravatar,initials"
