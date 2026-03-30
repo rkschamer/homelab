@@ -25,10 +25,6 @@ spec:
       version: "2026.2.1"
   values:
     authentik:
-      # Placeholder values - actual values come from global.env secretKeyRef
-      secret_key: "placeholder-overridden-by-env"
-      postgresql:
-        password: "placeholder-overridden-by-env"
       error_reporting:
         enabled: false
 
@@ -136,3 +132,18 @@ spec:
             secretKeyRef:
               name: authentik-secrets
               key: email-from
+        # Public URL configuration (required for OAuth2/OIDC redirects)
+        - name: AUTHENTIK_HOST
+          value: "https://auth.kschamer.info"
+        - name: AUTHENTIK_COOKIE_DOMAIN
+          value: ".kschamer.info"
+        # Logging and monitoring
+        - name: AUTHENTIK_LOG_LEVEL
+          value: "info"
+        - name: AUTHENTIK_ERROR_REPORTING__ENABLED
+          value: "false"
+        - name: AUTHENTIK_DISABLE_UPDATE_CHECK
+          value: "true"
+        # Avatar configuration
+        - name: AUTHENTIK_AVATARS
+          value: "gravatar,initials"
