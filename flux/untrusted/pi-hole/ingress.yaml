@@ -45,6 +45,8 @@ spec:
       kind: Rule
       middlewares:
         - name: pihole-ipwhitelist
+        - name: authentik-forwardauth
+          namespace: traefik
       services:
         - name: pihole-web
           port: 80

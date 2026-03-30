@@ -1,0 +1,24 @@
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: grafana
+  namespace: monitoring
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`grafana.kschamer.info`)
+      kind: Rule
+      middlewares:
+        - name: authentik-forwardauth
+          namespace: traefik
+      services:
+        - name: prometheus-release-grafana
+          port: 80
+  tls:
+    certResolver: letsencrypt
+    domains:
+      - main: kschamer.info
+        sans:
+          - "*.kschamer.info"

@@ -8,3 +8,4 @@ resources:
   - routes-bridge.yaml
   - traefik-porkbun-dns-sealedsecret.yaml
   - network-policy.yaml
+  - authentik-forwardauth-middleware.yaml
