@@ -24,9 +24,20 @@ spec:
         name: authentik
       version: "2026.2.1"
   values:
+    # Use external secret management (SealedSecrets)
+    # All credentials are injected via global.env from authentik-secrets
     authentik:
+      secret_key: ""  # Empty string prevents auto-generation
+      postgresql:
+        password: ""  # Empty string prevents auto-generation
+      bootstrap_password: ""  # Prevent bootstrap password generation
+      bootstrap_email: ""  # Prevent bootstrap email generation
       error_reporting:
         enabled: false
+      # Explicitly tell Authentik to use env vars for bootstrap
+      env:
+        AUTHENTIK_BOOTSTRAP_PASSWORD: ""
+        AUTHENTIK_BOOTSTRAP_EMAIL: ""
 
     server:
       replicas: 1
