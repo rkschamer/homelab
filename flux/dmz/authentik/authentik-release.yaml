@@ -81,8 +81,18 @@ spec:
           enabled: false
 
     # Non-secret runtime config passed as env vars
+    # NOTE: when existingSecret is used, the chart's generated secret is skipped entirely.
+    # All AUTHENTIK_* vars that would have been in that secret must be supplied here or in the secret.
     global:
       env:
+        - name: AUTHENTIK_POSTGRESQL__HOST
+          value: "authentik-postgresql"
+        - name: AUTHENTIK_POSTGRESQL__PORT
+          value: "5432"
+        - name: AUTHENTIK_POSTGRESQL__NAME
+          value: "authentik"
+        - name: AUTHENTIK_POSTGRESQL__USER
+          value: "authentik"
         - name: AUTHENTIK_COOKIE_DOMAIN
           value: ".kschamer.info"
         - name: AUTHENTIK_DISABLE_UPDATE_CHECK
