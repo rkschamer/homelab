@@ -3,7 +3,8 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - namespace.yaml
-  - authentik-sealedsecret.yaml
+  - generic-secret.yaml
+  - postgresql-secret.yaml
   - authentik-release.yaml
   - ingress.yaml
   - network-policies.yaml

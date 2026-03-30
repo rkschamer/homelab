@@ -24,12 +24,13 @@ spec:
         name: authentik
       version: "2026.2.1"
   values:
-    # Use external secret for all authentik configuration
     authentik:
+      # Secret values (AUTHENTIK_* env vars) come from the existing secret via envFrom
       existingSecret:
-        secretName: authentik-secrets
+        secretName: generic-secret
       error_reporting:
         enabled: false
+      log_level: info
 
     server:
       replicas: 1
@@ -58,7 +59,9 @@ spec:
     postgresql:
       enabled: true
       auth:
-        existingSecret: authentik-secrets
+        existingSecret: postgresql-secret
+        secretKeys:
+          userPasswordKey: password
         username: authentik
         database: authentik
       primary:
@@ -77,21 +80,12 @@ spec:
         persistence:
           enabled: false
 
-    # Public URL configuration (required for OAuth2/OIDC redirects)
-    # These cannot be set in the secret, so we set them as env vars
+    # Non-secret runtime config passed as env vars
     global:
       env:
-        - name: AUTHENTIK_HOST
-          value: "https://auth.kschamer.info"
         - name: AUTHENTIK_COOKIE_DOMAIN
           value: ".kschamer.info"
-        # Logging and monitoring
-        - name: AUTHENTIK_LOG_LEVEL
-          value: "info"
-        - name: AUTHENTIK_ERROR_REPORTING__ENABLED
-          value: "false"
         - name: AUTHENTIK_DISABLE_UPDATE_CHECK
           value: "true"
-        # Avatar configuration
         - name: AUTHENTIK_AVATARS
           value: "gravatar,initials"
