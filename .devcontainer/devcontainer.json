@@ -3,11 +3,12 @@
 	"build": {
 		"dockerfile": "Dockerfile"
 	},
-	"initializeCommand": "bash -c 'settings=\"${HOME}/.claude/settings.json\"; [ -f \"$settings\" ] && sed -i.bak \"s|host.docker.internal:6655|localhost:6655|g\" \"$settings\" && rm -f \"${settings}.bak\" || true'",
 	"runArgs": [
-		"--network=host",
 		"--add-host=host.docker.internal:host-gateway"
 	],
+	"remoteEnv": {
+		"ANTHROPIC_BASE_URL": "http://host.docker.internal:6655/anthropic/"
+	},
 	"mounts": [
 		"source=${localEnv:HOME}/.kube,target=/home/vscode/.kube,type=bind,consistency=cached",
 		"source=${localEnv:HOME}/.ssh,target=/home/vscode/.ssh,type=bind,consistency=cached",
@@ -28,6 +29,5 @@
 		}
 	},
 	"postCreateCommand": ".devcontainer/postCreateCommand.sh",
-	"postStartCommand": "bash -c 'settings=~/.claude/settings.json; [ -f \"$settings\" ] && sed -i \"s|localhost:6655|host.docker.internal:6655|g\" \"$settings\" && echo \"✓ Claude Code synced (proxy: host.docker.internal:6655)\" || echo \"ℹ ~/.claude/settings.json not found — skipping proxy rewrite\"'",
 	"remoteUser": "vscode"
 }
