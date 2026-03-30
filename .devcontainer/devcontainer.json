@@ -3,16 +3,19 @@
 	"build": {
 		"dockerfile": "Dockerfile"
 	},
+	"initializeCommand": "bash -c 'mkdir -p ~/.claude/plugins ~/.claude/projects ~/.claude/sessions ~/.claude/plans && touch ~/.claude/history.jsonl'",
 	"runArgs": [
 		"--add-host=host.docker.internal:host-gateway"
 	],
-	"remoteEnv": {
-		"ANTHROPIC_BASE_URL": "http://host.docker.internal:6655/anthropic/"
-	},
 	"mounts": [
 		"source=${localEnv:HOME}/.kube,target=/home/vscode/.kube,type=bind,consistency=cached",
 		"source=${localEnv:HOME}/.ssh,target=/home/vscode/.ssh,type=bind,consistency=cached",
-		"source=${localEnv:HOME}/.claude,target=/home/vscode/.claude,type=bind,consistency=cached"
+		"source=${localEnv:HOME}/.claude/history.jsonl,target=/home/vscode/.claude/history.jsonl,type=bind,consistency=cached",
+		"source=${localEnv:HOME}/.claude/plugins,target=/home/vscode/.claude/plugins,type=bind,consistency=cached",
+		"source=${localEnv:HOME}/.claude/projects,target=/home/vscode/.claude/projects,type=bind,consistency=cached",
+		"source=${localEnv:HOME}/.claude/sessions,target=/home/vscode/.claude/sessions,type=bind,consistency=cached",
+		"source=${localEnv:HOME}/.claude/plans,target=/home/vscode/.claude/plans,type=bind,consistency=cached",
+		"source=${localEnv:HOME}/.claude/settings.json,target=/run/host-settings/settings.json,type=bind,readonly"
 	],
 	"customizations": {
 		"vscode": {
@@ -29,5 +32,6 @@
 		}
 	},
 	"postCreateCommand": ".devcontainer/postCreateCommand.sh",
+	"postStartCommand": "bash -c 'sudo chown -R vscode ~/.claude && cp /run/host-settings/settings.json ~/.claude/settings.json && sed -i \"s|localhost:6655|host.docker.internal:6655|g\" ~/.claude/settings.json && echo \"✓ Claude settings written (proxy: host.docker.internal:6655)\"'",
 	"remoteUser": "vscode"
 }

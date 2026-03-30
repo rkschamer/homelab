@@ -4,5 +4,23 @@
         "KUBECONFIG": "${workspaceFolder}/kubeconfig.yaml",
         "KUBE_EDITOR": "code --wait",
         "TALOSCONFIG": "${workspaceFolder}/talosconfig",
-    }
+    },
+    "claudeCode.environmentVariables": [
+        {
+            "name": "KUBECONFIG",
+            "value": "${workspaceFolder}/kubeconfig.yaml"
+        },
+        {
+            "name": "KUBE_EDITOR",
+            "value": "code --wait"
+        },
+        {
+            "name": "TALOSCONFIG",
+            "value": "${workspaceFolder}/talosconfig"
+        },
+        {
+            "name": "ANTHROPIC_BASE_URL",
+            "value": "http://host.docker.internal:6655/anthropic/"
+        }
+    ]
 }
