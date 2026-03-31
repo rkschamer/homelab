@@ -9,3 +9,4 @@ resources:
   - traefik-porkbun-dns-sealedsecret.yaml
   - network-policy.yaml
   - authentik-forwardauth-middleware.yaml
+  - crowdsec-middleware.yaml

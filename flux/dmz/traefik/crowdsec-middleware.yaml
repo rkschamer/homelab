@@ -1,0 +1,41 @@
+---
+# =============================================================================
+# CrowdSec Bouncer Middleware for Traefik
+# =============================================================================
+# Placed in the traefik namespace so it can be referenced from all
+# IngressRoutes as:
+#   namespace: traefik
+#   name: crowdsec-bouncer
+#
+# The bouncer operates in two modes:
+#   1. LAPI stream mode  - blocks IPs that CrowdSec has already decided to ban
+#   2. AppSec inspection - sends each request to the AppSec WAF component for
+#                         deep HTTP analysis before it reaches your app
+#
+# The LAPI API key is injected via the CROWDSEC_BOUNCER_API_KEY env var on the
+# Traefik pod (set in traefik-release.yaml from the crowdsec-bouncer-key Secret).
+# Create the Secret after CrowdSec LAPI is running — see:
+#   flux/dmz/crowdsec/crowdsec-bouncer-sealedsecret.yaml.instructions
+# =============================================================================
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: crowdsec-bouncer
+  namespace: traefik
+spec:
+  plugin:
+    crowdsec-bouncer-traefik-plugin:
+      enabled: true
+      crowdsecMode: stream
+      crowdsecLapiScheme: http
+      crowdsecLapiHost: crowdsec-service.crowdsec.svc.cluster.local:8080
+      # API key is read from the CROWDSEC_BOUNCER_API_KEY env var injected
+      # into the Traefik pod via the crowdsec-bouncer-key Secret
+      crowdsecLapiKeyEnv: CROWDSEC_BOUNCER_API_KEY
+      httpTimeoutSeconds: 60
+      # AppSec WAF - deep HTTP inspection
+      crowdsecAppsecEnabled: true
+      crowdsecAppsecHost: crowdsec-appsec-service.crowdsec.svc.cluster.local:7422
+      crowdsecAppsecFailureBlock: true
+      crowdsecAppsecUnreachableBlock: false
+
