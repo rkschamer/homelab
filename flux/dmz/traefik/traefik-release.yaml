@@ -67,6 +67,16 @@ spec:
             secretKeyRef:
               name: traefik-dns-porkbun
               key: secret-key
+        # CrowdSec bouncer API key - read by the crowdsec-bouncer-traefik-plugin
+        # Secret must be created after CrowdSec LAPI is running:
+        #   kubectl exec -n crowdsec deployment/crowdsec-lapi -- \
+        #     cscli bouncers add traefik-bouncer -o raw
+        # then sealed (see flux/dmz/crowdsec/crowdsec-bouncer-sealedsecret.yaml.instructions)
+        - name: CROWDSEC_BOUNCER_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: crowdsec-bouncer-key
+              key: api-key
 
     persistence:
       enabled: true
@@ -105,3 +115,20 @@ spec:
         enabled: true
       kubernetesIngress:
         enabled: true
+
+    # Enable access logs so the CrowdSec agent can parse them
+    logs:
+      access:
+        enabled: true
+        format: json
+        fields:
+          defaultMode: keep
+          names:
+            ServiceName: keep
+
+    # CrowdSec bouncer plugin - inspects/blocks requests via CrowdSec LAPI + AppSec
+    experimental:
+      plugins:
+        crowdsec-bouncer-traefik-plugin:
+          moduleName: "github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin"
+          version: "v1.5.1"

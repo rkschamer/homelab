@@ -1,0 +1,109 @@
+---
+# =============================================================================
+# CrowdSec Network Policy - DMZ Zone
+# =============================================================================
+# CrowdSec Security Engine needs to:
+# - LAPI: receive connections from agents and bouncers within the cluster
+# - Agent: watch Traefik logs and report to LAPI
+# - AppSec: receive HTTP inspection requests from Traefik (port 7422)
+# - Both: reach CrowdSec Central API (CAPI) at api.crowdsec.net for shared intel
+# =============================================================================
+
+---
+# CrowdSec LAPI - Local API server
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: crowdsec-lapi
+  namespace: crowdsec
+spec:
+  description: "Network policy for CrowdSec LAPI"
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/component: lapi
+
+  ingress:
+    # Allow agents and bouncers (in-cluster) to reach LAPI on port 8080
+    - fromEndpoints:
+        - matchLabels:
+            io.cilium.k8s.namespace.labels.network-zone: dmz
+      toPorts:
+        - ports:
+            - port: "8080"
+              protocol: TCP
+
+  egress:
+    # CrowdSec Central API (CAPI) - shared threat intelligence
+    - toEntities:
+        - world
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP
+
+---
+# CrowdSec Agent - Log collector
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: crowdsec-agent
+  namespace: crowdsec
+spec:
+  description: "Network policy for CrowdSec Agent"
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/component: agent
+
+  egress:
+    # Report to LAPI
+    - toEndpoints:
+        - matchLabels:
+            app.kubernetes.io/component: lapi
+      toPorts:
+        - ports:
+            - port: "8080"
+              protocol: TCP
+
+    # Kubernetes API for reading pod/namespace metadata
+    - toEntities:
+        - kube-apiserver
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP
+            - port: "6443"
+              protocol: TCP
+
+---
+# CrowdSec AppSec - HTTP WAF inspection endpoint
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: crowdsec-appsec
+  namespace: crowdsec
+spec:
+  description: "Network policy for CrowdSec AppSec component"
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/component: appsec
+
+  ingress:
+    # Allow Traefik bouncer to submit HTTP requests for inspection
+    - fromEndpoints:
+        - matchLabels:
+            io.cilium.k8s.namespace.labels.network-zone: dmz
+            app.kubernetes.io/name: traefik
+      toPorts:
+        - ports:
+            - port: "7422"
+              protocol: TCP
+
+  egress:
+    # Report to LAPI
+    - toEndpoints:
+        - matchLabels:
+            app.kubernetes.io/component: lapi
+      toPorts:
+        - ports:
+            - port: "8080"
+              protocol: TCP
