@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(kubectl get:*)",
-      "Bash(kubectl kustomize:*)"
+      "Bash(kubectl kustomize:*)",
+      "Bash(helm template:*)"
     ]
   }
 }
