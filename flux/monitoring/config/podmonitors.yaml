@@ -5,6 +5,7 @@ metadata:
   namespace: monitoring
   labels:
     app.kubernetes.io/part-of: flux
+    app.kubernetes.io/component: monitoring
 spec:
   namespaceSelector:
     matchNames:
@@ -22,6 +23,3 @@ spec:
           - image-reflector-controller
   podMetricsEndpoints:
     - port: http-prom
-      relabelings:
-        - sourceLabels: [__meta_kubernetes_pod_label_app]
-          targetLabel: controller
