@@ -242,8 +242,28 @@ spec:
 # No explicit deny rules - trusted zone can reach most things.
 # =============================================================================
 
-# No explicit policies needed for trusted - it has default-allow.
-# If more restrictive rules are needed later, add them here.
+# No explicit deny rules needed for trusted - it has default-allow.
+# Provide a DNS baseline so per-pod egress policies don't need to repeat it.
+apiVersion: cilium.io/v2
+kind: CiliumClusterwideNetworkPolicy
+metadata:
+  name: allow-trusted-dns-egress
+spec:
+  description: "Allow trusted zone pods DNS egress (baseline for per-pod policies)"
+  endpointSelector:
+    matchLabels:
+      io.cilium.k8s.namespace.labels.network-zone: trusted
+  egress:
+  - toEndpoints:
+    - matchLabels:
+        io.kubernetes.pod.namespace: kube-system
+        k8s-app: kube-dns
+    toPorts:
+    - ports:
+      - port: "53"
+        protocol: UDP
+      - port: "53"
+        protocol: TCP
 
 ---
 # =============================================================================

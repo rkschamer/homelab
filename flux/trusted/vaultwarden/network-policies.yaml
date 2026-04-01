@@ -36,18 +36,6 @@ spec:
   # EGRESS: What Vaultwarden can reach
   # =========================================================================
   egress:
-    # DNS resolution
-    - toEndpoints:
-        - matchLabels:
-            io.kubernetes.pod.namespace: kube-system
-            k8s-app: kube-dns
-      toPorts:
-        - ports:
-            - port: "53"
-              protocol: UDP
-            - port: "53"
-              protocol: TCP
-
     # Bitwarden push notification relay (https://push.bitwarden.com)
     # Remove this block if you do not use mobile push notifications
     - toEntities:
