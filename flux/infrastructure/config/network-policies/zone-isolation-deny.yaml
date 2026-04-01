@@ -217,7 +217,6 @@ spec:
     - matchLabels:
         io.cilium.k8s.namespace.labels.network-zone: monitoring
 
----
 # =============================================================================
 # Monitoring Zone - Pull-based access (no ingress from other zones)
 # =============================================================================
@@ -254,10 +253,8 @@ spec:
     matchLabels:
       io.cilium.k8s.namespace.labels.network-zone: trusted
   egress:
-  - toEndpoints:
-    - matchLabels:
-        io.kubernetes.pod.namespace: kube-system
-        k8s-app: kube-dns
+  - toCIDR:
+    - 10.96.0.10/32
     toPorts:
     - ports:
       - port: "53"
