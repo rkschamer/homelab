@@ -8,7 +8,7 @@ spec:
   entryPoints:
     - websecure
   routes:
-    - match: Host(`vault.kschamer.info`)
+    - match: Host(`vw.kschamer.info`)
       kind: Rule
       services:
         - name: vaultwarden
