@@ -71,6 +71,29 @@ resource "local_file" "controlplane_config" {
               proxy = {
                 disabled = true
               },
+              controllerManager = merge(
+                lookup(local.controlplane_config_patched.cluster, "controllerManager", {}),
+                {
+                  // Bind to all interfaces so Prometheus can scrape metrics (port 10257).
+                  // By default Talos binds to 127.0.0.1, making the endpoint unreachable
+                  // from pods outside the node host network.
+                  extraArgs = merge(
+                    lookup(lookup(local.controlplane_config_patched.cluster, "controllerManager", {}), "extraArgs", {}),
+                    { "bind-address" = "0.0.0.0" }
+                  )
+                }
+              ),
+              scheduler = merge(
+                lookup(local.controlplane_config_patched.cluster, "scheduler", {}),
+                {
+                  // Bind to all interfaces so Prometheus can scrape metrics (port 10259).
+                  // Same reason as controllerManager above.
+                  extraArgs = merge(
+                    lookup(lookup(local.controlplane_config_patched.cluster, "scheduler", {}), "extraArgs", {}),
+                    { "bind-address" = "0.0.0.0" }
+                  )
+                }
+              ),
               network = merge(
                 local.controlplane_config_patched.cluster.network,
                 {
