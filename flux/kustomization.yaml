@@ -8,4 +8,5 @@ resources:
   - monitoring/flux-kustomization.yaml
   - monitoring/config/flux-kustomization.yaml
   - dmz/flux-kustomization.yaml
+  - trusted/flux-kustomization.yaml
   - untrusted/flux-kustomization.yaml
