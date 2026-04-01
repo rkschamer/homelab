@@ -71,6 +71,7 @@ spec:
                   storage: 8Gi
         podMonitorNamespaceSelector: {}
         podMonitorSelector: {}
+        podMonitorSelectorNilUsesHelmValues: false
         resources:
           requests:
             cpu: 300m
