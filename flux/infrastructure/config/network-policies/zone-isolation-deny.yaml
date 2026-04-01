@@ -248,19 +248,28 @@ kind: CiliumClusterwideNetworkPolicy
 metadata:
   name: allow-trusted-dns-egress
 spec:
-  description: "Allow trusted zone pods DNS egress (baseline for per-pod policies)"
+  description: "Allow trusted zone pods broad egress baseline (DNS, cluster, home LAN, internet)"
   endpointSelector:
     matchLabels:
       io.cilium.k8s.namespace.labels.network-zone: trusted
   egress:
-  - toCIDR:
-    - 10.96.0.10/32
-    toPorts:
+  # DNS
+  - toPorts:
     - ports:
       - port: "53"
         protocol: UDP
       - port: "53"
         protocol: TCP
+  # In-cluster traffic (pod and service backends).
+  # Cross-zone deny for monitoring is still enforced by deny-trusted-to-monitoring.
+  - toEntities:
+    - cluster
+  # Home LAN / management network (192.168.123.0/24)
+  - toCIDR:
+    - 192.168.123.0/24
+  # Internet egress
+  - toEntities:
+    - world
 
 ---
 # =============================================================================
