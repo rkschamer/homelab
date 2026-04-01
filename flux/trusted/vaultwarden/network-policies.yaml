@@ -36,11 +36,20 @@ spec:
   # EGRESS: What Vaultwarden can reach
   # =========================================================================
   egress:
-    # Bitwarden push notification relay (https://push.bitwarden.com)
-    # Remove this block if you do not use mobile push notifications
+    # Bitwarden push notification relay and outbound HTTPS
     - toEntities:
         - world
       toPorts:
         - ports:
             - port: "443"
+              protocol: TCP
+
+    # SMTP for email notifications (STARTTLS / SMTPS)
+    - toEntities:
+        - world
+      toPorts:
+        - ports:
+            - port: "587"
+              protocol: TCP
+            - port: "465"
               protocol: TCP
