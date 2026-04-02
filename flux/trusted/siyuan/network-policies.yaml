@@ -1,0 +1,45 @@
+---
+# =============================================================================
+# SiYuan Network Policy - Trusted Zone
+# =============================================================================
+# SiYuan is a personal notes app that should:
+# - Receive requests from Traefik (DMZ) only — no direct LAN access to pod
+# - Reach the internet for asset downloads and the plugin marketplace
+# - DNS + in-cluster egress covered by the cluster-wide allow-trusted-dns-egress policy
+# =============================================================================
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: siyuan
+  namespace: siyuan
+spec:
+  description: "Network policy for SiYuan notes app in Trusted zone"
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: siyuan
+
+  # =========================================================================
+  # INGRESS: Who can reach SiYuan
+  # =========================================================================
+  ingress:
+    # Allow Traefik (DMZ) to proxy requests to SiYuan
+    - fromEndpoints:
+        - matchLabels:
+            io.cilium.k8s.namespace.labels.network-zone: dmz
+            app.kubernetes.io/name: traefik
+      toPorts:
+        - ports:
+            - port: "6806"
+              protocol: TCP
+
+  # =========================================================================
+  # EGRESS: What SiYuan can reach
+  # =========================================================================
+  egress:
+    # Outbound HTTPS for asset downloads and plugin marketplace
+    - toEntities:
+        - world
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP
