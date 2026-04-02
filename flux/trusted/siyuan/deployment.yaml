@@ -43,9 +43,9 @@ spec:
     spec:
       automountServiceAccountToken: false
       securityContext:
-        runAsNonRoot: true
-        runAsUser: 1000
-        runAsGroup: 1000
+        # SiYuan's entrypoint runs as root to create the siyuan group/user
+        # (uid 1000), then drops privileges before starting the process.
+        # fsGroup ensures the Longhorn volume is writable by gid 1000.
         fsGroup: 1000
       containers:
         - name: siyuan
@@ -79,9 +79,6 @@ spec:
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: false  # SiYuan writes temp/cache files outside the workspace
-            capabilities:
-              drop:
-                - ALL
           livenessProbe:
             httpGet:
               path: /
