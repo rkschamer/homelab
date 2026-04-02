@@ -70,6 +70,8 @@ spec:
               value: "true"
             - name: SHOW_PASSWORD_HINT
               value: "false"
+            - name: SMTP_SECURITY
+              value: "starttls"
           volumeMounts:
             - name: data
               mountPath: /data
