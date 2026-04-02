@@ -1,0 +1,19 @@
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-traefik-to-grafana
+  namespace: monitoring
+spec:
+  description: "Allow Traefik (DMZ) to route traffic to Grafana"
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: grafana
+  ingress:
+  - fromEndpoints:
+    - matchLabels:
+        io.cilium.k8s.namespace.labels.network-zone: dmz
+    toPorts:
+    - ports:
+      - port: "3000"
+        protocol: TCP
