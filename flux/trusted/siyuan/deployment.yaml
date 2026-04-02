@@ -1,0 +1,117 @@
+---
+# =============================================================================
+# SiYuan PersistentVolumeClaim
+# Stores the workspace (notes, assets, SQLite index)
+# =============================================================================
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: siyuan-data
+  namespace: siyuan
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: longhorn
+  resources:
+    requests:
+      storage: 5Gi
+
+---
+# =============================================================================
+# SiYuan Deployment
+# https://github.com/siyuan-note/siyuan
+# =============================================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: siyuan
+  namespace: siyuan
+spec:
+  replicas: 1
+  # Recreate strategy: SiYuan uses a local SQLite index — only one replica can
+  # hold the write lock. Recreate ensures the old pod is fully terminated before
+  # the new one starts, preventing workspace corruption during updates.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: siyuan
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: siyuan
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      containers:
+        - name: siyuan
+          image: b3log/siyuan:v3.6.3
+          # Kubernetes substitutes $(ACCESS_AUTH_CODE) from the env block
+          # before passing args to the process, keeping the secret out of
+          # the literal args string while still injecting it at runtime.
+          args:
+            - --workspace=/siyuan/workspace
+            - --lang=en_US
+            - --accessAuthCode=$(ACCESS_AUTH_CODE)
+          env:
+            - name: ACCESS_AUTH_CODE
+              valueFrom:
+                secretKeyRef:
+                  name: siyuan-secret
+                  key: access-auth-code
+          ports:
+            - containerPort: 6806
+              protocol: TCP
+          volumeMounts:
+            - name: data
+              mountPath: /siyuan/workspace
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false  # SiYuan writes temp/cache files outside the workspace
+            capabilities:
+              drop:
+                - ALL
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 6806
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 6806
+            initialDelaySeconds: 10
+            periodSeconds: 10
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: siyuan-data
+
+---
+# =============================================================================
+# SiYuan Service
+# =============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: siyuan
+  namespace: siyuan
+spec:
+  selector:
+    app.kubernetes.io/name: siyuan
+  ports:
+    - port: 6806
+      targetPort: 6806
+      protocol: TCP
