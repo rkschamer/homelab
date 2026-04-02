@@ -12,3 +12,4 @@ resources:
   - loki-release.yaml
   - fluent-bit-release.yaml
   - ingress.yaml
+  - network-policies.yaml
