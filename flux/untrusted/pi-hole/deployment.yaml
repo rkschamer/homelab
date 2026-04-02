@@ -107,14 +107,14 @@ spec:
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: false
-            runAsNonRoot: true
-            runAsUser: 1000
-            runAsGroup: 1000
             seccompProfile:
               type: RuntimeDefault
             capabilities:
               drop:
                 - ALL
+              add:
+                - CHOWN
+                - MKNOD
       volumes:
         - name: config
           persistentVolumeClaim:
