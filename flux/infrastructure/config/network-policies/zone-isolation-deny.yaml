@@ -190,10 +190,15 @@ kind: CiliumClusterwideNetworkPolicy
 metadata:
   name: deny-dmz-to-monitoring
 spec:
-  description: "Block DMZ zone pods from pushing traffic to monitoring zone"
+  description: "Block DMZ zone pods from pushing traffic to monitoring zone (Traefik excluded — it routes to Grafana)"
   endpointSelector:
-    matchLabels:
-      io.cilium.k8s.namespace.labels.network-zone: dmz
+    matchExpressions:
+    - key: io.cilium.k8s.namespace.labels.network-zone
+      operator: In
+      values: [dmz]
+    - key: app.kubernetes.io/name
+      operator: NotIn
+      values: [traefik]
   egressDeny:
   - toEndpoints:
     - matchLabels:
