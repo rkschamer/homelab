@@ -42,6 +42,17 @@ spec:
         limits:
           cpu: 500m
           memory: 512Mi
+      grafana.ini:
+        auth.proxy:
+          enabled: true
+          header_name: X-authentik-username
+          header_property: username
+          auto_sign_up: true
+          default_role: Admin
+        auth:
+          signout_redirect_url: https://auth.kschamer.info/application/o/homelab/end-session/
+          disable_login_form: true
+
       additionalDataSources:
         - name: Loki
           uid: loki
