@@ -24,7 +24,7 @@ This is a Kubernetes homelab running on Proxmox VE, managed declaratively using 
 - **GitOps:** Flux CD
 - **Ingress:** Traefik with ACME/Let's Encrypt
 - **Load Balancing:** MetalLB (pool: 192.168.123.21-29)
-- **Observability:** Hubble (network), Prometheus/Grafana
+- **Observability:** Hubble (network), Prometheus, Loki, Fluent Bit
 - **Secrets:** Sealed Secrets (master key stored externally in Vaultwarden)
 - **Storage:** Longhorn (distributed block storage)
 
@@ -81,19 +81,19 @@ Cilium Network Policies in `flux/infrastructure/network-policies/` enforce these
 │   └── bootstrap/         # Bootstrap scripts
 ├── flux/
 │   ├── flux-system/       # Flux CD system components
-│   ├── infrastructure/    # Platform services (Cilium, MetalLB, Traefik, Sealed Secrets)
-│   │   ├── cilium-release.yaml
-│   │   ├── metallb-release.yaml
-│   │   ├── sealed-secrets-release.yaml
-│   │   ├── network-policies/   # Cilium Network Policies for zone isolation
-│   │   └── longhorn/           # Storage configuration
-│   └── apps/              # User-facing applications
+│   ├── infrastructure/
+│   │   ├── releases/           # HelmRelease manifests (Cilium, MetalLB, Longhorn, ...)
+│   │   └── config/             # Post-install config (MetalLB pool, network policies, Longhorn)
+│   │       └── network-policies/   # Cilium Network Policies for zone isolation
+│   ├── dmz/               # DMZ zone services (Traefik, Authentik, CrowdSec)
+│   ├── trusted/           # Trusted zone services (Vaultwarden, SiYuan)
+│   ├── untrusted/         # Untrusted zone services (Pi-hole, Snowflake Proxy)
+│   └── monitoring/        # Monitoring stack (Prometheus, Loki, Fluent Bit)
 └── docs/                  # Detailed documentation
     ├── network-architecture.md
     ├── network-policies.md
     ├── talos-installation.md
-    ├── CLUSTER_UPGRADES.md
-    └── MIGRATION_GUIDE.md
+    └── crowdsec.md
 ```
 
 ## Common Operations
@@ -208,7 +208,7 @@ cilium monitor  # BPF program monitoring
 
 ### Cluster Upgrades
 
-Always refer to `docs/CLUSTER_UPGRADES.md` for detailed procedures.
+Always refer to `docs/talos-installation.md` for detailed procedures.
 
 Talos OS upgrade:
 ```bash
@@ -226,8 +226,8 @@ talosctl upgrade-k8s --to 1.x.y
 - **talos/gen/talosconfig:** Talos client credentials (encrypted)
 - **talos/gen/kubeconfig:** Kubernetes admin credentials (encrypted)
 - **talos/manifests/<node-name>/linkconfig.yaml:** Per-node network configuration (static IPs, routes, DNS)
-- **flux/infrastructure/cilium-release.yaml:** Cilium CNI configuration
-- **flux/infrastructure/network-policies/:** Zone isolation policies
+- **flux/infrastructure/releases/cilium-release.yaml:** Cilium CNI configuration
+- **flux/infrastructure/config/network-policies/:** Zone isolation policies
 - **.gitattributes:** Defines which files are encrypted by git-crypt
 
 ## Important Notes
@@ -265,13 +265,13 @@ LoadBalancer services receive IPs from 192.168.123.21-29 (management network). F
 ### Documentation References
 
 For deep dives, consult:
-- `README.md` - Project overview and navigation
+- `README.md` - Project overview and service inventory
 - `docs/network-architecture.md` - Complete network design and routing
 - `docs/network-policies.md` - Cilium policy details
+- `docs/talos-installation.md` - Installation, bootstrap, and upgrade procedures
+- `docs/crowdsec.md` - CrowdSec threat detection setup
 - `terraform/README.md` - Terraform workflow and ISO-based deployment
 - `talos/manifests/README.md` - LinkConfig and network configuration
-- `docs/CLUSTER_UPGRADES.md` - Upgrade procedures
-- `docs/MIGRATION_GUIDE.md` - Service migration from Docker
 
 ## External References
 
