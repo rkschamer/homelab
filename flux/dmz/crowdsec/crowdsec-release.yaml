@@ -39,9 +39,6 @@ spec:
     container_runtime: containerd
 
     lapi:
-      env:
-        - name: DISABLE_AGENT
-          value: "true"
       resources:
         requests:
           cpu: 50m
