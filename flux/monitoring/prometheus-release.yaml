@@ -85,11 +85,11 @@ spec:
         podMonitorSelectorNilUsesHelmValues: false
         resources:
           requests:
-            cpu: 300m
-            memory: 2Gi
+            cpu: 100m
+            memory: 512Mi
           limits:
-            cpu: 1500m
-            memory: 4Gi
+            cpu: 500m
+            memory: 1500Mi
 
     kubeProxy:
       enabled: false
@@ -108,26 +108,26 @@ spec:
                   storage: 1Gi
         resources:
           requests:
-            cpu: 50m
-            memory: 128Mi
+            cpu: 25m
+            memory: 64Mi
           limits:
-            cpu: 300m
-            memory: 512Mi
+            cpu: 100m
+            memory: 256Mi
 
     kube-state-metrics:
       resources:
         requests:
-          cpu: 50m
-          memory: 128Mi
+          cpu: 25m
+          memory: 64Mi
         limits:
-          cpu: 250m
-          memory: 256Mi
+          cpu: 100m
+          memory: 128Mi
 
     prometheus-node-exporter:
       resources:
         requests:
-          cpu: 50m
-          memory: 64Mi
+          cpu: 25m
+          memory: 32Mi
         limits:
-          cpu: 250m
-          memory: 128Mi
+          cpu: 100m
+          memory: 64Mi
