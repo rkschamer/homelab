@@ -1,47 +1,184 @@
-# Talos Installation
+# Talos: Installation & Cluster Maintenance
 
-This guide walks through creating VMs on Proxmox and bootstrapping a Talos Kubernetes cluster on a single workload network, with pod-level network isolation enforced via Cilium Network Policies.
+## Installation
 
-The cluster creation is a semi-automated process, since several step of the bootstrapping process is not supported by the Proxmox Terraform provider (yet?).
+Cluster creation is semi-automated — Terraform handles VM provisioning and Talos config generation, but a few bootstrapping steps still require manual intervention (Proxmox Terraform provider limitations).
 
-## Step 1: `terraform apply`
+### Step 1: `terraform apply`
 
-- Navigate to [`terraform/`](../terraform/) and run `terraform apply`.
-- Proxmox will create VMs with SecureBoot enabled and cloud-init network configuration automatically.
-- The control plane will boot and request DHCP on vmbr0, receiving **192.168.123.20** via static DHCP lease.
-- Worker nodes will have network configuration applied via Proxmox cloud-init (no manual steps needed):
+Navigate to [`terraform/`](../terraform/) and run `terraform apply`.
+
+Proxmox will create VMs with SecureBoot enabled and cloud-init network configuration applied automatically:
+
+- Control plane boots via DHCP on vmbr0 → receives **192.168.123.20** via static DHCP lease
+- Worker nodes get static IPs via cloud-init:
   - **Worker-1**: 10.10.20.21/24
   - **Worker-2**: 10.10.20.22/24
-- The created VM will boot from the Talos ISO image, making them read to receive Talos cluster configuration
 
-## Step 2: `talosctl apply-config`
+All VMs boot from the Talos ISO and are ready to receive cluster configuration.
 
-- `terraform apply` also generated Talos configuration, which need to be applied to the created node VMs
-- Navigate to `talos/gen`, which contains the generated Talos configuration for each node
-- Apply the configuration:
+`terraform apply` also generates Talos machine configs in `talos/gen/`.
 
-  ```bash
-  talosctl apply-config \
-    --insecure \
-    --nodes <node-ip> \
-    --file ./talos/gen/<node-name>.yaml
-  ```
-- Wait 2-3 minutes for the control plane to install and reboot.
-- **After reboot make sure that Talos is booting the from disk and not from the ISO again**
-  - This can be done by entering UEFI prompt and select the disk as boot device
-  - Remove the Talso ISO from the _Hardware_ tab in Proxmox so that in subsequent boots the nodes will never boot from ISO (this is currently not supprted by the Terraform provider)
-- After reboot, retrieve the kubeconfig:
-  ```bash
-  talosctl kubeconfig -n 192.168.123.20 > ~/.kube/config
-  export KUBECONFIG=$HOME/.kube/config
-  kubectl get nodes
-  ```
+### Step 2: Apply Talos Configuration
 
-## Step 3: `talosctl bootstrap`
+Apply the generated configs to each node:
 
-- Call `talosctl bootstrap -n 192.168.123.20` to install basic K8s components, after the control-plane node has rebooted
+```bash
+talosctl apply-config \
+  --insecure \
+  --nodes <node-ip> \
+  --file ./talos/gen/<node-name>.yaml
+```
 
-## Step 3: Bootstrap Cilium and Flux
+Wait 2–3 minutes for the control plane to install and reboot.
 
-- The created cluster won't become ready, since the CNI Cilium is missing
-- Install Cilium and Flux via [../talos/bootstrap/bootstrap.sh](../talos/bootstrap/bootstrap.sh) and here only kept for explanation.
+**After reboot, make sure Talos boots from disk, not the ISO:**
+- Enter the UEFI prompt and set the disk as boot device
+- Remove the Talos ISO from the *Hardware* tab in Proxmox (not yet supported by the Terraform provider, so this is manual for now)
+
+Then retrieve the kubeconfig:
+
+```bash
+talosctl kubeconfig -n 192.168.123.20 > ~/.kube/config
+export KUBECONFIG=$HOME/.kube/config
+kubectl get nodes
+```
+
+### Step 3: Bootstrap etcd
+
+Once the control plane has rebooted:
+
+```bash
+talosctl bootstrap -n 192.168.123.20
+```
+
+### Step 4: Bootstrap Cilium and Flux
+
+The cluster won't reach `Ready` state until Cilium (the CNI) is installed. Run the bootstrap script to install both Cilium and Flux:
+
+```bash
+./talos/bootstrap/bootstrap.sh
+```
+
+Flux takes over from here and reconciles everything else from this repo.
+
+### Backup the Sealed Secrets Private Key
+
+Once the cluster is up, export and store the Sealed Secrets controller's private key somewhere safe (Vaultwarden). This key is **not** managed by git-crypt and cannot be recovered if lost.
+
+```bash
+kubectl get secret -n sealed-secrets \
+  -l sealedsecrets.bitnami.com/sealed-secrets-key \
+  -o yaml > sealed-secrets-master.key
+```
+
+Store `sealed-secrets-master.key` securely and **do not commit it**.
+
+---
+
+## Cluster Maintenance
+
+### General Principles
+
+- Always take a Proxmox snapshot of all cluster VMs before starting any upgrade.
+- Upgrade one node at a time to maintain availability.
+- Cordon and drain before touching a node.
+- Workers first, control plane last.
+
+### Pre-Upgrade Checklist
+
+- [ ] All nodes in `Ready` state
+- [ ] No stuck or pending pods across the cluster
+- [ ] Persistent volumes healthy (check Longhorn UI)
+- [ ] Proxmox snapshots created for all cluster VMs
+
+### Talos OS Upgrades
+
+```bash
+export TALOSCONFIG=$(pwd)/talos/gen/talosconfig
+
+# Check current version
+talosctl version
+
+# For each worker node:
+kubectl cordon <NODE_NAME>
+kubectl drain <NODE_NAME> --ignore-daemonsets --delete-emptydir-data
+
+talosctl upgrade --nodes <NODE_IP> --image ghcr.io/siderolabs/installer:vX.X.X
+
+# Monitor reboot and rejoin (~2–3 min)
+watch kubectl get nodes
+
+kubectl uncordon <NODE_NAME>
+
+# Upgrade control plane last
+talosctl upgrade --nodes 192.168.123.20 --image ghcr.io/siderolabs/installer:vX.X.X
+```
+
+### Kubernetes Version Upgrades
+
+Talos manages the Kubernetes version directly:
+
+```bash
+talosctl upgrade-k8s --to 1.x.y
+```
+
+### Post-Upgrade Verification
+
+- [ ] All nodes back in `Ready` state
+- [ ] All system pods running
+- [ ] `cilium status` healthy
+- [ ] Application workloads healthy
+
+---
+
+## Rollback
+
+### From Proxmox Snapshot (fastest)
+
+```bash
+qm stop <VMID>
+qm rollback <VMID> <SNAPSHOT_NAME>
+qm start <VMID>
+kubectl get nodes
+```
+
+### Revert Talos Machine Config
+
+```bash
+talosctl apply-config --nodes <NODE_IP> --file reverted-config.yaml
+watch kubectl get nodes
+```
+
+---
+
+## Troubleshooting
+
+### Node Stuck in `NotReady`
+
+```bash
+kubectl describe node <NODE_NAME>
+talosctl logs --nodes <NODE_IP> kubelet
+talosctl health --nodes <NODE_IP>
+```
+
+### Upgrade Didn't Complete
+
+```bash
+talosctl logs --nodes <NODE_IP> --services=update
+# Retry:
+talosctl upgrade --nodes <NODE_IP> --image ghcr.io/siderolabs/installer:vX.X.X
+```
+
+### Cluster Unreachable After Upgrade
+
+1. Verify all VMs are running in Proxmox
+2. Confirm control plane IP is reachable (`192.168.123.20`)
+3. Restore from snapshot if needed
+
+---
+
+## External References
+
+- [Talos Upgrade Guide](https://www.talos.dev/latest/talos-guides/upgrade/)
+- [Cilium Upgrade Guide](https://docs.cilium.io/en/latest/operations/upgrade/)
