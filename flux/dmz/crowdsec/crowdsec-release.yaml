@@ -48,27 +48,17 @@ spec:
           memory: 256Mi
 
     agent:
-      env:
-        - name: COLLECTIONS
-          value: "crowdsecurity/traefik crowdsecurity/appsec-virtual-patching crowdsecurity/appsec-generic-rules"
-      resources:
-        requests:
-          cpu: 50m
-          memory: 128Mi
-        limits:
-          cpu: 500m
-          memory: 256Mi
-      # Tail Traefik access logs from the Traefik namespace
-      additionalAcquisition:
-        - source: file
-          labels:
-            type: traefik
-          filenames:
-            - /var/log/traefik/*.log
-      tolerations:
-        - key: node-role.kubernetes.io/control-plane
-          operator: Exists
-          effect: NoSchedule
+      # Disabled: the agent DaemonSet requires hostPath mounts (/var/log) to tail
+      # node logs, which violates the baseline PodSecurity policy on this namespace.
+      # Granting privileged access to a security tool that also talks to the internet
+      # (CAPI) is an unacceptable blast radius — a compromised agent pod could read
+      # secrets from all other pods' log output across every node.
+      #
+      # The incremental value (time-based brute-force detection) does not justify
+      # the risk. Protection is provided by:
+      #   - AppSec: per-request WAF inspection against CVEs and generic attack rules
+      #   - LAPI + CAPI: community blocklist of known-bad IPs, synced from CrowdSec Central API
+      enabled: false
 
     appsec:
       enabled: true
@@ -79,7 +69,8 @@ spec:
         - source: appsec
           listen_addr: "0.0.0.0:7422"
           path: /
-          appsec_config: crowdsecurity/appsec-default
+          appsec_configs:
+            - crowdsecurity/appsec-default
           labels:
             type: appsec
       resources:
