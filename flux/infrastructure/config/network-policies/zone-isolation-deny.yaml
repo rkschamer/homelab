@@ -230,12 +230,36 @@ spec:
 # This is a one-directional relationship: monitoring pulls, others don't push.
 # =============================================================================
 
-# No explicit deny rules for monitoring zone - it needs to reach everywhere.
-# Instead, other zones should have egress rules preventing push to monitoring
-# (This could be added if needed, but pull-based is the default pattern).
-
-# Example: Allow monitoring to pull from etcd, API servers, etc.
-# (Usually happens automatically via service DNS resolution)
+---
+apiVersion: cilium.io/v2
+kind: CiliumClusterwideNetworkPolicy
+metadata:
+  name: allow-monitoring-egress
+spec:
+  description: "Allow monitoring zone pods broad egress (DNS, cluster, internet) for pull-based metrics collection"
+  endpointSelector:
+    matchLabels:
+      io.cilium.k8s.namespace.labels.network-zone: monitoring
+  egress:
+  # DNS
+  - toPorts:
+    - ports:
+      - port: "53"
+        protocol: UDP
+      - port: "53"
+        protocol: TCP
+  # In-cluster traffic (pod and service backends across all zones)
+  - toEntities:
+    - cluster
+  # Internet egress (e.g. remote write, alert webhooks)
+  - toEntities:
+    - world
+    toPorts:
+    - ports:
+      - port: "80"
+        protocol: TCP
+      - port: "443"
+        protocol: TCP
 
 ---
 # =============================================================================
