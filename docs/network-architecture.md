@@ -443,7 +443,7 @@ subsets:
         port: 8123
 ```
 
-**Network Policy Exception** (flux/infrastructure/config/network-policies/zone-isolation-deny.yaml):
+**Network Policy Exception** (flux/infrastructure/config/network-policies/zone-policies.yaml):
 
 Add proxy IP to `deny-dmz-to-home-lan` exceptions:
 ```yaml
