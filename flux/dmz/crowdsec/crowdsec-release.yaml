@@ -82,7 +82,6 @@ spec:
           appsec_config: crowdsecurity/appsec-default
           labels:
             type: appsec
-          enabled: true
       resources:
         requests:
           cpu: 100m
