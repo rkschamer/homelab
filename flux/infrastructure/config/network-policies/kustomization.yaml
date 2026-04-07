@@ -7,5 +7,5 @@ metadata:
 
 resources:
   - namespace-zone-admission-policy.yaml
-  - zone-isolation-deny.yaml
+  - zone-policies.yaml
   - host-firewall-policies.yaml

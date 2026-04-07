@@ -27,7 +27,7 @@ All worker nodes (2 nodes) share the same physical network (10.10.20.0/24). **Ne
 
 ## Zone Isolation Rules
 
-The `zone-isolation-deny.yaml` file enforces these boundaries using Cilium Network Policies with namespace selectors:
+The `zone-policies.yaml` file enforces these boundaries using Cilium Network Policies with namespace selectors:
 
 ### Untrusted Zone (Most Restricted)
 - ❌ Cannot reach Home LAN (192.168.123.0/24)
@@ -115,7 +115,7 @@ spec:
 
 ```
 network-policies/
-├── zone-isolation-deny.yaml    # All deny rules for zone isolation
+├── zone-policies.yaml              # Zone baseline policies (deny + allow rules)
 ├── namespace-zone-labels.yaml  # Namespace labels for zone classification
 ├── host-firewall-policies.yaml # Node host firewall policies (CCNP + nodeSelector)
 ├── kustomization.yaml          # Kustomize manifest
@@ -240,7 +240,7 @@ kubectl -n kube-system exec -it ds/cilium -- hubble observe --verdict DROPPED
 
 ## Adding New Deny Rules
 
-To add a new deny rule, edit `zone-isolation-deny.yaml`:
+To add a new deny rule, edit `zone-policies.yaml`:
 
 ```yaml
 apiVersion: cilium.io/v2
