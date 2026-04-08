@@ -13,16 +13,16 @@ metadata:
   name: snowflake-proxy
   namespace: snowflake-proxy
   labels:
-    app: snowflake-proxy
+    app.kubernetes.io/name: snowflake-proxy
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: snowflake-proxy
+      app.kubernetes.io/name: snowflake-proxy
   template:
     metadata:
       labels:
-        app: snowflake-proxy
+        app.kubernetes.io/name: snowflake-proxy
     spec:
       containers:
         - name: snowflake-proxy

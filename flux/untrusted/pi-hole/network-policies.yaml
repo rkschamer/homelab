@@ -14,7 +14,7 @@ spec:
   description: "Strict network policy for pi-hole DNS server in untrusted zone"
   endpointSelector:
     matchLabels:
-      app: pihole
+      app.kubernetes.io/name: pihole
 
   # =========================================================================
   # INGRESS: Who can reach pi-hole

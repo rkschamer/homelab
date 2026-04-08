@@ -65,7 +65,7 @@ spec:
             Host loki-gateway.monitoring.svc.cluster.local
             Port 80
             Labels cluster=homelab, job=fluent-bit
-            label_keys $kubernetes['namespace_name'],$kubernetes['pod_name'],$kubernetes['container_name'],$kubernetes['host']
+            label_keys $kubernetes['namespace_name'],$kubernetes['pod_name'],$kubernetes['container_name'],$kubernetes['host'],$kubernetes['labels']['app_kubernetes_io_name']
             line_format json
-            auto_kubernetes_labels on
+            auto_kubernetes_labels off
             Retry_Limit False
