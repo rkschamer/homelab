@@ -39,6 +39,7 @@ spec:
       # old pod first, freeing the PVC before the new pod starts.
       deploymentStrategy:
         type: Recreate
+        rollingUpdate: null
       # set admin credentials from Kubernetes Secret
       admin:
         existingSecret: admin-secret
