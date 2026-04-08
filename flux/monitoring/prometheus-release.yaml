@@ -34,6 +34,11 @@ spec:
 
     grafana:
       enabled: true
+      # RollingUpdate is incompatible with ReadWriteOnce PVCs — the new pod cannot
+      # mount the volume while the old pod still holds it. Recreate terminates the
+      # old pod first, freeing the PVC before the new pod starts.
+      deploymentStrategy:
+        type: Recreate
       # set admin credentials from Kubernetes Secret
       admin:
         existingSecret: admin-secret
