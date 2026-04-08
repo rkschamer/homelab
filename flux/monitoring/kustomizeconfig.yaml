@@ -1,0 +1,11 @@
+# Without this, Kustomize does not know that spec.valuesFrom[].name on a
+# HelmRelease is a ConfigMap reference. The configMapGenerator appends a
+# content hash to ConfigMap names for cache-busting; this nameReference
+# transformer propagates that hash into the HelmRelease field so the
+# Helm Operator resolves the correct versioned ConfigMap.
+nameReference:
+- kind: ConfigMap
+  version: v1
+  fieldSpecs:
+  - path: spec/valuesFrom/name
+    kind: HelmRelease
