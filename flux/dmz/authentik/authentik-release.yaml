@@ -22,7 +22,7 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: authentik
-      version: "2026.2.1"
+      version: "2026.2.2"
   values:
     authentik:
       # Secret values (AUTHENTIK_* env vars) come from the existing secret via envFrom
