@@ -5,3 +5,4 @@ resources:
   - backup-secret.yaml
   - backup-target.yaml
   - longhorn-volumeattributesclass-rbac.yaml
+  - volumesnapshotclass.yaml
