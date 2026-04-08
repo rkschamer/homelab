@@ -13,3 +13,21 @@ resources:
   - fluent-bit-release.yaml
   - ingress.yaml
   - network-policies.yaml
+
+configMapGenerator:
+  # Wraps kube-state-metrics-config.yaml into a ConfigMap consumed by the
+  # prometheus-release HelmRelease via valuesFrom. Kustomize appends a content
+  # hash to the name; kustomizeconfig.yaml propagates that hash into the
+  # HelmRelease spec so changes trigger a Helm upgrade automatically.
+  - name: flux-kube-state-metrics-config
+    files:
+      - kube-state-metrics-config.yaml
+    options:
+      labels:
+        app.kubernetes.io/part-of: flux
+        app.kubernetes.io/component: monitoring
+
+# Teaches Kustomize to rewrite the hash-suffixed ConfigMap name into
+# spec.valuesFrom[].name on HelmRelease resources.
+configurations:
+  - kustomizeconfig.yaml
