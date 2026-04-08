@@ -36,6 +36,7 @@ spec:
       replicas: 1
       deploymentStrategy:
         type: Recreate
+        rollingUpdate: null
       resources:
         requests:
           cpu: 100m
@@ -51,6 +52,7 @@ spec:
       replicas: 1
       deploymentStrategy:
         type: Recreate
+        rollingUpdate: null
       resources:
         requests:
           cpu: 50m
