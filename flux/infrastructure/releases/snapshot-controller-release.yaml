@@ -31,9 +31,3 @@ spec:
     installCRDs: true
     webhook:
       enabled: false
-    volumeSnapshotClasses:
-      - name: longhorn
-        driver: driver.longhorn.io
-        deletionPolicy: Delete
-        annotations:
-          snapshot.storage.kubernetes.io/is-default-class: "true"
