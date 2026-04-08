@@ -20,6 +20,7 @@ configMapGenerator:
   # hash to the name; kustomizeconfig.yaml propagates that hash into the
   # HelmRelease spec so changes trigger a Helm upgrade automatically.
   - name: flux-kube-state-metrics-config
+    namespace: monitoring
     files:
       - kube-state-metrics-config.yaml
     options:
