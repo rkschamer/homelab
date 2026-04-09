@@ -1,0 +1,66 @@
+---
+# =============================================================================
+# Authelia Network Policy - DMZ Zone
+# =============================================================================
+# Authelia is an authentication portal that needs to:
+# - Receive ForwardAuth requests from Traefik
+# - Receive browser redirects (login callbacks) from all zones
+# - Reach external HTTPS for future OIDC provider support
+# =============================================================================
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: authelia
+  namespace: authelia
+spec:
+  description: "Network policy for Authelia IdP in DMZ zone"
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: authelia
+
+  ingress:
+    # Allow Traefik to reach Authelia for ForwardAuth checks
+    - fromEndpoints:
+        - matchLabels:
+            io.cilium.k8s.namespace.labels.network-zone: dmz
+            app.kubernetes.io/name: traefik
+      toPorts:
+        - ports:
+            - port: "9091"
+              protocol: TCP
+
+    # Allow browser redirect callbacks from all zones (login flow)
+    - fromEndpoints:
+        - matchLabels:
+            io.cilium.k8s.namespace.labels.network-zone: trusted
+        - matchLabels:
+            io.cilium.k8s.namespace.labels.network-zone: dmz
+        - matchLabels:
+            io.cilium.k8s.namespace.labels.network-zone: monitoring
+        - matchLabels:
+            io.cilium.k8s.namespace.labels.network-zone: untrusted
+      toPorts:
+        - ports:
+            - port: "9091"
+              protocol: TCP
+
+  egress:
+    # DNS resolution
+    - toEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: kube-system
+            k8s-app: kube-dns
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: UDP
+            - port: "53"
+              protocol: TCP
+
+    # HTTPS for external OIDC providers (future use)
+    - toEntities:
+        - world
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP
