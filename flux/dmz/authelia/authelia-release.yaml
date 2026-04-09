@@ -32,6 +32,27 @@ spec:
       replicas: 1
       strategy:
         type: Recreate
+      env:
+        - name: AUTHELIA_NOTIFIER_SMTP_HOST
+          valueFrom:
+            secretKeyRef:
+              name: authelia-secrets
+              key: SMTP_HOST
+        - name: AUTHELIA_NOTIFIER_SMTP_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: authelia-secrets
+              key: SMTP_USERNAME
+        - name: AUTHELIA_NOTIFIER_SMTP_SENDER
+          valueFrom:
+            secretKeyRef:
+              name: authelia-secrets
+              key: SMTP_SENDER
+        - name: AUTHELIA_NOTIFIER_SMTP_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: authelia-secrets
+              key: SMTP_PASSWORD
       resources:
         requests:
           cpu: 50m
@@ -80,8 +101,10 @@ spec:
           enabled: true
           path: /config/db.sqlite3
 
-      # Notify via filesystem log — no email server needed for single user
+      # SMTP notifications — host/username/sender/password injected via env vars from authelia-secrets
       notifier:
         filesystem:
+          enabled: false
+        smtp:
           enabled: true
-          filename: /config/notification.txt
+          port: 587
