@@ -28,6 +28,8 @@ spec:
       enabled: false
 
     pod:
+      kind: Deployment
+      replicas: 1
       resources:
         requests:
           cpu: 50m
@@ -36,7 +38,7 @@ spec:
           cpu: 200m
           memory: 256Mi
 
-    # Persist SQLite database across restarts
+    # Persist SQLite database — required for WebAuthn device registrations
     persistence:
       enabled: true
       storageClass: longhorn

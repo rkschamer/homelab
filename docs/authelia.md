@@ -10,7 +10,7 @@ Browser → Traefik → authelia-forwardauth middleware
                          └─► Authelia (9091)   — is this session authenticated?
                                   │                  if not → redirect to auth.kschamer.info/login
                                   │
-                                  └─► SQLite (PVC)   — session + user data
+                                  └─► SQLite (PVC)      — WebAuthn registrations, brute-force state
 ```
 
 Protected services redirect unauthenticated requests to `auth.kschamer.info`. After login, Authelia sets a session cookie scoped to `.kschamer.info` and passes identity headers back to Traefik.
@@ -21,7 +21,7 @@ Protected services redirect unauthenticated requests to `auth.kschamer.info`. Af
 |-----------|-----------|---------|
 | `authelia` pod | `authelia` | Auth portal — single binary, file-based users, SQLite storage |
 | `authelia-forwardauth` middleware | `traefik` | Traefik ForwardAuth pointing to Authelia's `/api/authz/forward-auth` |
-| SQLite PVC (1 Gi, Longhorn) | `authelia` | Persistent storage for sessions and encrypted data |
+| SQLite PVC (1 Gi, Longhorn) | `authelia` | Persists WebAuthn device registrations and brute-force state |
 
 ## Limitations
 
