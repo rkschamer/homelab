@@ -54,6 +54,15 @@ spec:
     # Keep aligned with `persistence.defaultClassReplicaCount` to avoid drift.
     # IMPORTANT:  this number MUST NOT exceed the number of available Longhorn nodes,
     #             otherwise provisioning will fail.
+    longhornManager:
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: 500m
+          memory: 1Gi
+
     defaultSettings:
       defaultDataPath: /var/mnt/longhorn
       defaultReplicaCount: "2"
