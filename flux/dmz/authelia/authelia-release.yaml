@@ -61,7 +61,7 @@ spec:
         file:
           enabled: true
           watch: false
-          path: /secrets/users_database.yml
+          path: /secrets/authelia-secrets/users_database.yml
 
       # Session scoped to kschamer.info, stored in memory
       session:
