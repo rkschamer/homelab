@@ -59,12 +59,12 @@ spec:
       grafana.ini:
         auth.proxy:
           enabled: true
-          header_name: X-authentik-username
+          header_name: Remote-User
           header_property: username
           auto_sign_up: true
           default_role: Admin
         auth:
-          signout_redirect_url: https://auth.kschamer.info/application/o/homelab/end-session/
+          signout_redirect_url: https://auth.kschamer.info/logout
           disable_login_form: true
 
       additionalDataSources:
