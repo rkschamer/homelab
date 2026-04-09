@@ -63,26 +63,16 @@ middlewares:
 
 The `authelia-secrets` SealedSecret must be created before Flux can deploy Authelia.
 
-**1. Generate secret values:**
-```bash
-JWT_TOKEN=$(openssl rand -base64 48)
-SESSION_KEY=$(openssl rand -base64 48)
-STORAGE_KEY=$(openssl rand -base64 48)   # NEVER change this after first deploy
-```
-
-**2. Hash your password:**
+**1. Hash your password:**
 ```bash
 docker run --rm ghcr.io/authelia/authelia:latest \
   authelia crypto hash generate argon2 --password 'yourpassword'
 # Outputs: $argon2id$v=19$...
 ```
 
-**3. Seal the secret:**
+**2. Seal the secret:**
 ```bash
 kubectl create secret generic authelia-secrets -n authelia \
-  --from-literal=JWT_TOKEN="$JWT_TOKEN" \
-  --from-literal=SESSION_ENCRYPTION_KEY="$SESSION_KEY" \
-  --from-literal=STORAGE_ENCRYPTION_KEY="$STORAGE_KEY" \
   --from-literal=users_database.yml='users:
   rkschamer:
     displayname: "René Kschamer"
@@ -90,12 +80,15 @@ kubectl create secret generic authelia-secrets -n authelia \
     email: "rene.kschamer@gmail.com"
     groups: []' \
   --dry-run=client -o yaml \
-  | kubeseal --format=yaml > flux/dmz/authelia/sealedsecret.yaml
+  | kubeseal --format=yaml > flux/dmz/authelia/authelia-sealedsecret.yaml
 ```
 
-**4. Commit and let Flux reconcile:**
+> The chart auto-generates JWT, session, and storage encryption keys internally.
+> Only `users_database.yml` is needed in this secret.
+
+**3. Commit and let Flux reconcile:**
 ```bash
-git add flux/dmz/authelia/sealedsecret.yaml
+git add flux/dmz/authelia/authelia-sealedsecret.yaml
 git commit -m "flux(authelia): seal authelia-secrets"
 git push
 ```
