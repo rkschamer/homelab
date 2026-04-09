@@ -24,7 +24,7 @@ resource "talos_image_factory_schematic" "this" {
   )
 }
 
-resource "proxmox_virtual_environment_download_file" "talos_iso" {
+resource "proxmox_download_file" "talos_iso" {
   depends_on   = [talos_image_factory_schematic.this]
   content_type = "iso"
   datastore_id = "local"
