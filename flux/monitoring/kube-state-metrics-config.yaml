@@ -10,11 +10,6 @@
 # It is loaded into the kube-prometheus-stack HelmRelease via valuesFrom —
 # see kustomization.yaml (configMapGenerator) and kustomizeconfig.yaml.
 kube-state-metrics:
-  # Disable all built-in collectors — standard k8s metrics are already scraped
-  # by kube-prometheus-stack's own jobs. Only emit Flux custom resource metrics.
-  collectors: []
-  extraArgs:
-    - --custom-resource-state-only=true
   rbac:
     extraRules:
       - apiGroups:
