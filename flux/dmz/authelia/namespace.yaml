@@ -5,5 +5,5 @@ metadata:
   name: authelia
   labels:
     network-zone: dmz
-    pod-security.kubernetes.io/enforce: restricted
-    pod-security.kubernetes.io/warn: restricted
+    pod-security.kubernetes.io/enforce: baseline
+    pod-security.kubernetes.io/warn: baseline
