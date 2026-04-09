@@ -68,7 +68,6 @@ spec:
         cookies:
           - domain: kschamer.info
             subdomain: auth
-            default_redirection_url: https://auth.kschamer.info
 
       # SQLite storage — no PostgreSQL needed
       storage:
