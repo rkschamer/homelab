@@ -62,13 +62,15 @@ spec:
       storageClass: longhorn
       size: 1Gi
 
-    # Mount users_database.yml from the sealed secret
+    # Mount users_database.yml and SMTP password from the sealed secret
     secret:
       additionalSecrets:
         authelia-secrets:
           items:
             - key: users_database.yml
               path: users_database.yml
+            - key: SMTP_PASSWORD
+              path: SMTP_PASSWORD
 
     configMap:
       access_control:
