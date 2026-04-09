@@ -30,16 +30,6 @@ spec:
     pod:
       kind: Deployment
       replicas: 1
-      securityContext:
-        pod:
-          runAsNonRoot: true
-          seccompProfile:
-            type: RuntimeDefault
-        container:
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - ALL
       resources:
         requests:
           cpu: 50m
