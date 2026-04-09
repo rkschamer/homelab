@@ -62,18 +62,13 @@ spec:
       storageClass: longhorn
       size: 1Gi
 
-    # Mount users_database.yml from the sealed secret as an additional volume
+    # Mount users_database.yml from the sealed secret
     secret:
       additionalSecrets:
         authelia-secrets:
           items:
             - key: users_database.yml
               path: users_database.yml
-      notifier:
-        smtp:
-          password:
-            secret_name: authelia-secrets
-            key: SMTP_PASSWORD
 
     configMap:
       access_control:
@@ -104,8 +99,7 @@ spec:
           enabled: true
           path: /config/db.sqlite3
 
-      # SMTP notifications — address/username/sender/password injected via env vars from authelia-secrets
-      # AUTHELIA_NOTIFIER_SMTP_ADDRESS format: "smtp.example.com:587"
+      # SMTP notifications — address/username/sender injected via env vars; password via chart secret mechanism
       notifier:
         filesystem:
           enabled: false
@@ -114,3 +108,6 @@ spec:
           tls:
             skip_verify: false
             minimum_version: TLS1.2
+          password:
+            secret_name: authelia-secrets
+            path: SMTP_PASSWORD
