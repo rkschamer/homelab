@@ -57,10 +57,12 @@ spec:
             - port: "53"
               protocol: TCP
 
-    # HTTPS for external OIDC providers (future use)
+    # HTTPS and SMTP submission for external services
     - toEntities:
         - world
       toPorts:
         - ports:
             - port: "443"
+              protocol: TCP
+            - port: "587"
               protocol: TCP
