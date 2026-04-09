@@ -53,6 +53,9 @@ spec:
               path: users_database.yml
 
     configMap:
+      access_control:
+        default_policy: two_factor
+
       # File-based authentication — user database mounted from secret
       authentication_backend:
         file:
