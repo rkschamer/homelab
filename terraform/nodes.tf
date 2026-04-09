@@ -48,7 +48,7 @@ resource "proxmox_virtual_environment_vm" "control_plane" {
   }
 
   cdrom {
-    file_id = proxmox_virtual_environment_download_file.talos_iso.id
+    file_id = proxmox_download_file.talos_iso.id
   }
 
   # System disk
@@ -147,7 +147,7 @@ resource "proxmox_virtual_environment_vm" "workers" {
   }
 
   cdrom {
-    file_id = proxmox_virtual_environment_download_file.talos_iso.id
+    file_id = proxmox_download_file.talos_iso.id
   }
 
   # System disk
