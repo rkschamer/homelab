@@ -77,7 +77,10 @@ spec:
 
     configMap:
       access_control:
-        default_policy: two_factor
+        default_policy: deny
+        rules:
+          - domain: "*.kschamer.info"
+            policy: two_factor
 
       # File-based authentication — user database mounted from secret
       authentication_backend:
