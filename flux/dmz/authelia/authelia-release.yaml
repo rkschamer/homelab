@@ -33,11 +33,11 @@ spec:
       strategy:
         type: Recreate
       env:
-        - name: AUTHELIA_NOTIFIER_SMTP_HOST
+        - name: AUTHELIA_NOTIFIER_SMTP_ADDRESS
           valueFrom:
             secretKeyRef:
               name: authelia-secrets
-              key: SMTP_HOST
+              key: SMTP_ADDRESS
         - name: AUTHELIA_NOTIFIER_SMTP_USERNAME
           valueFrom:
             secretKeyRef:
@@ -101,10 +101,13 @@ spec:
           enabled: true
           path: /config/db.sqlite3
 
-      # SMTP notifications — host/username/sender/password injected via env vars from authelia-secrets
+      # SMTP notifications — address/username/sender/password injected via env vars from authelia-secrets
+      # AUTHELIA_NOTIFIER_SMTP_ADDRESS format: "smtp.example.com:587"
       notifier:
         filesystem:
           enabled: false
         smtp:
           enabled: true
-          port: 587
+          tls:
+            skip_verify: false
+            minimum_version: TLS1.2
