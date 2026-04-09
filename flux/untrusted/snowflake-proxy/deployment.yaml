@@ -26,7 +26,7 @@ spec:
     spec:
       containers:
         - name: snowflake-proxy
-          image: thetorproject/snowflake-proxy:v2.12.1
+          image: thetorproject/snowflake-proxy:v2.13.1
           args:
             - "-ephemeral-ports-range"
             - "55000:55000"
