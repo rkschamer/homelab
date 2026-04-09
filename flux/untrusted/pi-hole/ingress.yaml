@@ -45,7 +45,7 @@ spec:
       kind: Rule
       middlewares:
         - name: pihole-ipwhitelist
-        - name: authentik-forwardauth
+        - name: authelia-forwardauth
           namespace: traefik
       services:
         - name: pihole-web
