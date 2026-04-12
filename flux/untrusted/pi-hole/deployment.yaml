@@ -27,6 +27,12 @@ spec:
         app.kubernetes.io/name: pihole
     spec:
       serviceAccountName: pihole
+      nodeSelector:
+        node-role.kubernetes.io/control-plane: ""
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
       containers:
         - name: pihole
           image: pihole/pihole:2026.04.0

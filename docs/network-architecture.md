@@ -370,6 +370,170 @@ Worker (10.10.20.21)
 
 ---
 
+## Exposing Services Directly to the Home LAN (Without Traefik)
+
+Some services need to be reachable from the home LAN directly — not via Traefik — because they use non-HTTP protocols (e.g., DNS on UDP/53) or because per-client source IP visibility is required (e.g., Pi-hole client groups, parental filtering).
+
+### The Constraint: Only the Control-Plane Can Advertise Home LAN IPs
+
+MetalLB operates in **L2 (ARP) mode**. To advertise a `192.168.123.x` IP, a node must have a physical interface on `192.168.123.0/24`. Only the control-plane has this (`ens18: 192.168.123.20`). Worker nodes are exclusively on `10.10.20.0/24` and cannot respond to ARP on the home LAN.
+
+```
+Home LAN (192.168.123.0/24)
+       │
+       │  ARP: "who has 192.168.123.22?"
+       │
+  ┌────▼─────────────────────┐
+  │  Control-Plane           │  ← only node that can answer ARP
+  │  ens18: 192.168.123.20   │    for 192.168.123.x addresses
+  └──────────────────────────┘
+
+  talos-worker-1 (10.10.20.21)  ← no 192.168.123.x interface
+  talos-worker-2 (10.10.20.22)  ← no 192.168.123.x interface
+```
+
+### The Constraint: `externalTrafficPolicy: Cluster` Hides Client IPs
+
+With `externalTrafficPolicy: Cluster` (the default), Cilium's kube-proxy replacement SNATs forwarded traffic using the forwarding node's internal (`cilium_host`) IP as the masquerade source. The destination pod sees this internal IP instead of the real client. Per-client features in applications like Pi-hole become useless.
+
+`externalTrafficPolicy: Local` disables SNAT — traffic is only delivered to nodes with a **local** endpoint, and the original source IP is preserved end-to-end.
+
+### The Pattern
+
+Both constraints combine into a single requirement: **the pod must run on the control-plane**.
+
+- MetalLB advertises the IP from the control-plane (only node on the home LAN).
+- `externalTrafficPolicy: Local` delivers traffic to the local endpoint on the control-plane.
+- No SNAT — the pod sees the real client IP.
+
+```
+Home LAN client (192.168.123.x)
+  │  DNS query to 192.168.123.22:53
+  ▼
+FritzBox → ARP resolved to control-plane MAC
+  │
+  ▼
+Control-Plane (MetalLB speaker + local pod endpoint)
+  │  externalTrafficPolicy: Local → no SNAT
+  ▼
+Pod on control-plane sees source = 192.168.123.x  ✓
+```
+
+### Implementation
+
+Four things are required:
+
+**1. Dedicated `IPAddressPool` and `L2Advertisement`** (in `flux/infrastructure/config/metallb/metallb-config.yaml`)
+
+The L2Advertisement must restrict speakers to the control-plane. A shared IP (e.g. with Traefik) cannot be used because Traefik uses `externalTrafficPolicy: Cluster` — mixing the two on one IP is not supported.
+
+```yaml
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: my-service
+  namespace: metallb-system
+spec:
+  addresses:
+  - 192.168.123.2x/32   # pick a free IP from the pool
+
+---
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+  name: my-service
+  namespace: metallb-system
+spec:
+  ipAddressPools:
+  - my-service
+  nodeSelectors:
+  - matchExpressions:
+    - key: node-role.kubernetes.io/control-plane
+      operator: Exists
+```
+
+**2. `LoadBalancer` service with `externalTrafficPolicy: Local`**
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-service
+  namespace: my-namespace
+spec:
+  type: LoadBalancer
+  loadBalancerIP: 192.168.123.2x
+  externalTrafficPolicy: Local
+  selector:
+    app.kubernetes.io/name: my-app
+  ports:
+    - port: <port>
+      targetPort: <port>
+      protocol: <TCP|UDP>
+```
+
+**3. Deployment pinned to the control-plane**
+
+The control-plane has a `NoSchedule` taint by default. The pod needs a matching toleration and a nodeSelector to land there.
+
+```yaml
+spec:
+  template:
+    spec:
+      nodeSelector:
+        node-role.kubernetes.io/control-plane: ""
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+```
+
+**4. Network policy allowing home LAN ingress**
+
+With `externalTrafficPolicy: Local`, the real client IP is preserved, so `fromCIDR` works correctly:
+
+```yaml
+ingress:
+  - fromCIDR:
+      - 192.168.123.0/24
+    toPorts:
+      - ports:
+          - port: "<port>"
+            protocol: TCP   # repeat for UDP if needed
+```
+
+No `fromEntities: cluster` or CIDR workarounds for SNAT are needed — the source is always a real home LAN IP.
+
+### Example: Pi-hole DNS
+
+Pi-hole requires client IP visibility for per-device blocking rules and parental filtering. It uses UDP/TCP port 53, which cannot go through Traefik.
+
+**Files:**
+- `flux/infrastructure/config/metallb/metallb-config.yaml` — `pihole` IPAddressPool (`192.168.123.22/32`) and L2Advertisement (control-plane only)
+- `flux/untrusted/pi-hole/service.yaml` — `pihole-dns` LoadBalancer service with `externalTrafficPolicy: Local`
+- `flux/untrusted/pi-hole/deployment.yaml` — toleration + nodeSelector for control-plane
+- `flux/untrusted/pi-hole/network-policies.yaml` — ingress from `192.168.123.0/24` on port 53
+
+Traffic flow:
+```
+Home LAN device (e.g. 192.168.123.50)
+  │  UDP query → 192.168.123.22:53
+  ▼
+FritzBox → static route → ARP answered by control-plane MetalLB speaker
+  │
+  ▼
+Control-Plane (192.168.123.20)
+  │  Cilium: LoadBalancer DNAT → pihole pod (local, no SNAT)
+  ▼
+Pi-hole pod sees source = 192.168.123.50  ✓ (per-client rules work)
+```
+
+**Why not a worker node?** Workers have no `192.168.123.x` interface, so MetalLB's ARP speaker on a worker cannot respond to home LAN ARP requests for `192.168.123.22`. Traffic would never reach the cluster.
+
+**Why not `externalTrafficPolicy: Cluster`?** Cilium SNATs forwarded traffic using the `cilium_host` IP of the forwarding node (a `10.244.x.x` address). This IP has a cluster-internal Cilium identity — `fromCIDR` rules do not apply to it. All DNS queries arrive from the same masquerade IP regardless of actual client, breaking per-client features.
+
+---
+
 ## TCP Proxy for VPN-Bridged Services
 
 ### Problem
