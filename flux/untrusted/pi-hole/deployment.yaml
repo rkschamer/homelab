@@ -27,12 +27,6 @@ spec:
         app.kubernetes.io/name: pihole
     spec:
       serviceAccountName: pihole
-      nodeSelector:
-        node-role.kubernetes.io/control-plane: ""
-      tolerations:
-        - key: node-role.kubernetes.io/control-plane
-          operator: Exists
-          effect: NoSchedule
       containers:
         - name: pihole
           image: pihole/pihole:2026.04.0
@@ -110,13 +104,11 @@ spec:
                 - MKNOD
       volumes:
         - name: config
-          hostPath:
-            path: /var/lib/pihole/config
-            type: DirectoryOrCreate
+          persistentVolumeClaim:
+            claimName: pihole-config
         - name: dnsmasq
-          hostPath:
-            path: /var/lib/pihole/dnsmasq
-            type: DirectoryOrCreate
+          persistentVolumeClaim:
+            claimName: pihole-dnsmasq
         - name: unbound-config
           configMap:
             name: unbound-config

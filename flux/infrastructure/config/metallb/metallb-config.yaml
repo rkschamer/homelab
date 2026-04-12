@@ -23,27 +23,31 @@ spec:
       operator: Exists
 
 ---
+# Pool for cluster services that need direct home LAN access without Traefik.
+# IPs are on the workload network (10.10.20.0/24) so worker nodes can respond
+# to ARP. The FritzBox static route (10.10.20.0/24 → 192.168.123.20) makes
+# these IPs reachable from the home LAN. Use externalTrafficPolicy: Local on
+# services in this pool to preserve client source IPs (no SNAT).
+# Current allocations:
+#   10.10.20.100  pihole-dns (pi-hole/pihole-dns)
 apiVersion: metallb.io/v1beta1
 kind: IPAddressPool
 metadata:
-  name: pihole
+  name: cluster-services
   namespace: metallb-system
 spec:
   addresses:
-  - 192.168.123.22/32
+  - 10.10.20.100-10.10.20.150
 
 ---
-# Restricted to control-plane: only node with a 192.168.123.x interface, so only
-# node that can respond to ARP for this IP on the home LAN.
+# No nodeSelector: workers advertise their own network (10.10.20.x) natively.
+# MetalLB elects the node with the healthy local endpoint as speaker, which
+# combined with externalTrafficPolicy: Local ensures no SNAT occurs.
 apiVersion: metallb.io/v1beta1
 kind: L2Advertisement
 metadata:
-  name: pihole
+  name: cluster-services
   namespace: metallb-system
 spec:
   ipAddressPools:
-  - pihole
-  nodeSelectors:
-  - matchExpressions:
-    - key: node-role.kubernetes.io/control-plane
-      operator: Exists
+  - cluster-services
