@@ -1,16 +1,20 @@
 ---
-# DNS LoadBalancer Service (dedicated IP - required for externalTrafficPolicy: Local)
-# externalTrafficPolicy: Local preserves the real client IP so Pi-hole can apply
-# per-client rules (parental filtering, groups, etc.). MetalLB L2 only advertises
-# this IP from the node running the Pi-hole pod, so no SNAT occurs.
+# DNS LoadBalancer Service (IP from workload network - required for externalTrafficPolicy: Local)
+# Using a 10.10.20.x IP means worker nodes can respond to ARP for this address,
+# so MetalLB L2 can advertise from the node running Pi-hole. The FritzBox static
+# route (10.10.20.0/24 → 192.168.123.20) makes this reachable from the home LAN.
+# externalTrafficPolicy: Local preserves the real client IP (no SNAT) so Pi-hole
+# can apply per-client rules (parental filtering, groups, etc.).
 apiVersion: v1
 kind: Service
 metadata:
   name: pihole-dns
   namespace: pi-hole
+  annotations:
+    metallb.io/address-pool: cluster-services
 spec:
   type: LoadBalancer
-  loadBalancerIP: 192.168.123.22
+  loadBalancerIP: 10.10.20.100
   externalTrafficPolicy: Local
   selector:
     app.kubernetes.io/name: pihole
