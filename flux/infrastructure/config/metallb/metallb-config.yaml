@@ -21,3 +21,25 @@ spec:
   - matchExpressions:
     - key: node-role.kubernetes.io/control-plane
       operator: Exists
+
+---
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: pihole
+  namespace: metallb-system
+spec:
+  addresses:
+  - 192.168.123.22/32
+
+---
+# No nodeSelector: MetalLB will elect whichever node has a healthy local Pi-hole
+# endpoint. Required for externalTrafficPolicy: Local to work on worker nodes.
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+  name: pihole
+  namespace: metallb-system
+spec:
+  ipAddressPools:
+  - pihole
