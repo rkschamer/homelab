@@ -20,11 +20,23 @@ spec:
   # INGRESS: Who can reach pi-hole
   # =========================================================================
   ingress:
-    # DNS (port 53) - allow from home LAN, workload network, and pod CIDR
+    # DNS (port 53) - allow from home LAN and workload network (external clients)
     - fromCIDR:
         - 192.168.123.0/24
         - 10.10.20.0/24
-        - 10.244.0.0/16
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: TCP
+            - port: "53"
+              protocol: UDP
+
+    # DNS (port 53) - allow from cluster nodes (covers Cilium SNAT/masquerade with
+    # externalTrafficPolicy: Cluster; node addresses have host/remote-node identity,
+    # not world, so fromCIDR does not match them)
+    - fromEntities:
+        - host
+        - remote-node
       toPorts:
         - ports:
             - port: "53"
