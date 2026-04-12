@@ -49,7 +49,7 @@ spec:
         fsGroup: 1000
       containers:
         - name: vaultwarden
-          image: vaultwarden/server:1.35.4-alpine
+          image: vaultwarden/server:1.35.6-alpine
           ports:
             - containerPort: 8080
               protocol: TCP
