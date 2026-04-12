@@ -26,8 +26,10 @@ spec:
 # Pool for cluster services that need direct home LAN access without Traefik.
 # IPs are on the workload network (10.10.20.0/24) so worker nodes can respond
 # to ARP. The FritzBox static route (10.10.20.0/24 → 192.168.123.20) makes
-# these IPs reachable from the home LAN. Use externalTrafficPolicy: Local on
-# services in this pool to preserve client source IPs (no SNAT).
+# these IPs reachable from the home LAN.
+# Note: externalTrafficPolicy: Cluster is required — the control-plane acts as
+# router between home LAN and workload network; with Local, Cilium on the
+# control-plane drops packets (no local backend) before they reach workers.
 # Current allocations:
 #   10.10.20.100  pihole-dns (pi-hole/pihole-dns)
 apiVersion: metallb.io/v1beta1

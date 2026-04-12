@@ -21,10 +21,20 @@ spec:
   # =========================================================================
   ingress:
     # DNS (port 53) - allow from home LAN
-    # externalTrafficPolicy: Local preserves the real client IP so fromCIDR matches
-    # correctly and Pi-hole sees the originating device address.
+    # externalTrafficPolicy: Cluster causes Cilium to SNAT the source IP to the
+    # forwarding node's cilium_host IP (a 10.244.x.x address with cluster identity).
+    # fromCIDR only matches world-identity traffic, so we must also allow fromEntities:
+    # cluster to catch the SNAT'd packets from other cluster nodes.
     - fromCIDR:
         - 192.168.123.0/24
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: TCP
+            - port: "53"
+              protocol: UDP
+    - fromEntities:
+        - cluster
       toPorts:
         - ports:
             - port: "53"

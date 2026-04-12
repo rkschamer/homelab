@@ -1,10 +1,11 @@
 ---
-# DNS LoadBalancer Service (IP from workload network - required for externalTrafficPolicy: Local)
+# DNS LoadBalancer Service (IP from workload network)
 # Using a 10.10.20.x IP means worker nodes can respond to ARP for this address,
 # so MetalLB L2 can advertise from the node running Pi-hole. The FritzBox static
 # route (10.10.20.0/24 → 192.168.123.20) makes this reachable from the home LAN.
-# externalTrafficPolicy: Local preserves the real client IP (no SNAT) so Pi-hole
-# can apply per-client rules (parental filtering, groups, etc.).
+# externalTrafficPolicy: Cluster is required because the control-plane routes
+# traffic between home LAN and workload network — with Local, Cilium on the
+# control-plane drops packets before they reach the worker running Pi-hole.
 apiVersion: v1
 kind: Service
 metadata:
@@ -15,7 +16,7 @@ metadata:
 spec:
   type: LoadBalancer
   loadBalancerIP: 10.10.20.100
-  externalTrafficPolicy: Local
+  externalTrafficPolicy: Cluster
   selector:
     app.kubernetes.io/name: pihole
   ports:
