@@ -38,6 +38,7 @@ metadata:
 spec:
   addresses:
   - 10.10.20.100-10.10.20.150
+  autoAssign: false
 
 ---
 # No nodeSelector: workers advertise their own network (10.10.20.x) natively.

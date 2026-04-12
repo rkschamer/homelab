@@ -21,15 +21,6 @@ spec:
   # Namespace-scoped policy: apply to all endpoints in snowflake-proxy namespace.
   endpointSelector: {}
 
-  # Allow inbound UDP peer traffic only on the fixed Snowflake relay port.
-  ingress:
-    - fromEntities:
-        - world
-      toPorts:
-        - ports:
-            - port: "55000"
-              protocol: UDP
-
   egress:
     # Allow HTTPS on alternate port used by some Snowflake peers/relays.
     - toEntities:
