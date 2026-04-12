@@ -1,17 +1,17 @@
 ---
-# DNS LoadBalancer Service (shared IP with Traefik)
+# DNS LoadBalancer Service (dedicated IP - required for externalTrafficPolicy: Local)
+# externalTrafficPolicy: Local preserves the real client IP so Pi-hole can apply
+# per-client rules (parental filtering, groups, etc.). MetalLB L2 only advertises
+# this IP from the node running the Pi-hole pod, so no SNAT occurs.
 apiVersion: v1
 kind: Service
 metadata:
   name: pihole-dns
   namespace: pi-hole
-  annotations:
-    metallb.io/address-pool: traefik
-    metallb.io/allow-shared-ip: homelab-shared
 spec:
   type: LoadBalancer
-  loadBalancerIP: 192.168.123.21
-  externalTrafficPolicy: Cluster
+  loadBalancerIP: 192.168.123.22
+  externalTrafficPolicy: Local
   selector:
     app.kubernetes.io/name: pihole
   ports:
