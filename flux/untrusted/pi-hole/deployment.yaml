@@ -110,11 +110,13 @@ spec:
                 - MKNOD
       volumes:
         - name: config
-          persistentVolumeClaim:
-            claimName: pihole-config
+          hostPath:
+            path: /var/lib/pihole/config
+            type: DirectoryOrCreate
         - name: dnsmasq
-          persistentVolumeClaim:
-            claimName: pihole-dnsmasq
+          hostPath:
+            path: /var/lib/pihole/dnsmasq
+            type: DirectoryOrCreate
         - name: unbound-config
           configMap:
             name: unbound-config
