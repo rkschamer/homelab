@@ -1,11 +1,13 @@
 ---
 # DNS LoadBalancer Service (IP from workload network)
 # Using a 10.10.20.x IP means worker nodes can respond to ARP for this address,
-# so MetalLB L2 can advertise from the node running Pi-hole. The FritzBox static
+# so MetalLB L2 advertises from the worker running Pi-hole. The FritzBox static
 # route (10.10.20.0/24 → 192.168.123.20) makes this reachable from the home LAN.
-# externalTrafficPolicy: Cluster is required because the control-plane routes
-# traffic between home LAN and workload network — with Local, Cilium on the
-# control-plane drops packets before they reach the worker running Pi-hole.
+# externalTrafficPolicy: Cluster is required — all 10.10.20.0/24 traffic routes
+# through the control plane (IP forwarding). Cilium on the control plane would
+# drop packets with Local (no local Pi-hole backend). With Cluster, Cilium SNATs
+# the source IP to the control plane's cilium_host IP (10.244.0.43) before
+# forwarding to the worker.
 apiVersion: v1
 kind: Service
 metadata:
