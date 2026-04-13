@@ -20,24 +20,16 @@ spec:
   # INGRESS: Who can reach pi-hole
   # =========================================================================
   ingress:
-    # DNS (port 53) - allow from home LAN and SNAT'd control plane traffic.
-    # With externalTrafficPolicy: Cluster, Cilium on the control plane SNATs
-    # the source IP to its cilium_host IP (10.244.0.43) before forwarding to
-    # the worker. Cilium may assign that IP either remote-node or world identity
-    # depending on ipcache state. Both rules are present for defense in depth:
-    # fromEntities: remote-node covers it when identity=remote-node;
-    # fromCIDR: 10.244.0.0/24 covers it when identity=world (control plane pod subnet).
-    - fromCIDR:
-        - 192.168.123.0/24
-        - 10.244.0.0/24
-      toPorts:
-        - ports:
-            - port: "53"
-              protocol: TCP
-            - port: "53"
-              protocol: UDP
+    # DNS (port 53) - allow from home LAN clients.
+    # With externalTrafficPolicy: Cluster + Cilium VXLAN tunnel mode, the control
+    # plane embeds the original security identity (world) in the tunnel header when
+    # forwarding SNAT'd packets to the worker. The worker uses the tunnel-embedded
+    # identity for policy enforcement, bypassing ipcache CIDR lookups entirely.
+    # fromEntities: world is the only selector that matches tunnel-embedded world
+    # identity. This is safe because 10.10.20.100 is not internet-routable — only
+    # reachable from home LAN via the FritzBox static route through the control plane.
     - fromEntities:
-        - remote-node
+        - world
       toPorts:
         - ports:
             - port: "53"
