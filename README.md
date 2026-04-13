@@ -64,6 +64,30 @@ Network isolation between zones (Trusted, DMZ, Untrusted, Monitoring) is enforce
 
 For the full picture, see [Network Architecture](docs/network-architecture.md) and [Network Policies](docs/network-policies.md).
 
+## Exposed Services
+
+Traefik runs at `192.168.123.21` (MetalLB `traefik` pool). The FritzBox forwards ports 80 and 443 to this IP, making HTTPS services publicly reachable. DNS challenge via Porkbun issues a wildcard cert for `*.kschamer.info`.
+
+### HTTPS — via Traefik (`*.kschamer.info`)
+
+| URL | Service | Access | Auth |
+|-----|---------|--------|------|
+| [auth.kschamer.info](https://auth.kschamer.info) | Authelia (SSO) | Public | — |
+| [vw.kschamer.info](https://vw.kschamer.info) | Vaultwarden | Public | Built-in |
+| [notes.kschamer.info](https://notes.kschamer.info) | SiYuan Notes | Public | Authelia |
+| [grafana.kschamer.info](https://grafana.kschamer.info) | Grafana | Public | Authelia |
+| [pihole.kschamer.info](https://pihole.kschamer.info) | Pi-hole Web UI | Home LAN only¹ | Authelia |
+
+¹ Restricted by Traefik IP allowlist to `192.168.123.0/24` (home LAN) even though it routes through the public Traefik entrypoint. CrowdSec threat detection runs as Traefik middleware on all public routes.
+
+### Direct — Pi-hole DNS
+
+| Endpoint | Service | Access |
+|----------|---------|--------|
+| `10.10.20.100:53` | Pi-hole DNS resolver | Home LAN only |
+
+Exposed via MetalLB `cluster-services` pool on the workload network. Reachable from home LAN via the FritzBox static route (`10.10.20.0/24 → 192.168.123.20`). See [Pi-hole networking](docs/pihole.md) for details on the routing and Cilium policy design.
+
 ## Repository Layout
 
 ```
@@ -102,3 +126,4 @@ git-crypt unlock /path/to/encryption-key
 - [Network Policies and Cilium Debug](docs/network-policies.md)
 - [Talos Installation & Cluster Maintenance](docs/talos-installation.md)
 - [CrowdSec](docs/crowdsec.md)
+- [Pi-hole Networking](docs/pihole.md)
