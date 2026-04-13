@@ -43,9 +43,11 @@ spec:
   autoAssign: false
 
 ---
-# No nodeSelector: workers advertise their own network (10.10.20.x) natively.
-# MetalLB elects the node with the healthy local endpoint as speaker, which
-# combined with externalTrafficPolicy: Local ensures no SNAT occurs.
+# No nodeSelector: workers advertise the 10.10.20.x range natively.
+# externalTrafficPolicy: Cluster is required — all traffic for 10.10.20.0/24
+# routes through the control plane (FritzBox static route). Cilium on the
+# control plane would drop packets with Local (no local backend). With Cluster,
+# Cilium SNATs to the control plane's cilium_host IP before forwarding to the worker.
 apiVersion: metallb.io/v1beta1
 kind: L2Advertisement
 metadata:
