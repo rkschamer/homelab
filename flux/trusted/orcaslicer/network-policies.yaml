@@ -1,0 +1,38 @@
+---
+# =============================================================================
+# OrcaSlicer Network Policy - Trusted Zone
+#
+# OrcaSlicer is a local-only tool that should:
+#   - Receive proxied requests from Traefik (DMZ) only
+#   - Have NO egress to the internet (unlike SiYuan, no plugin marketplace needed)
+#   - DNS + in-cluster egress covered by the cluster-wide allow-trusted-dns-egress policy
+# =============================================================================
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: orcaslicer
+  namespace: orcaslicer
+spec:
+  description: "Network policy for OrcaSlicer in Trusted zone"
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: orcaslicer
+
+  # ===========================================================================
+  # INGRESS: Only Traefik (DMZ) may reach the OrcaSlicer pod
+  # ===========================================================================
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            io.cilium.k8s.namespace.labels.network-zone: dmz
+            app.kubernetes.io/name: traefik
+      toPorts:
+        - ports:
+            - port: "3001"
+              protocol: TCP
+
+  # ===========================================================================
+  # EGRESS: No internet access needed — slicer is fully offline
+  # (DNS + kube-apiserver access handled by cluster-wide policies)
+  # ===========================================================================
+  egress: []
