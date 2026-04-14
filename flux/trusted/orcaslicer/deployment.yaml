@@ -1,0 +1,125 @@
+---
+# =============================================================================
+# OrcaSlicer PersistentVolumeClaim
+# Stores printer profiles, filament settings, process profiles, and sliced files
+# =============================================================================
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: orcaslicer-config
+  namespace: orcaslicer
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: longhorn
+  resources:
+    requests:
+      storage: 5Gi
+
+---
+# =============================================================================
+# OrcaSlicer Deployment
+# https://github.com/linuxserver/docker-orcaslicer
+#
+# lscr.io/linuxserver/orcaslicer streams the OrcaSlicer desktop to the browser
+# via Selkies (WebRTC). HTTPS is required for full functionality.
+#
+# seccomp:Unconfined is required: OrcaSlicer uses syscalls (e.g. userfaultfd,
+# clone3) that are blocked by the Kubernetes default seccomp profile. Without
+# it the container crashes immediately. This is a known limitation of all
+# linuxserver.io desktop containers.
+# =============================================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orcaslicer
+  namespace: orcaslicer
+spec:
+  replicas: 1
+  # Recreate: only one replica can hold the Longhorn RWO volume at a time.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: orcaslicer
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: orcaslicer
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        # linuxserver images internally drop to PUID/PGID 1000
+        fsGroup: 1000
+        seccompProfile:
+          # Required for OrcaSlicer / Selkies WebRTC desktop streaming.
+          # The default RuntimeDefault profile blocks syscalls (userfaultfd,
+          # clone3) that the application depends on.
+          type: Unconfined
+      containers:
+        - name: orcaslicer
+          image: lscr.io/linuxserver/orcaslicer:latest
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: TZ
+              value: "Europe/Vienna"
+          ports:
+            - name: https-web
+              containerPort: 3001
+              protocol: TCP
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: dshm
+              mountPath: /dev/shm
+          resources:
+            requests:
+              cpu: 200m
+              memory: 1Gi
+            limits:
+              cpu: 2000m
+              memory: 3Gi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false  # Selkies writes runtime state outside /config
+          readinessProbe:
+            tcpSocket:
+              port: 3001
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 3001
+            initialDelaySeconds: 30
+            periodSeconds: 30
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: orcaslicer-config
+        # /dev/shm must be at least 1 GiB to prevent Chromium (used by Selkies)
+        # from crashing. An emptyDir with a size limit replaces the default 64 MiB shm.
+        - name: dshm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 1Gi
+
+---
+# =============================================================================
+# OrcaSlicer Service
+# =============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: orcaslicer
+  namespace: orcaslicer
+spec:
+  selector:
+    app.kubernetes.io/name: orcaslicer
+  ports:
+    - name: https-web
+      port: 3001
+      targetPort: 3001
+      protocol: TCP
