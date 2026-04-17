@@ -22,7 +22,7 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: authelia
-      version: "0.10.56"
+      version: "0.10.58"
   values:
     ingress:
       enabled: false
