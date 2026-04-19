@@ -39,6 +39,14 @@ spec:
     tolerations:
       - operator: Exists
 
+    # Expose port 5170 on the host so Talos (the host OS) can ship logs via TCP.
+    # Talos configures tcp://127.0.0.1:5170/ as its logging destination.
+    extraPorts:
+      - name: talos-logs
+        containerPort: 5170
+        hostPort: 5170
+        protocol: TCP
+
     config:
       inputs: |
         [INPUT]
@@ -48,6 +56,14 @@ spec:
             Tag kube.*
             Mem_Buf_Limit 10MB
             Skip_Long_Lines On
+
+        [INPUT]
+            Name tcp
+            Listen 0.0.0.0
+            Port 5170
+            Format json
+            Tag talos.*
+            Mem_Buf_Limit 10MB
 
       filters: |
         [FILTER]
@@ -66,6 +82,17 @@ spec:
             Port 80
             Labels cluster=homelab, job=fluent-bit
             label_keys $kubernetes['namespace_name'],$kubernetes['pod_name'],$kubernetes['container_name'],$kubernetes['host'],$kubernetes['labels']['app.kubernetes.io/name'],$kubernetes['labels']['app.kubernetes.io/component']
+            line_format json
+            auto_kubernetes_labels off
+            Retry_Limit False
+
+        [OUTPUT]
+            Name loki
+            Match talos.*
+            Host loki-gateway.monitoring.svc.cluster.local
+            Port 80
+            Labels cluster=homelab, job=talos
+            label_keys $node,$talos-service,$talos-level
             line_format json
             auto_kubernetes_labels off
             Retry_Limit False
