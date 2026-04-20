@@ -4,5 +4,4 @@ kind: Kustomization
 
 resources:
   - snowflake-proxy
-  - pi-hole
   - flux-kustomization.yaml

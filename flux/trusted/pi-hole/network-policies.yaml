@@ -1,0 +1,46 @@
+---
+# =============================================================================
+# Pi-hole Network Policy - Trusted Zone
+# =============================================================================
+# Pi-hole is in the trusted zone, so the zone baseline (allow-trusted-dns-egress)
+# already covers: DNS, internet, home LAN (192.168.123.0/24), and cluster egress.
+# This policy adds ingress rules specific to pi-hole.
+# =============================================================================
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: pihole
+  namespace: pi-hole
+spec:
+  description: "Network policy for pi-hole DNS server in trusted zone"
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: pihole
+
+  ingress:
+    # DNS (port 53) - allow from home LAN clients.
+    # With externalTrafficPolicy: Cluster + Cilium VXLAN tunnel mode, the control
+    # plane embeds the original security identity (world) in the tunnel header when
+    # forwarding SNAT'd packets to the worker. The worker uses the tunnel-embedded
+    # identity for policy enforcement, bypassing ipcache CIDR lookups entirely.
+    # fromEntities: world is the only selector that matches tunnel-embedded world
+    # identity. This is safe because 10.10.20.100 is not internet-routable — only
+    # reachable from home LAN via the FritzBox static route through the control plane.
+    - fromEntities:
+        - world
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: TCP
+            - port: "53"
+              protocol: UDP
+
+    # Web UI (port 80) - allow from Traefik (DMZ -> Trusted cross-zone exception)
+    - fromEndpoints:
+        - matchLabels:
+            io.cilium.k8s.namespace.labels.network-zone: dmz
+            app.kubernetes.io/name: traefik
+      toPorts:
+        - ports:
+            - port: "80"
+              protocol: TCP
