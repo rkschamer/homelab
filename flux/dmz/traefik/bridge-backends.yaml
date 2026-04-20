@@ -1,11 +1,11 @@
 # External backends exposed through Kubernetes Services:
 # - Each Service below intentionally has no selector.
-# - The matching EndpointSlice provides explicit external IP:port targets
+# - The matching Endpoints object provides explicit external IP:port targets
 #   (LAN services outside Kubernetes).
 # - Traefik routes use these Services as stable Kubernetes names for hybrid
 #   routing, during migration and for workloads that remain external.
-# - Without EndpointSlices, these Services would have no backends and requests
-#   would fail with upstream unavailable errors.
+# - Without Endpoints, these Services would have no backends and requests would
+#   fail with upstream unavailable errors.
 ---
 apiVersion: v1
 kind: Service
@@ -20,21 +20,18 @@ spec:
       targetPort: 8123
 
 ---
-apiVersion: discovery.k8s.io/v1
-kind: EndpointSlice
+apiVersion: v1
+kind: Endpoints
 metadata:
   name: ext-homeassistant
   namespace: traefik
-  labels:
-    kubernetes.io/service-name: ext-homeassistant
-addressType: IPv4
-endpoints:
+subsets:
   - addresses:
-      - 192.168.123.10
-ports:
-  - name: http
-    port: 8123
-    protocol: TCP
+      - ip: 192.168.123.10
+    ports:
+      - name: http
+        port: 8123
+        protocol: TCP
 
 ---
 apiVersion: v1
@@ -50,21 +47,18 @@ spec:
       targetPort: 8123
 
 ---
-apiVersion: discovery.k8s.io/v1
-kind: EndpointSlice
+apiVersion: v1
+kind: Endpoints
 metadata:
   name: ext-homeassistant-horsmar
   namespace: traefik
-  labels:
-    kubernetes.io/service-name: ext-homeassistant-horsmar
-addressType: IPv4
-endpoints:
+subsets:
   - addresses:
-      - 192.168.123.11  # ha-proxy LXC - TCP proxy to Horsmar
-ports:
-  - name: http
-    port: 8123
-    protocol: TCP
+      - ip: 192.168.123.11  # ha-proxy LXC - TCP proxy to Horsmar
+    ports:
+      - name: http
+        port: 8123
+        protocol: TCP
 
 ---
 apiVersion: v1
@@ -80,21 +74,18 @@ spec:
       targetPort: 8006
 
 ---
-apiVersion: discovery.k8s.io/v1
-kind: EndpointSlice
+apiVersion: v1
+kind: Endpoints
 metadata:
   name: ext-pve
   namespace: traefik
-  labels:
-    kubernetes.io/service-name: ext-pve
-addressType: IPv4
-endpoints:
+subsets:
   - addresses:
-      - 192.168.123.8
-ports:
-  - name: https
-    port: 8006
-    protocol: TCP
+      - ip: 192.168.123.8
+    ports:
+      - name: https
+        port: 8006
+        protocol: TCP
 
 ---
 apiVersion: v1
@@ -110,22 +101,18 @@ spec:
       targetPort: 5001
 
 ---
-apiVersion: discovery.k8s.io/v1
-kind: EndpointSlice
+apiVersion: v1
+kind: Endpoints
 metadata:
   name: ext-nas
   namespace: traefik
-  labels:
-    kubernetes.io/service-name: ext-nas
-addressType: IPv4
-endpoints:
+subsets:
   - addresses:
-      - 192.168.123.5
-ports:
-  - name: https
-    port: 5001
-    protocol: TCP
-
+      - ip: 192.168.123.5
+    ports:
+      - name: https
+        port: 5001
+        protocol: TCP
 ---
 apiVersion: v1
 kind: Service
@@ -140,18 +127,15 @@ spec:
       targetPort: 6443
 
 ---
-apiVersion: discovery.k8s.io/v1
-kind: EndpointSlice
+apiVersion: v1
+kind: Endpoints
 metadata:
   name: ext-kubernetes-api
   namespace: traefik
-  labels:
-    kubernetes.io/service-name: ext-kubernetes-api
-addressType: IPv4
-endpoints:
+subsets:
   - addresses:
-      - 192.168.123.20
-ports:
-  - name: https
-    port: 6443
-    protocol: TCP
+      - ip: 192.168.123.20
+    ports:
+      - name: https
+        port: 6443
+        protocol: TCP
