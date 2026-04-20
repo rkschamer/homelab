@@ -78,6 +78,7 @@ spec:
               add:
                 - CHOWN
                 - NET_BIND_SERVICE
+                - SETFCAP
           livenessProbe:
             httpGet:
               path: /admin/
