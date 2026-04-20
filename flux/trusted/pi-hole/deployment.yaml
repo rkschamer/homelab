@@ -72,6 +72,14 @@ spec:
               memory: 512Mi
           securityContext:
             readOnlyRootFilesystem: false
+            capabilities:
+              drop:
+                - ALL
+              add:
+                - CHOWN
+                - NET_BIND_SERVICE
+                - NET_RAW
+                - SYS_NICE
           livenessProbe:
             httpGet:
               path: /admin/
