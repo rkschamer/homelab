@@ -4,7 +4,7 @@ kind: Namespace
 metadata:
   name: pi-hole
   labels:
-    network-zone: untrusted
+    network-zone: trusted
     # Pi-hole requires CHOWN, SYS_NICE capabilities and runs as root
     pod-security.kubernetes.io/enforce: baseline
     pod-security.kubernetes.io/warn: baseline

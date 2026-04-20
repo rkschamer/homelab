@@ -38,6 +38,16 @@ spec:
             # Use Unbound sidecar for recursive DNS resolution
             - name: FTLCONF_dns_upstreams
               value: "127.0.0.1#5335"
+            # Delegate reverse lookups for home LAN to FritzBox
+            - name: FTLCONF_dns_revServers
+              value: "true,192.168.123.0/24,192.168.123.1,fritz.box"
+            # increse API rate limits because currently all request come from the same IP (the sidecar)
+            # due to SNAT config for pihole (at the moment)
+            - name: FTLCONF_dns_rateLimit_count
+              value: "10000"
+            - name: FTLCONF_dns_rateLimit_interval
+              value: "60"
+
           ports:
             - name: dns-tcp
               containerPort: 53
