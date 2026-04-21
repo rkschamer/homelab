@@ -158,32 +158,34 @@ spec:
         additionalArgs:
           - name: config.expand-env
             value: "true"
-        env:
-          - name: SMTP_SMARTHOST
-            valueFrom:
-              secretKeyRef:
-                name: alertmanager-email-secret
-                key: smarthost
-          - name: SMTP_FROM
-            valueFrom:
-              secretKeyRef:
-                name: alertmanager-email-secret
-                key: from
-          - name: SMTP_USERNAME
-            valueFrom:
-              secretKeyRef:
-                name: alertmanager-email-secret
-                key: username
-          - name: SMTP_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: alertmanager-email-secret
-                key: password
-          - name: SMTP_TO
-            valueFrom:
-              secretKeyRef:
-                name: alertmanager-email-secret
-                key: to
+        containers:
+          - name: alertmanager
+            env:
+              - name: SMTP_SMARTHOST
+                valueFrom:
+                  secretKeyRef:
+                    name: alertmanager-email-secret
+                    key: smarthost
+              - name: SMTP_FROM
+                valueFrom:
+                  secretKeyRef:
+                    name: alertmanager-email-secret
+                    key: from
+              - name: SMTP_USERNAME
+                valueFrom:
+                  secretKeyRef:
+                    name: alertmanager-email-secret
+                    key: username
+              - name: SMTP_PASSWORD
+                valueFrom:
+                  secretKeyRef:
+                    name: alertmanager-email-secret
+                    key: password
+              - name: SMTP_TO
+                valueFrom:
+                  secretKeyRef:
+                    name: alertmanager-email-secret
+                    key: to
         storage:
           volumeClaimTemplate:
             spec:
