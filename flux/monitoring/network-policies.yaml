@@ -34,3 +34,32 @@ spec:
   - toEndpoints:
     - matchLabels:
         io.cilium.k8s.namespace.labels.network-zone: monitoring
+
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-alertmanager-smtp-egress
+  namespace: monitoring
+spec:
+  description: "Allow Alertmanager to reach MailerSend SMTP and resolve DNS"
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: alertmanager
+  egress:
+    - toEntities:
+        - world
+      toPorts:
+        - ports:
+            - port: "587"
+              protocol: TCP
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: kube-system
+            k8s:k8s-app: kube-dns
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: UDP
+            - port: "53"
+              protocol: TCP
