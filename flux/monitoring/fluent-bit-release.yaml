@@ -24,6 +24,8 @@ spec:
       retries: 3
   values:
     kind: DaemonSet
+    service:
+      type: NodePort
 
     serviceMonitor:
       enabled: true
@@ -39,12 +41,13 @@ spec:
     tolerations:
       - operator: Exists
 
-    # Expose port 5170 on the host so Talos (the host OS) can ship logs via TCP.
-    # Talos configures tcp://127.0.0.1:5170/ as its logging destination.
+    # Expose a fixed NodePort so Talos can ship logs to this node-local service.
+    # Talos nodes are configured to send to tcp://127.0.0.1:30517/.
     extraPorts:
       - name: talos-logs
+        port: 5170
         containerPort: 5170
-        hostPort: 5170
+        nodePort: 30517
         protocol: TCP
 
     config:

@@ -115,11 +115,11 @@ resource "local_file" "controlplane_config" {
                   wipe  = false                                                                                                   # Indicates if the installation disk should be wiped at installation time.
                 }
               ),
-              # Forward Talos service logs to Fluent Bit (hostPort 5170 on the same node).
+              # Forward Talos service logs to Fluent Bit via local NodePort on the same node.
               logging = {
                 destinations = [
                   {
-                    endpoint  = "tcp://127.0.0.1:5170/"
+                    endpoint  = "tcp://127.0.0.1:30517/"
                     format    = "json_lines"
                     extraTags = { node = each.value.name }
                   }
@@ -183,11 +183,11 @@ resource "local_file" "worker_config" {
                   wipe  = false                                                                                                   # Indicates if the installation disk should be wiped at installation time.
                 }
               ),
-              # Forward Talos service logs to Fluent Bit (hostPort 5170 on the same node).
+              # Forward Talos service logs to Fluent Bit via local NodePort on the same node.
               logging = {
                 destinations = [
                   {
-                    endpoint  = "tcp://127.0.0.1:5170/"
+                    endpoint  = "tcp://127.0.0.1:30517/"
                     format    = "json_lines"
                     extraTags = { node = each.value.name }
                   }
