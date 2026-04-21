@@ -1,0 +1,42 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: longhorn-rules
+  namespace: monitoring
+spec:
+  groups:
+    - name: longhorn
+      rules:
+        - alert: LonghornVolumeDegraded
+          expr: longhorn_volume_robustness == 2
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Longhorn volume {{ $labels.volume }} is degraded"
+            description: >-
+              Volume {{ $labels.volume }} is degraded — fewer replicas than
+              required. Data is still available but redundancy is reduced.
+
+        - alert: LonghornVolumeFaulted
+          expr: longhorn_volume_robustness == 3
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Longhorn volume {{ $labels.volume }} is faulted"
+            description: >-
+              Volume {{ $labels.volume }} has faulted. All replicas are
+              unhealthy and the volume may be inaccessible.
+
+        - alert: LonghornNodeStorageWarning
+          expr: |
+            longhorn_node_storage_usage_bytes / longhorn_node_storage_capacity_bytes > 0.70
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Longhorn node {{ $labels.node }} storage above 70%"
+            description: >-
+              Node {{ $labels.node }} Longhorn storage usage is at
+              {{ $value | humanizePercentage }}.
