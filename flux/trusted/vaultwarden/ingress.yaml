@@ -10,6 +10,9 @@ spec:
   routes:
     - match: Host(`vw.kschamer.info`)
       kind: Rule
+      middlewares:
+        - name: crowdsec-bouncer
+          namespace: traefik
       services:
         - name: vaultwarden
           port: 8080
