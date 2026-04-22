@@ -11,6 +11,8 @@ spec:
     - match: Host(`grafana.kschamer.info`)
       kind: Rule
       middlewares:
+        - name: crowdsec-bouncer
+          namespace: traefik
         - name: authelia-forwardauth
           namespace: traefik
       services:

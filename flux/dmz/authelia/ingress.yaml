@@ -10,6 +10,9 @@ spec:
   routes:
     - match: Host(`auth.kschamer.info`)
       kind: Rule
+      middlewares:
+        - name: crowdsec-bouncer
+          namespace: traefik
       services:
         - name: authelia
           port: 80

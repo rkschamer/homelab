@@ -31,6 +31,9 @@ spec:
   routes:
     - match: Host(`ha.kschamer.info`)
       kind: Rule
+      middlewares:
+        - name: crowdsec-bouncer
+          namespace: traefik
       services:
         - name: ext-homeassistant
           port: 8123
@@ -53,6 +56,9 @@ spec:
   routes:
     - match: Host(`horsmar.kschamer.info`)
       kind: Rule
+      middlewares:
+        - name: crowdsec-bouncer
+          namespace: traefik
       services:
         - name: ext-homeassistant-horsmar
           port: 8123
@@ -75,6 +81,9 @@ spec:
   routes:
     - match: Host(`nas.kschamer.info`)
       kind: Rule
+      middlewares:
+        - name: crowdsec-bouncer
+          namespace: traefik
       services:
         - name: ext-nas
           port: 5001
@@ -99,6 +108,9 @@ spec:
   routes:
     - match: Host(`pve.kschamer.info`)
       kind: Rule
+      middlewares:
+        - name: crowdsec-bouncer
+          namespace: traefik
       services:
         - name: ext-pve
           port: 8006

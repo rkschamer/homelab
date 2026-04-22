@@ -23,6 +23,8 @@ spec:
     - match: Host(`slicer.kschamer.info`)
       kind: Rule
       middlewares:
+        - name: crowdsec-bouncer
+          namespace: traefik
         - name: internal-ip-addresses
           namespace: traefik
         - name: authelia-forwardauth
