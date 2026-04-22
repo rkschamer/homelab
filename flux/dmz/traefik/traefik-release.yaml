@@ -68,12 +68,16 @@ spec:
           secretKeyRef:
             name: traefik-dns-porkbun
             key: secret-key
-      # CrowdSec bouncer API key - read by the crowdsec-bouncer-traefik-plugin
-      - name: CROWDSEC_BOUNCER_API_KEY
-        valueFrom:
-          secretKeyRef:
-            name: crowdsec-bouncer-key
-            key: api-key
+
+    volumes:
+      - name: crowdsec-bouncer-key
+        secret:
+          secretName: crowdsec-bouncer-key
+
+    additionalVolumeMounts:
+      - name: crowdsec-bouncer-key
+        mountPath: /etc/traefik/crowdsec
+        readOnly: true
 
     persistence:
       enabled: true
