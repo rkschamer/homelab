@@ -71,13 +71,8 @@ spec:
 
     volumes:
       - name: crowdsec-bouncer-key
-        secret:
-          secretName: crowdsec-bouncer-key
-
-    additionalVolumeMounts:
-      - name: crowdsec-bouncer-key
         mountPath: /etc/traefik/crowdsec
-        readOnly: true
+        type: secret
 
     persistence:
       enabled: true
