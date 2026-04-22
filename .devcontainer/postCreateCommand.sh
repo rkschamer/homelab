@@ -27,6 +27,8 @@ cat >> /home/vscode/.bash_aliases << 'EOF'
 # User-defined aliases
 alias k='kubectl'
 alias tf='terraform'
+alias kns='kubens'
+alias kctx='kubectx'
 EOF
 echo "Shell aliases configured."
 
