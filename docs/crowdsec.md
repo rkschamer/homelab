@@ -48,8 +48,8 @@ flux/dmz/crowdsec/
 └── crowdsec-bouncer-sealedsecret.yaml.instructions  # How to create the bouncer API key secret
 
 flux/dmz/traefik/
-├── crowdsec-middleware.yaml                       # Traefik Middleware (bouncer plugin config)
-└── traefik-release.yaml                           # Plugin registration + CROWDSEC_BOUNCER_API_KEY env
+├── crowdsec-middleware.yaml                       # Traefik Middleware (bouncer plugin config, uses crowdsecLapiKeyFile)
+└── traefik-release.yaml                           # Plugin registration + secret volume mount at /etc/traefik/crowdsec
 ```
 
 ## Initial Setup
@@ -67,6 +67,9 @@ kubectl exec -n crowdsec deployment/crowdsec-lapi -- \
   cscli bouncers add traefik-bouncer -o raw
 ```
 
+> The key is only shown once at creation. CrowdSec stores a hash — you cannot retrieve it later.
+> If you lose it, delete the bouncer and re-add: `cscli bouncers delete traefik-bouncer`
+
 **3. Seal the key as a Secret in the `traefik` namespace:**
 ```bash
 kubectl create secret generic crowdsec-bouncer-key \
@@ -76,11 +79,16 @@ kubectl create secret generic crowdsec-bouncer-key \
   > flux/dmz/crowdsec/crowdsec-bouncer-sealedsecret.yaml
 ```
 
-**4. Commit and add the middleware to IngressRoutes:**
-```yaml
-middlewares:
-  - name: crowdsec-bouncer
-    namespace: traefik
+**4. Commit and reconcile:**
+```bash
+git add flux/dmz/crowdsec/crowdsec-bouncer-sealedsecret.yaml
+git commit -m "seal crowdsec bouncer api key"
+flux reconcile source git flux-system
+```
+
+After reconciliation the SealedSecret is decrypted in-cluster and mounted into the Traefik pod at `/etc/traefik/crowdsec/api-key`. If Traefik was already running with a stale or missing secret, restart it to pick up the new file:
+```bash
+kubectl rollout restart deployment/traefik -n traefik
 ```
 
 ## Useful Commands
