@@ -29,6 +29,28 @@ spec:
     - kind: ConfigMap
       name: flux-kube-state-metrics-config
       valuesKey: kube-state-metrics-config.yaml
+    # Inject SMTP settings from SealedSecret-derived Secret to avoid runtime
+    # env placeholder expansion issues during Prometheus Operator validation.
+    - kind: Secret
+      name: alertmanager-email-secret
+      valuesKey: smarthost
+      targetPath: alertmanager.config.global.smtp_smarthost
+    - kind: Secret
+      name: alertmanager-email-secret
+      valuesKey: from
+      targetPath: alertmanager.config.global.smtp_from
+    - kind: Secret
+      name: alertmanager-email-secret
+      valuesKey: username
+      targetPath: alertmanager.config.global.smtp_auth_username
+    - kind: Secret
+      name: alertmanager-email-secret
+      valuesKey: password
+      targetPath: alertmanager.config.global.smtp_auth_password
+    - kind: Secret
+      name: alertmanager-email-secret
+      valuesKey: to
+      targetPath: alertmanager.config.receivers[1].email_configs[0].to
   values:
     cleanPrometheusOperatorObjectNames: true
 
@@ -117,6 +139,8 @@ spec:
 
     alertmanager:
       enabled: true
+      # Keep routing structure in Git while injecting sensitive SMTP values via
+      # valuesFrom targetPath entries above.
       config:
         global:
           smtp_smarthost: '${SMTP_SMARTHOST}'
@@ -155,37 +179,6 @@ spec:
               - severity = info
             equal: ['alertname', 'namespace']
       alertmanagerSpec:
-        additionalArgs:
-          - name: config.expand-env
-            value: "true"
-        containers:
-          - name: alertmanager
-            env:
-              - name: SMTP_SMARTHOST
-                valueFrom:
-                  secretKeyRef:
-                    name: alertmanager-email-secret
-                    key: smarthost
-              - name: SMTP_FROM
-                valueFrom:
-                  secretKeyRef:
-                    name: alertmanager-email-secret
-                    key: from
-              - name: SMTP_USERNAME
-                valueFrom:
-                  secretKeyRef:
-                    name: alertmanager-email-secret
-                    key: username
-              - name: SMTP_PASSWORD
-                valueFrom:
-                  secretKeyRef:
-                    name: alertmanager-email-secret
-                    key: password
-              - name: SMTP_TO
-                valueFrom:
-                  secretKeyRef:
-                    name: alertmanager-email-secret
-                    key: to
         storage:
           volumeClaimTemplate:
             spec:

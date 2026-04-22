@@ -5,4 +5,3 @@ resources:
   - prometheusrules-flux.yaml
   - prometheusrules-longhorn.yaml
   - longhorn-servicemonitor.yaml
-  - alertmanager-email-sealedsecret.yaml
