@@ -42,6 +42,21 @@ spec:
     #             otherwise provisioning will fail.
     persistence:
       defaultClassReplicaCount: 2
+      # Apply recurring jobs to every new volume provisioned by the default
+      # Longhorn StorageClass (StorageClass parameter: recurringJobSelector).
+      #
+      # This selects the RecurringJob group named "default", so any RecurringJob
+      # manifest that includes groups: [default] is auto-assigned to new volumes.
+      # Equivalent StorageClass selector JSON:
+      # [{"name":"default","isGroup":true}]
+      #
+      # If you add another StorageClass later that should NOT auto-run backups,
+      # leave recurringJobSelector disabled/empty on that StorageClass.
+      recurringJobSelector:
+        enable: true
+        jobList:
+          - name: default
+            isGroup: true
 
     csi:
       # Homelab sizing: reduce CSI control-plane replica fan-out to lower steady CPU load.
