@@ -5,11 +5,11 @@ metadata:
   name: hourly-snapshot
   namespace: longhorn-system
 spec:
-  cron: "0 * * * *"
+  cron: "0 */2 * * *"
   task: snapshot
   groups:
     - default
-  retain: 168 # 7 days worth of hourly snapshots
+  retain: 84 # 7 days worth of snapshots every 2 hours (webhook cap is <= 100)
   concurrency: 1
 ---
 apiVersion: longhorn.io/v1beta2
@@ -35,7 +35,7 @@ spec:
   task: snapshot-delete
   groups:
     - default
-  retain: 168 # Enforce snapshot retention independent of snapshot creation job
+  retain: 84 # Match snapshot retention (webhook cap is <= 100)
   concurrency: 1
 ---
 apiVersion: longhorn.io/v1beta2
