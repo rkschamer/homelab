@@ -30,6 +30,13 @@ spec:
         - ports:
             - port: "8080"
               protocol: TCP
+    - fromEndpoints:
+        - matchLabels:
+            io.cilium.k8s.namespace.labels.network-zone: monitoring
+      toPorts:
+        - ports:
+            - port: "6060"
+              protocol: TCP
 
 ---
 # CrowdSec AppSec - restrict ingress to Traefik only
@@ -52,4 +59,11 @@ spec:
       toPorts:
         - ports:
             - port: "7422"
+              protocol: TCP
+    - fromEndpoints:
+        - matchLabels:
+            io.cilium.k8s.namespace.labels.network-zone: monitoring
+      toPorts:
+        - ports:
+            - port: "6060"
               protocol: TCP

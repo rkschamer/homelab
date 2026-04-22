@@ -1,0 +1,44 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: crowdsec-rules
+  namespace: monitoring
+spec:
+  groups:
+    - name: crowdsec
+      rules:
+        - alert: CrowdSecLapiDown
+          expr: |
+            up{namespace="crowdsec", job=~".*lapi.*"} == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "CrowdSec LAPI is down"
+            description: >-
+              Prometheus cannot scrape CrowdSec LAPI metrics for 5 minutes.
+              Active decisions are no longer being enforced.
+
+        - alert: CrowdSecNoBouncer
+          expr: cs_lapi_bouncers_total == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "No CrowdSec bouncer connected"
+            description: >-
+              No bouncers are connected to CrowdSec LAPI. Banned IPs are
+              no longer being blocked at the Traefik ingress.
+
+        - alert: CrowdSecDecisionSpike
+          expr: |
+            delta(sum(cs_active_decisions{action="ban"})[1h:5m]) > 1
+          for: 0m
+          labels:
+            severity: warning
+          annotations:
+            summary: "CrowdSec ban spike: {{ $value | humanize }} new bans in 1h"
+            description: >-
+              The number of active CrowdSec ban decisions increased by
+              {{ $value | humanize }} in the last hour, suggesting an
+              ongoing attack or scan wave.
