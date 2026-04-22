@@ -6,3 +6,5 @@ resources:
   - backup-target.yaml
   - longhorn-volumeattributesclass-rbac.yaml
   - volumesnapshotclass.yaml
+  - recurring-jobs.yaml
+  - recurring-job-backfill.yaml

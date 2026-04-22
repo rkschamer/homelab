@@ -1,0 +1,53 @@
+---
+apiVersion: longhorn.io/v1beta2
+kind: RecurringJob
+metadata:
+  name: hourly-snapshot
+  namespace: longhorn-system
+spec:
+  cron: "0 * * * *"
+  task: snapshot
+  groups:
+    - default
+  retain: 168 # 7 days worth of hourly snapshots
+  concurrency: 1
+---
+apiVersion: longhorn.io/v1beta2
+kind: RecurringJob
+metadata:
+  name: daily-backup
+  namespace: longhorn-system
+spec:
+  cron: "0 2 * * *"
+  task: backup
+  groups:
+    - default
+  retain: 30 # 30 days of daily backups
+  concurrency: 1
+---
+apiVersion: longhorn.io/v1beta2
+kind: RecurringJob
+metadata:
+  name: snapshot-delete
+  namespace: longhorn-system
+spec:
+  cron: "30 2 * * *"
+  task: snapshot-delete
+  groups:
+    - default
+  retain: 168 # Enforce snapshot retention independent of snapshot creation job
+  concurrency: 1
+---
+apiVersion: longhorn.io/v1beta2
+kind: RecurringJob
+metadata:
+  name: snapshot-cleanup
+  namespace: longhorn-system
+spec:
+  cron: "0 3 * * *"
+  task: snapshot-cleanup
+  groups:
+    - default
+  # Longhorn mutates this to 0 for snapshot-cleanup tasks.
+  retain: 1
+  concurrency: 1
