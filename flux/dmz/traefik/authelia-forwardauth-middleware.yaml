@@ -13,6 +13,3 @@ spec:
       - Remote-Name
       - Remote-Email
       - Remote-Groups
-  buffering:
-    memRequestBodyBytes: 1048576
-    memResponseBodyBytes: 1048576
