@@ -51,6 +51,10 @@ spec:
       name: alertmanager-email-secret
       valuesKey: to
       targetPath: alertmanager.config.receivers[1].email_configs[0].to
+    - kind: Secret
+      name: alertmanager-telegram-secret
+      valuesKey: bot_token
+      targetPath: alertmanager.config.receivers[2].telegram_configs[0].bot_token
   values:
     cleanPrometheusOperatorObjectNames: true
 
@@ -155,14 +159,31 @@ spec:
                 - alertname = "Watchdog"
               receiver: 'null'
             - matchers:
-                - severity =~ "warning|critical"
+                - severity = "critical"
               receiver: email
+              continue: true
+            - matchers:
+                - severity =~ "warning|critical"
+              receiver: telegram
         receivers:
           - name: 'null'
           - name: email
             email_configs:
-              - to: '${SMTP_TO}'
+              - to: 'placeholder'
                 send_resolved: true
+          - name: telegram
+            telegram_configs:
+              - chat_id: 11073373
+                bot_token: 'placeholder'
+                send_resolved: true
+                parse_mode: HTML
+                message: |-
+                  {{ range .Alerts }}
+                  {{ if eq .Status "firing" }}🔥 <b>FIRING</b>{{ else }}✅ <b>RESOLVED</b>{{ end }}: <b>{{ .Labels.alertname }}</b>
+                  {{ if .Labels.namespace }}<code>{{ .Labels.namespace }}</code>{{ end }}
+                  {{ .Annotations.summary }}
+                  {{ if .Annotations.description }}{{ .Annotations.description }}{{ end }}
+                  {{ end }}
         inhibit_rules:
           - source_matchers:
               - severity = critical

@@ -62,7 +62,7 @@ metadata:
   name: allow-alertmanager-smtp-egress
   namespace: monitoring
 spec:
-  description: "Allow Alertmanager to reach MailerSend SMTP and resolve DNS"
+  description: "Allow Alertmanager to reach MailerSend SMTP, Telegram API, and resolve DNS"
   endpointSelector:
     matchLabels:
       app.kubernetes.io/name: alertmanager
@@ -72,6 +72,8 @@ spec:
       toPorts:
         - ports:
             - port: "587"
+              protocol: TCP
+            - port: "443"
               protocol: TCP
     - toEndpoints:
         - matchLabels:
