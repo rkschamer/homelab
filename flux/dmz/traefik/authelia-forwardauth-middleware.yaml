@@ -9,6 +9,7 @@ spec:
     address: http://authelia.authelia.svc.cluster.local/api/authz/forward-auth
     trustForwardHeader: true
     maxBodySize: 1048576  # 1MB in bytes (should be plenty)
+    maxResponseBodySize: 10485760  # 10MB in bytes
     authResponseHeaders:
       - Remote-User
       - Remote-Name
