@@ -97,6 +97,55 @@ spec:
           signout_redirect_url: https://auth.kschamer.info/logout
           disable_login_form: true
 
+      sidecar:
+        dashboards:
+          defaultFolderName: "Kubernetes"
+
+      dashboardProviders:
+        dashboardproviders.yaml:
+          apiVersion: 1
+          providers:
+            - name: homelab
+              orgId: 1
+              folder: Homelab
+              type: file
+              disableDeletion: false
+              editable: true
+              options:
+                path: /var/lib/grafana/dashboards/homelab
+
+      dashboards:
+        homelab:
+          node-exporter-full:
+            gnet_id: 1860
+            revision: 45
+            datasource: Prometheus
+          k8s-dashboard:
+            gnet_id: 15661
+            revision: 2
+            datasource: Prometheus
+          flux-cluster:
+            url: https://raw.githubusercontent.com/fluxcd/flux2-monitoring-example/main/monitoring/configs/dashboards/cluster.json
+            datasource: Prometheus
+          flux-control-plane:
+            url: https://raw.githubusercontent.com/fluxcd/flux2-monitoring-example/main/monitoring/configs/dashboards/control-plane.json
+            datasource: Prometheus
+          flux-logs:
+            url: https://raw.githubusercontent.com/fluxcd/flux2-monitoring-example/main/monitoring/configs/dashboards/logs.json
+            datasource: Loki
+          longhorn:
+            gnet_id: 16888
+            revision: 11
+            datasource: Prometheus
+          traefik:
+            gnet_id: 17347
+            revision: 9
+            datasource: Prometheus
+          crowdsec:
+            gnet_id: 21419
+            revision: 6
+            datasource: Prometheus
+
       additionalDataSources:
         - name: Loki
           uid: loki
