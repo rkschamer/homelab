@@ -10,6 +10,7 @@ resources:
   - admin-secret.yaml
   - alertmanager-email-sealedsecret.yaml
   - alertmanager-telegram-sealedsecret.yaml
+  - alertmanager-healthcheck-sealedsecret.yaml
   - prometheus-release.yaml
   - loki-release.yaml
   - fluent-bit-release.yaml
