@@ -55,6 +55,10 @@ spec:
       name: alertmanager-telegram-secret
       valuesKey: bot_token
       targetPath: alertmanager.config.receivers[2].telegram_configs[0].bot_token
+    - kind: Secret
+      name: alertmanager-healthchecks-secret
+      valuesKey: url
+      targetPath: alertmanager.config.receivers[3].webhook_configs[0].url
   values:
     cleanPrometheusOperatorObjectNames: true
 
@@ -157,7 +161,9 @@ spec:
           routes:
             - matchers:
                 - alertname = "Watchdog"
-              receiver: 'null'
+              receiver: healthchecks
+              group_wait: 0s
+              repeat_interval: 1m
             - matchers:
                 - severity = "critical"
               receiver: email
@@ -184,6 +190,10 @@ spec:
                   {{ .Annotations.summary }}
                   {{ if .Annotations.description }}{{ .Annotations.description }}{{ end }}
                   {{ end }}
+          - name: healthchecks
+            webhook_configs:
+              - url: 'placeholder'
+                send_resolved: false
         inhibit_rules:
           - source_matchers:
               - severity = critical
