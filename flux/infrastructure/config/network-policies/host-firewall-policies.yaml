@@ -154,6 +154,8 @@ spec:
     - ports:
       - port: "9100"      # Node exporter metrics
         protocol: TCP
+      - port: "9962"      # Cilium agent metrics
+        protocol: TCP
       - port: "10257"     # kube-controller-manager metrics
         protocol: TCP
       - port: "10259"     # kube-scheduler metrics
@@ -391,6 +393,8 @@ spec:
     toPorts:
     - ports:
       - port: "9100"     # Node exporter metrics
+        protocol: TCP
+      - port: "9962"     # Cilium agent metrics
         protocol: TCP
 
 ---
