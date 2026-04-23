@@ -51,7 +51,7 @@ spec:
       serviceAccountName: longhorn-recurring-job-backfill
       containers:
         - name: backfill
-          image: registry.k8s.io/kubectl:v1.35.4
+          image: docker.io/bitnami/kubectl:latest
           imagePullPolicy: IfNotPresent
           command:
             - /bin/sh
