@@ -43,6 +43,7 @@ metadata:
 spec:
   # One-shot migration helper. After this succeeds and labels are confirmed,
   # this manifest can be removed from Git.
+  activeDeadlineSeconds: 900
   backoffLimit: 1
   template:
     spec:
@@ -50,7 +51,7 @@ spec:
       serviceAccountName: longhorn-recurring-job-backfill
       containers:
         - name: backfill
-          image: docker.io/bitnami/kubectl:1.35.4
+          image: registry.k8s.io/kubectl:v1.35.4
           imagePullPolicy: IfNotPresent
           command:
             - /bin/sh
