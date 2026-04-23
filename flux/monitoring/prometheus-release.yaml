@@ -117,11 +117,11 @@ spec:
       dashboards:
         homelab:
           node-exporter-full:
-            gnet_id: 1860
+            gnetId: 1860
             revision: 45
             datasource: Prometheus
           k8s-dashboard:
-            gnet_id: 15661
+            gnetId: 15661
             revision: 2
             datasource: Prometheus
           flux-cluster:
@@ -134,15 +134,15 @@ spec:
             url: https://raw.githubusercontent.com/fluxcd/flux2-monitoring-example/main/monitoring/configs/dashboards/logs.json
             datasource: Loki
           longhorn:
-            gnet_id: 16888
+            gnetId: 16888
             revision: 11
             datasource: Prometheus
           traefik:
-            gnet_id: 17347
+            gnetId: 17347
             revision: 9
             datasource: Prometheus
           crowdsec:
-            gnet_id: 21419
+            gnetId: 21419
             revision: 6
             datasource: Prometheus
 
