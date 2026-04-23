@@ -7,4 +7,3 @@ resources:
   - longhorn-volumeattributesclass-rbac.yaml
   - volumesnapshotclass.yaml
   - recurring-jobs.yaml
-  - recurring-job-backfill.yaml
