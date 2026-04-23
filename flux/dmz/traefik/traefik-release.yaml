@@ -106,6 +106,15 @@ spec:
       websecure:
         exposedPort: 443
 
+    metrics:
+      prometheus:
+        enabled: true
+        addEntryPointsLabels: true
+        addRoutersLabels: true
+        addServicesLabels: true
+        serviceMonitor:
+          enabled: true
+
     providers:
       kubernetesCRD:
         enabled: true

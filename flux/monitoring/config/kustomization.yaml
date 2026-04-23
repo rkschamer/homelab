@@ -6,3 +6,4 @@ resources:
   - prometheusrules-longhorn.yaml
   - prometheusrules-crowdsec.yaml
   - longhorn-servicemonitor.yaml
+  - prometheusrules-traefik.yaml

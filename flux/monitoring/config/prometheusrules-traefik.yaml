@@ -1,0 +1,29 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: traefik-alerts
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/part-of: kube-prometheus-stack
+spec:
+  groups:
+    - name: traefik.certificates
+      interval: 1h
+      rules:
+        - alert: TraefikCertExpiringSoon
+          expr: (traefik_tls_certs_not_after - time()) / 86400 < 20
+          for: 1h
+          labels:
+            severity: warning
+          annotations:
+            summary: "TLS certificate expiring soon ({{ $labels.sans }})"
+            description: "Certificate for {{ $labels.sans }} expires in {{ $value | printf \"%.1f\" }} days. Traefik should have already attempted renewal."
+
+        - alert: TraefikCertExpiringCritical
+          expr: (traefik_tls_certs_not_after - time()) / 86400 < 7
+          for: 1h
+          labels:
+            severity: critical
+          annotations:
+            summary: "TLS certificate expiring critically soon ({{ $labels.sans }})"
+            description: "Certificate for {{ $labels.sans }} expires in {{ $value | printf \"%.1f\" }} days. Immediate attention required."
