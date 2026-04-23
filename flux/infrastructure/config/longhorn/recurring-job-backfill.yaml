@@ -47,7 +47,7 @@ spec:
   backoffLimit: 1
   template:
     spec:
-      restartPolicy: OnFailure
+      restartPolicy: Never
       serviceAccountName: longhorn-recurring-job-backfill
       containers:
         - name: backfill
