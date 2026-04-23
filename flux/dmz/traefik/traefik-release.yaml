@@ -25,6 +25,10 @@ metadata:
 spec:
   interval: 30m
   releaseName: traefik
+  install:
+    crds: CreateReplace
+  upgrade:
+    crds: CreateReplace
   chart:
     spec:
       chart: traefik
