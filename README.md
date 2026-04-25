@@ -34,6 +34,7 @@ Was this necessary? Absolutely not. Was it worth it? Absolutely yes. This repo h
 |---|---|
 | [Vaultwarden](https://github.com/dani-garcia/vaultwarden) | Self-hosted Bitwarden-compatible password manager |
 | [SiYuan](https://b3log.org/siyuan/en/) | Personal knowledge base / notes |
+| [DoneTick](https://donetick.com/) | Household task & chore manager |
 
 #### Untrusted — experimental
 
