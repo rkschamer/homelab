@@ -28,7 +28,7 @@
 				"github.vscode-github-actions",
 				"fluxcd.flux-vscode",
 				"eamodio.gitlens",
-				"Anthropic.claude-code"
+				"anthropic.claude-code"
 			]
 		}
 	},
