@@ -5,7 +5,7 @@ metadata:
   name: orcaslicer
   labels:
     network-zone: trusted
-    # baseline allows the hostIPC/hostPID exemptions OrcaSlicer doesn't need,
-    # but restricted would block the seccomp:Unconfined we require below.
-    pod-security.kubernetes.io/enforce: baseline
-    pod-security.kubernetes.io/warn: baseline
+    # privileged is required because OrcaSlicer needs seccompProfile.type: Unconfined
+    # (userfaultfd/clone3 syscalls via Selkies WebRTC); baseline and above forbid it.
+    pod-security.kubernetes.io/enforce: privileged
+    pod-security.kubernetes.io/warn: privileged
