@@ -1,0 +1,26 @@
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: donetick
+  namespace: donetick
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`todo.kschamer.info`)
+      kind: Rule
+      middlewares:
+        - name: crowdsec-bouncer
+          namespace: traefik
+        - name: authelia-forwardauth
+          namespace: traefik
+      services:
+        - name: donetick
+          port: 2021
+  tls:
+    certResolver: letsencrypt
+    domains:
+      - main: kschamer.info
+        sans:
+          - "*.kschamer.info"
