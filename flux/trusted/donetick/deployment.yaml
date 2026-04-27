@@ -51,6 +51,33 @@ spec:
                 secretKeyRef:
                   name: donetick-secret
                   key: DT_JWT_SECRET
+            - name: DT_EMAIL_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: donetick-secret
+                  key: DT_EMAIL_HOST
+            - name: DT_EMAIL_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: donetick-secret
+                  key: DT_EMAIL_PORT
+            - name: DT_EMAIL_APPHOST
+              value: "https://todo.kschamer.info"
+            - name: DT_EMAIL_EMAIL
+              valueFrom:
+                secretKeyRef:
+                  name: donetick-secret
+                  key: DT_EMAIL_EMAIL
+            - name: DT_EMAIL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: donetick-secret
+                  key: DT_EMAIL_USER
+            - name: DT_EMAIL_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: donetick-secret
+                  key: DT_EMAIL_KEY
           ports:
             - containerPort: 2021
               protocol: TCP
