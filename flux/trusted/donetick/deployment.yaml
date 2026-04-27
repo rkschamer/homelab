@@ -44,6 +44,8 @@ spec:
           env:
             - name: DT_ENV
               value: selfhosted
+            - name: DT_IS_USER_CREATION_DISABLED
+              value: "true"
             - name: DT_SQLITE_PATH
               value: /donetick-data/donetick.db
             - name: DT_JWT_SECRET
@@ -78,6 +80,25 @@ spec:
                 secretKeyRef:
                   name: donetick-secret
                   key: DT_EMAIL_KEY
+            - name: DT_OAUTH2_NAME
+              value: "Authelia"
+            - name: DT_OAUTH2_CLIENT_ID
+              value: "donetick"
+            - name: DT_OAUTH2_SCOPES
+              value: "openid profile email"
+            - name: DT_OAUTH2_AUTH_URL
+              value: "https://auth.kschamer.info/api/oidc/authorization"
+            - name: DT_OAUTH2_TOKEN_URL
+              value: "https://auth.kschamer.info/api/oidc/token"
+            - name: DT_OAUTH2_USER_INFO_URL
+              value: "https://auth.kschamer.info/api/oidc/userinfo"
+            - name: DT_OAUTH2_REDIRECT_URL
+              value: "https://todo.kschamer.info/auth/oauth2"
+            - name: DT_OAUTH2_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: donetick-secret
+                  key: DT_OAUTH2_CLIENT_SECRET
           ports:
             - containerPort: 2021
               protocol: TCP
