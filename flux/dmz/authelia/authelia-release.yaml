@@ -128,7 +128,7 @@ spec:
           clients:
             - client_id: 'donetick'
               client_name: 'Donetick'
-              client_secret: '$pbkdf2-sha512$310000$UESPbRMPl/ZapWKkuEez5g$UipN2QmEKs/BmxvZuAOBK6FlP7izresCOqryWvHWdvBzrtC0N6viQ.rc4p4eKGBEYNbpof8tR0l.08dXHwfKyw'
+              client_secret: '$pbkdf2-sha512$310000$vYfWXAM9Z9M48tYWnU7vFw$ySBmsnZtvzu7.G1wQcD0KyO5XkY5soJeuO6xaq6FVSbGaWbW0wyXLZEj2fkm6dNjxY72bpGtQEvt057Xm/P2og'
               public: false
               authorization_policy: 'two_factor'
               require_pkce: false
@@ -141,4 +141,4 @@ spec:
                 - 'email'
               access_token_signed_response_alg: 'none'
               userinfo_signed_response_alg: 'none'
-              token_endpoint_auth_method: 'client_secret_post'
+              token_endpoint_auth_method: 'client_secret_basic'
