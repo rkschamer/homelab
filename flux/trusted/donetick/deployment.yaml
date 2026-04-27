@@ -40,12 +40,17 @@ spec:
         fsGroup: 1000
       containers:
         - name: donetick
-          image: donetick/donetick:latest
+          image: donetick/donetick:v0.1.75
           env:
             - name: DT_ENV
               value: selfhosted
             - name: DT_SQLITE_PATH
               value: /donetick-data/donetick.db
+            - name: DT_JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: donetick-secret
+                  key: DT_JWT_SECRET
           ports:
             - containerPort: 2021
               protocol: TCP
