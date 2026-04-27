@@ -89,7 +89,11 @@ Authelia acts as an OIDC provider for services that support native SSO. This is 
 **1. Generate a client secret and seal it for Authelia (hashed) and the application (plaintext):**
 
 ```bash
-CLIENT_SECRET=$(openssl rand -base64 32)
+# Preferred: 64 hex chars, no internal line wrapping/newline surprises.
+CLIENT_SECRET=$(openssl rand -hex 32)
+
+# If you prefer base64 and long output, strip wrapping/newlines explicitly:
+# CLIENT_SECRET=$(openssl rand -base64 64 | tr -d '\n')
 
 # Hash for Authelia config (OIDC_CLIENT_<NAME>_SECRET in authelia-sealedsecret.yaml)
 docker run --rm ghcr.io/authelia/authelia:latest \
@@ -98,6 +102,8 @@ docker run --rm ghcr.io/authelia/authelia:latest \
 # Plaintext for the application's SealedSecret
 echo "$CLIENT_SECRET"
 ```
+
+> Note: OpenSSL base64 output can wrap at 64 characters for longer secrets. If that wrapped value is copied into Kubernetes secrets, embedded whitespace/newlines can cause OIDC client hash mismatches.
 
 **2. Add the client to `authelia-release.yaml`** under `configMap.identity_providers.oidc.clients`.
 
