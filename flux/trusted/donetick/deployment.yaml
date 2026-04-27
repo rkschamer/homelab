@@ -45,7 +45,7 @@ spec:
             - name: DT_ENV
               value: selfhosted
             - name: DT_IS_USER_CREATION_DISABLED
-              value: "true"
+              value: "false"
             - name: DT_SQLITE_PATH
               value: /donetick-data/donetick.db
             - name: DT_JWT_SECRET
