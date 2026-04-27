@@ -128,7 +128,7 @@ spec:
           clients:
             - client_id: 'donetick'
               client_name: 'Donetick'
-              client_secret: '$pbkdf2-sha512$310000$IVuu07FfH001cjG94U0xFg$/RtHiS4eKN64ZFYw81HE1cKWL5nONN69TAOJPp.5Eece2QOr9RpCJ1UQ1jITQYSer6n7fAPHvNIzXt62q/V/d'
+              client_secret: '$pbkdf2-sha512$310000$UESPbRMPl/ZapWKkuEez5g$UipN2QmEKs/BmxvZuAOBK6FlP7izresCOqryWvHWdvBzrtC0N6viQ.rc4p4eKGBEYNbpof8tR0l.08dXHwfKyw'
               public: false
               authorization_policy: 'two_factor'
               require_pkce: false
