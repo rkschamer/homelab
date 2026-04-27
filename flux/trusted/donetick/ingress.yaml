@@ -13,8 +13,6 @@ spec:
       middlewares:
         - name: crowdsec-bouncer
           namespace: traefik
-        - name: authelia-forwardauth
-          namespace: traefik
       services:
         - name: donetick
           port: 2021

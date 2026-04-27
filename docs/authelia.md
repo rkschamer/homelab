@@ -35,7 +35,7 @@ flux/dmz/authelia/
 ├── authelia-release.yaml        # HelmRepository + HelmRelease
 ├── ingress.yaml                 # IngressRoute at auth.kschamer.info
 ├── network-policy.yaml          # CiliumNetworkPolicy (port 9091)
-├── sealedsecret.yaml            # SealedSecret — authelia-secrets (JWT, session, storage keys + users file)
+├── authelia-sealedsecret.yaml   # SealedSecret — authelia-secrets (users file, SMTP creds, OIDC keys)
 └── kustomization.yaml
 
 flux/dmz/traefik/
@@ -52,12 +52,69 @@ These IngressRoutes use the `authelia-forwardauth` middleware:
 | Pi-hole | `pihole.kschamer.info` | `flux/untrusted/pi-hole/ingress.yaml` |
 | SiYuan | `notes.kschamer.info` | `flux/trusted/siyuan/ingress.yaml` |
 
+Services using **native OIDC** (no forward-auth middleware needed):
+
+| Service | Domain | Notes |
+|---------|--------|-------|
+| Donetick | `todo.kschamer.info` | OIDC login via Authelia; local registration disabled |
+
 To protect additional services, add to their IngressRoute:
 ```yaml
 middlewares:
   - name: authelia-forwardauth
     namespace: traefik
 ```
+
+## OpenID Connect (OIDC)
+
+Authelia acts as an OIDC provider for services that support native SSO. This is preferred over forward-auth for services with their own login UI, as it avoids a second auth hop and works with mobile apps.
+
+### Registered Clients
+
+| Client ID | Service | Redirect URI |
+|-----------|---------|-------------|
+| `donetick` | Donetick | `https://todo.kschamer.info/auth/oauth2` |
+
+### OIDC Endpoints
+
+| Endpoint | URL |
+|----------|-----|
+| Authorization | `https://auth.kschamer.info/api/oidc/authorization` |
+| Token | `https://auth.kschamer.info/api/oidc/token` |
+| Userinfo | `https://auth.kschamer.info/api/oidc/userinfo` |
+| Discovery | `https://auth.kschamer.info/.well-known/openid-configuration` |
+
+### Adding a New OIDC Client
+
+**1. Generate a client secret and seal it for Authelia (hashed) and the application (plaintext):**
+
+```bash
+CLIENT_SECRET=$(openssl rand -base64 32)
+
+# Hash for Authelia config (OIDC_CLIENT_<NAME>_SECRET in authelia-sealedsecret.yaml)
+docker run --rm ghcr.io/authelia/authelia:latest \
+  authelia crypto hash generate pbkdf2 --variant sha512 --password "$CLIENT_SECRET"
+
+# Plaintext for the application's SealedSecret
+echo "$CLIENT_SECRET"
+```
+
+**2. Add the client to `authelia-release.yaml`** under `configMap.identity_providers.oidc.clients`.
+
+**3. Mount the hashed secret** by adding it to `secret.additionalSecrets.authelia-secrets.items` in `authelia-release.yaml` and referencing the path in `client_secret.path`.
+
+### OIDC Private Key
+
+The OIDC provider signs tokens with an RSA-4096 key stored as `OIDC_PRIVATE_KEY` in `authelia-secrets`. To rotate it:
+
+```bash
+openssl genrsa 4096 | kubectl create secret generic authelia-secrets \
+  --namespace authelia --from-file=OIDC_PRIVATE_KEY=/dev/stdin \
+  --dry-run=client -o yaml | kubeseal --format=yaml
+# Merge the new OIDC_PRIVATE_KEY value into authelia-sealedsecret.yaml and commit
+```
+
+> Rotating the private key invalidates all existing OIDC sessions for all clients.
 
 ## Initial Setup
 

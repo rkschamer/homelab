@@ -71,6 +71,10 @@ spec:
               path: users_database.yml
             - key: SMTP_PASSWORD
               path: SMTP_PASSWORD
+            - key: OIDC_PRIVATE_KEY
+              path: OIDC_PRIVATE_KEY
+            - key: OIDC_CLIENT_DONETICK_SECRET
+              path: OIDC_CLIENT_DONETICK_SECRET
 
     configMap:
       access_control:
@@ -100,6 +104,30 @@ spec:
         local:
           enabled: true
           path: /config/db.sqlite3
+
+      identity_providers:
+        oidc:
+          jwks:
+            - key_id: 'main'
+              algorithm: 'RS256'
+              use: 'sig'
+              key:
+                path: '/secrets/authelia-secrets/OIDC_PRIVATE_KEY'
+          clients:
+            - client_id: 'donetick'
+              client_name: 'Donetick'
+              client_secret:
+                path: '/secrets/authelia-secrets/OIDC_CLIENT_DONETICK_SECRET'
+              public: false
+              authorization_policy: 'two_factor'
+              require_pkce: false
+              redirect_uris:
+                - 'https://todo.kschamer.info/auth/oauth2'
+              scopes:
+                - 'openid'
+                - 'profile'
+                - 'email'
+              token_endpoint_auth_method: 'client_secret_basic'
 
       # SMTP notifications — address/username/sender injected via env vars; password via chart secret mechanism
       notifier:
