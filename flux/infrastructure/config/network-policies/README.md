@@ -22,7 +22,7 @@ All worker nodes (2 nodes) share the same physical network (10.10.20.0/24). **Ne
 |------|-----------------|---------|----------------------|
 | **Trusted** | `network-zone: trusted` | Internal services (Home Assistant, NAS, databases) with home LAN access | Can reach: Home LAN, Management, Internet |
 | **DMZ** | `network-zone: dmz` | Public-facing services (Traefik Ingress). Isolated from home LAN | Can reach: Internet, explicit Trusted backends; Blocked: Home LAN |
-| **Untrusted** | `network-zone: untrusted` | Experimental workloads, development, testing, sandboxing | Can reach: Internet only; Blocked: Home LAN, Trusted, DMZ, Monitoring |
+| **Untrusted** | `network-zone: untrusted` | Services that need no access to the home network or internal zones (internet-only). Also used for experiments/sandboxing. The name reflects the access level, not the trustworthiness of the software. | Can reach: Internet only; Blocked: Home LAN, Trusted, DMZ, Monitoring |
 | **Monitoring** | `network-zone: monitoring` | Observability infrastructure (Prometheus, Grafana, Hubble) | Can reach: All zones (pull-only); Others cannot push to Monitoring |
 
 ## Zone Isolation Rules

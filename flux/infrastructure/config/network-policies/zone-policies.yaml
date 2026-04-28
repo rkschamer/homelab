@@ -10,7 +10,7 @@
 # Network Zones (Pod-Level):
 # - Trusted (network-zone: trusted): Internal apps with home LAN access
 # - DMZ (network-zone: dmz): Public-facing services (Traefik)
-# - Untrusted (network-zone: untrusted): Experimental workloads, internet-only
+# - Untrusted (network-zone: untrusted): Services requiring no home network access (internet-only). Also experiments/sandboxing. Name reflects access level, not software trustworthiness.
 # - Monitoring (network-zone: monitoring): Observability infrastructure
 #
 # Key Isolation Rules:
@@ -24,8 +24,9 @@
 # =============================================================================
 # Untrusted Zone Isolation - Block access to internal networks
 # =============================================================================
-# Pods labeled with network-zone: untrusted should only have internet access.
-# All pods in the untrusted zone are blocked from reaching internal networks.
+# "Untrusted" means internet-only access, not that the software itself is untrustworthy.
+# Use this zone for any service that simply has no reason to reach the home LAN or
+# internal zones — good default for public-facing apps without internal dependencies.
 # =============================================================================
 apiVersion: cilium.io/v2
 kind: CiliumClusterwideNetworkPolicy

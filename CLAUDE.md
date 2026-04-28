@@ -60,7 +60,7 @@ kubectl label namespace <namespace> network-zone=<trusted|dmz|untrusted|monitori
 |------|-------|---------|--------------|
 | **Trusted** | `network-zone: trusted` | Internal services (Home Assistant, NAS) | Home LAN, Management, Internet |
 | **DMZ** | `network-zone: dmz` | Public-facing (Traefik Ingress) | Internet, explicit Trusted pods; Blocked: Home LAN, Untrusted |
-| **Untrusted** | `network-zone: untrusted` | Experimental/testing | Internet only; Blocked: all others |
+| **Untrusted** | `network-zone: untrusted` | Services needing no home network access; also experiments/sandboxing. Name reflects access level, not software trustworthiness. | Internet only; Blocked: all others |
 | **Monitoring** | `network-zone: monitoring` | Observability (Prometheus, Grafana, Hubble) | Pull from all zones; others cannot push |
 
 Cilium Network Policies in `flux/infrastructure/network-policies/` enforce these rules.
