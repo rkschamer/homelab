@@ -78,6 +78,29 @@ Store `sealed-secrets-master.key` securely and **do not commit it**.
 
 ## Cluster Maintenance
 
+### Priority Classes
+
+The cluster defines two custom PriorityClasses in [`flux/infrastructure/config/priority-classes.yaml`](../flux/infrastructure/config/priority-classes.yaml) to control eviction order when a node goes down and the surviving node cannot fit all pods.
+
+| Class | Value | `globalDefault` |
+|---|---|---|
+| `homelab-critical` | 1 000 000 | false |
+| `homelab-default` | 0 | **true** |
+
+Because `homelab-default` is the `globalDefault`, every pod without an explicit `priorityClassName` automatically gets value 0. Only the critical workloads need an explicit assignment.
+
+Full priority hierarchy (highest → lowest):
+
+| Class | Value | Used by |
+|---|---|---|
+| `system-node-critical` | 2 000 001 000 | Cilium |
+| `system-cluster-critical` | 2 000 000 000 | Flux source / kustomize / helm controllers |
+| `longhorn-critical` | 2 000 000 | Longhorn manager, driver, UI (created by the Longhorn chart) |
+| `homelab-critical` | 1 000 000 | Traefik, MetalLB, Sealed Secrets, snapshot-controller, Authelia, Vaultwarden, Pi-hole |
+| `homelab-default` | 0 | Everything else (CrowdSec, monitoring stack, SiYuan, DoneTick, OrcaSlicer, Snowflake Proxy) |
+
+When a node is drained or crashes and the remaining node lacks memory for all pending pods, the scheduler evicts `homelab-default` pods first to free space for `homelab-critical` ones. Critical services come back up; best-effort pods stay pending until the second node recovers.
+
 ### General Principles
 
 - Always take a Proxmox snapshot of all cluster VMs before starting any upgrade.
