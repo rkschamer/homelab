@@ -4,6 +4,6 @@ kind: Namespace
 metadata:
   name: donetick
   labels:
-    network-zone: trusted
+    network-zone: untrusted
     pod-security.kubernetes.io/enforce: baseline
     pod-security.kubernetes.io/warn: baseline

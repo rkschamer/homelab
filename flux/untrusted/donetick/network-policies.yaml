@@ -5,7 +5,7 @@ metadata:
   name: donetick
   namespace: donetick
 spec:
-  description: "Network policy for DoneTick task manager in Trusted zone"
+  description: "Network policy for DoneTick task manager in the untrusted zone"
   endpointSelector:
     matchLabels:
       app.kubernetes.io/name: donetick
@@ -22,10 +22,13 @@ spec:
               protocol: TCP
 
   egress:
-    # Outbound HTTPS for any external integrations
+    # SMTP for email notifications (DT_EMAIL_PORT is configurable; cover common ports)
+    # DNS and HTTPS (443) to world are provided by the untrusted zone baseline policy.
     - toEntities:
         - world
       toPorts:
         - ports:
-            - port: "443"
+            - port: "465"
+              protocol: TCP
+            - port: "587"
               protocol: TCP
