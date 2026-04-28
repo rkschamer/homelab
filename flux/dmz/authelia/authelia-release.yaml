@@ -30,6 +30,7 @@ spec:
     pod:
       kind: Deployment
       replicas: 1
+      priorityClassName: homelab-critical
       strategy:
         type: Recreate
       env:

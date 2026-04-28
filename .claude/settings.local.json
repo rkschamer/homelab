@@ -3,7 +3,9 @@
     "allow": [
       "Bash(kubectl get:*)",
       "Bash(kubectl kustomize:*)",
-      "Bash(helm template:*)"
+      "Bash(helm template:*)",
+      "Bash(awk '/^kind: Deployment$/{kind=1; next} kind && /^  namespace: /{namespace=$NF} kind && /^  name: /{name=$NF} kind && /priorityClassName: /{priority=$NF; print name, namespace, priority; kind=0}' /workspaces/homelab/flux/flux-system/gotk-components.yaml)",
+      "Bash(awk '/^kind: Deployment$/{kind=1; next} kind && /^  namespace: /{namespace=$NF} kind && /^  name: /{name=$NF} kind && !/priorityClassName:/{if\\(name\\){print name, namespace, \"NONE\"; kind=0}}' /workspaces/homelab/flux/flux-system/gotk-components.yaml)"
     ]
   }
 }
