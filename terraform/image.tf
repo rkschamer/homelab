@@ -37,3 +37,8 @@ resource "proxmox_download_file" "talos_iso" {
 output "schematic_id" {
   value = talos_image_factory_schematic.this.id
 }
+
+output "installer_image" {
+  value       = "factory.talos.dev/installer-secureboot/${talos_image_factory_schematic.this.id}:${var.talos_version}"
+  description = "Talos installer image for talosctl upgrade --image"
+}

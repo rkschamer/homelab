@@ -94,17 +94,40 @@ Store `sealed-secrets-master.key` securely and **do not commit it**.
 
 ### Talos OS Upgrades
 
+Only adjacent minor version upgrades are supported. To go from v1.11 to v1.13, upgrade to the latest v1.12 patch first, then to v1.13.
+
 ```bash
 export TALOSCONFIG=$(pwd)/talos/gen/talosconfig
 
 # Check current version
 talosctl version
+```
+
+**Step 1: bump the version and regenerate configs**
+
+Update `talos_version` in [`terraform/variables.tf`](../terraform/variables.tf), then:
+
+```bash
+cd terraform && terraform apply
+```
+
+This regenerates machine configs in `talos/gen/` and updates the installer image reference. The target image is now available as a Terraform output — no copy-pasting from YAML files needed:
+
+```bash
+terraform output installer_image
+# factory.talos.dev/installer-secureboot/<schematic-id>:vX.X.X
+```
+
+**Step 2: upgrade nodes** (workers first, control plane last)
+
+```bash
+cd terraform
 
 # For each worker node:
 kubectl cordon <NODE_NAME>
 kubectl drain <NODE_NAME> --ignore-daemonsets --delete-emptydir-data
 
-talosctl upgrade --nodes <NODE_IP> --image ghcr.io/siderolabs/installer:vX.X.X
+talosctl upgrade --nodes <NODE_IP> --image $(terraform output -raw installer_image)
 
 # Monitor reboot and rejoin (~2–3 min)
 watch kubectl get nodes
@@ -112,7 +135,7 @@ watch kubectl get nodes
 kubectl uncordon <NODE_NAME>
 
 # Upgrade control plane last
-talosctl upgrade --nodes 192.168.123.20 --image ghcr.io/siderolabs/installer:vX.X.X
+talosctl upgrade --nodes 192.168.123.20 --image $(terraform output -raw installer_image)
 ```
 
 ### Kubernetes Version Upgrades
