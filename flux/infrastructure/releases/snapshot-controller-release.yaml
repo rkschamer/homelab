@@ -28,6 +28,7 @@ spec:
   upgrade:
     crds: CreateReplace
   values:
+    priorityClassName: homelab-critical
     installCRDs: true
     webhook:
       enabled: false

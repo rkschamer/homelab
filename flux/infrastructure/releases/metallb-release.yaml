@@ -41,6 +41,7 @@ spec:
   values:
     # Controller deployment configuration
     controller:
+      priorityClassName: homelab-critical
       resources:
         requests:
           cpu: 50m
@@ -51,6 +52,7 @@ spec:
 
     # Speaker DaemonSet configuration
     speaker:
+      priorityClassName: homelab-critical
       resources:
         requests:
           cpu: 50m

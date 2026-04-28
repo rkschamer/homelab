@@ -38,6 +38,8 @@ spec:
         namespace: traefik
       version: "39.0.8"
   values:
+    priorityClassName: homelab-critical
+
     global:
       sendAnonymousUsage: true
 

@@ -27,6 +27,7 @@ spec:
         app.kubernetes.io/name: pihole
     spec:
       serviceAccountName: pihole
+      priorityClassName: homelab-critical
       containers:
         - name: pihole
           image: pihole/pihole:2026.04.1
