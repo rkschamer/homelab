@@ -5,4 +5,5 @@ kind: Kustomization
 resources:
   - snowflake-proxy
   - donetick
+  - karakeep
   - flux-kustomization.yaml
