@@ -16,6 +16,8 @@ This is a Kubernetes homelab running on Proxmox VE, managed declaratively using 
 
 **Network Isolation:** Network zones (Trusted, DMZ, Untrusted, Monitoring) are enforced at the **pod level** via namespace labels (`network-zone: [trusted|dmz|untrusted|monitoring]`) and Cilium Network Policies, not via separate physical networks.
 
+**Image Tags:** Always pin container images to a specific immutable tag (e.g. `v2.3.2-ls15`). Never use `latest` or other floating tags — they prevent Renovate from tracking versions and make rollbacks unreliable.
+
 ## Stack
 
 - **Hypervisor:** Proxmox VE
