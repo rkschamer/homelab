@@ -120,6 +120,14 @@ spec:
       identity_providers:
         oidc:
           enabled: true
+          claims_policies:
+            karakeep:
+              id_token:
+                - 'email'
+                - 'email_verified'
+                - 'alt_emails'
+                - 'preferred_username'
+                - 'name'
           jwks:
             - key_id: 'main'
               algorithm: 'RS256'
@@ -148,6 +156,7 @@ spec:
               client_secret: '$pbkdf2-sha512$310000$KQA51yV1zcaAHY.HSWEOJA$qXi3JIZ7HbSHb8XKNP3GHIZBWAX33xcD1APWHLflXG0FNtueceVTQ0eS.VZxN60vfzKfSdfcbvrKg1VJT./oVA'
               public: false
               authorization_policy: 'two_factor'
+              claims_policy: 'karakeep'
               require_pkce: false
               pkce_challenge_method: ''
               redirect_uris:
