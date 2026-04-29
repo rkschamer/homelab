@@ -58,7 +58,7 @@ spec:
           type: Unconfined
       containers:
         - name: orcaslicer
-          image: lscr.io/linuxserver/orcaslicer:latest
+          image: lscr.io/linuxserver/orcaslicer:v2.3.2-ls15
           env:
             - name: PUID
               value: "1000"
