@@ -3,9 +3,8 @@
 # OrcaSlicer IngressRoute
 #
 # Middlewares applied (in order):
-#   1. internal-ip-addresses — blocks requests from outside the home LAN
-#      (192.168.123.0/24, 192.168.178.0/24) before they reach Authelia.
-#   2. authelia-forwardauth   — SSO via Authelia for the allowed LAN traffic.
+#   1. crowdsec-bouncer      — blocks malicious IPs via CrowdSec.
+#   2. authelia-forwardauth  — SSO via Authelia.
 #
 # The backend uses scheme: https because the lscr.io/linuxserver/orcaslicer
 # container only serves on HTTPS (port 3001). skip-tls-verification is needed
@@ -24,8 +23,6 @@ spec:
       kind: Rule
       middlewares:
         - name: crowdsec-bouncer
-          namespace: traefik
-        - name: internal-ip-addresses
           namespace: traefik
         - name: authelia-forwardauth
           namespace: traefik
