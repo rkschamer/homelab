@@ -49,8 +49,10 @@ spec:
                 secretKeyRef:
                   name: karakeep-secret
                   key: NEXTAUTH_SECRET
+            # to allow user creation after success OIDC authentication we need to enable signups
+            # and disable password auth, otherwise users would be created but not able to login
             - name: DISABLE_SIGNUPS
-              value: "true"
+              value: "false"
             - name: DISABLE_PASSWORD_AUTH
               value: "true"
             - name: OAUTH_AUTO_REDIRECT
