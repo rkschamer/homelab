@@ -142,7 +142,7 @@ spec:
                 - 'email'
               access_token_signed_response_alg: 'none'
               userinfo_signed_response_alg: 'none'
-              token_endpoint_auth_method: 'client_secret_basic'
+              token_endpoint_auth_method: 'client_secret_post'
             - client_id: 'karakeep'
               client_name: 'Karakeep'
               client_secret: '$pbkdf2-sha512$310000$KQA51yV1zcaAHY.HSWEOJA$qXi3JIZ7HbSHb8XKNP3GHIZBWAX33xcD1APWHLflXG0FNtueceVTQ0eS.VZxN60vfzKfSdfcbvrKg1VJT./oVA'
