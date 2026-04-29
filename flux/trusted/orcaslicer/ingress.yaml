@@ -30,7 +30,7 @@ spec:
         - name: orcaslicer
           port: 3001
           scheme: https
-          serversTransport: skip-tls-verification
+          serversTransport: traefik/skip-tls-verification
           namespace: orcaslicer
   tls:
     certResolver: letsencrypt
