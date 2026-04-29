@@ -49,6 +49,25 @@ spec:
                 secretKeyRef:
                   name: karakeep-secret
                   key: NEXTAUTH_SECRET
+            - name: DISABLE_SIGNUPS
+              value: "true"
+            - name: DISABLE_PASSWORD_AUTH
+              value: "true"
+            - name: OAUTH_AUTO_REDIRECT
+              value: "true"
+            - name: OAUTH_PROVIDER_NAME
+              value: Authelia
+            - name: OAUTH_WELLKNOWN_URL
+              value: https://auth.kschamer.info/.well-known/openid-configuration
+            - name: OAUTH_CLIENT_ID
+              value: karakeep
+            - name: OAUTH_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: karakeep-secret
+                  key: OAUTH_CLIENT_SECRET
+            - name: OAUTH_SCOPE
+              value: openid profile email
             - name: DB_WAL_MODE
               value: "true"
             - name: LOG_LEVEL
