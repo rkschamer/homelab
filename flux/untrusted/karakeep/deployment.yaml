@@ -49,6 +49,31 @@ spec:
                 secretKeyRef:
                   name: karakeep-secret
                   key: NEXTAUTH_SECRET
+            - name: SMTP_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: karakeep-secret
+                  key: SMTP_HOST
+            - name: SMTP_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: karakeep-secret
+                  key: SMTP_PORT
+            - name: SMTP_USER
+              valueFrom:
+                secretKeyRef:
+                  name: karakeep-secret
+                  key: SMTP_USER
+            - name: SMTP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: karakeep-secret
+                  key: SMTP_PASSWORD
+            - name: SMTP_FROM
+              valueFrom:
+                secretKeyRef:
+                  name: karakeep-secret
+                  key: SMTP_FROM
             # to allow user creation after success OIDC authentication we need to enable signups
             # and disable password auth, otherwise users would be created but not able to login
             - name: DISABLE_SIGNUPS
