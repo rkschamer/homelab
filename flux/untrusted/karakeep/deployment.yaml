@@ -105,6 +105,8 @@ spec:
           volumeMounts:
             - name: data
               mountPath: /data
+            - name: web-cache
+              mountPath: /app/apps/web/.next/cache
           resources:
             requests:
               cpu: 100m
@@ -136,6 +138,8 @@ spec:
         - name: data
           persistentVolumeClaim:
             claimName: karakeep-data
+        - name: web-cache
+          emptyDir: {}
 
 ---
 apiVersion: v1
