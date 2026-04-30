@@ -146,16 +146,11 @@ terraform output installer_image
 ```bash
 cd terraform
 
-# For each worker node:
-kubectl cordon <NODE_NAME>
-kubectl drain <NODE_NAME> --ignore-daemonsets --delete-emptydir-data
-
+# For each worker node (talosctl handles cordon/drain/uncordon automatically):
 talosctl upgrade --nodes <NODE_IP> --image $(terraform output -raw installer_image)
 
 # Monitor reboot and rejoin (~2–3 min)
 watch kubectl get nodes
-
-kubectl uncordon <NODE_NAME>
 
 # Upgrade control plane last
 talosctl upgrade --nodes 192.168.123.20 --image $(terraform output -raw installer_image)
