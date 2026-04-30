@@ -7,8 +7,9 @@
 #   2. authelia-forwardauth  — SSO via Authelia.
 #
 # The backend uses scheme: https because the lscr.io/linuxserver/orcaslicer
-# container only serves on HTTPS (port 3001). skip-tls-verification is needed
-# as the container uses a self-signed certificate.
+# container only serves on HTTPS (port 3001). The ServersTransport is defined
+# in the traefik namespace and referenced cross-namespace via the
+# {namespace}-{name}@kubernetescrd syntax (requires allowCrossNamespace: true).
 # =============================================================================
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
@@ -30,7 +31,7 @@ spec:
         - name: orcaslicer
           port: 3001
           scheme: https
-          serversTransport: traefik/skip-tls-verification
+          serversTransport: traefik-skip-tls-verification@kubernetescrd
           namespace: orcaslicer
   tls:
     certResolver: letsencrypt
