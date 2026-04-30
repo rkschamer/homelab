@@ -66,6 +66,12 @@ spec:
               value: "1000"
             - name: TZ
               value: "Europe/Vienna"
+            - name: SELKIES_ENCODER
+              value: "x264enc"
+            - name: SELKIES_VIDEO_BITRATE
+              value: "4000"
+            - name: SELKIES_FRAMERATE
+              value: "30"
           ports:
             - name: https-web
               containerPort: 3001
