@@ -172,7 +172,7 @@ spec:
                 - ReadWriteOnce
               resources:
                 requests:
-                  storage: 8Gi
+                  storage: 20Gi
         # Empty selectors + NilUsesHelmValues=false = discover all PodMonitors
         # cluster-wide, regardless of labels. Required to pick up the
         # flux-system PodMonitor which has no release label.
