@@ -57,7 +57,8 @@ spec:
 
     deployment:
       replicas: 1
-      strategy: Recreate
+      strategy:
+        type: Recreate
 
     env:
       # Disable CNAME support for DNS challenge - ACME/LEGO would otherwise
