@@ -144,6 +144,7 @@ spec:
               pkce_challenge_method: ''
               redirect_uris:
                 - 'https://todo.kschamer.info/auth/oauth2'
+                - 'donetick://auth/oauth2' # deep-link URI required for mobile app SSO
               scopes:
                 - 'openid'
                 - 'profile'
