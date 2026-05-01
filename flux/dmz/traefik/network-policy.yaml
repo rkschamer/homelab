@@ -52,3 +52,14 @@ spec:
     - ports:
       - port: "6443"
         protocol: TCP
+  # ACME DNS-01 propagation check: Traefik queries authoritative nameservers
+  # directly on port 53 to verify TXT record propagation. The DMZ baseline
+  # only opens 80/443/123 to world — this adds the missing DNS egress.
+  - toEntities:
+    - world
+    toPorts:
+    - ports:
+      - port: "53"
+        protocol: UDP
+      - port: "53"
+        protocol: TCP
