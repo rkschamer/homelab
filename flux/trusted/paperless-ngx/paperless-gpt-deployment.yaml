@@ -1,0 +1,68 @@
+---
+# =============================================================================
+# paperless-gpt Deployment
+# =============================================================================
+# LLM companion for paperless-ngx. Polls for documents tagged with
+# AUTO_TAG ("paperless-gpt-auto"), calls Claude Haiku via Anthropic API,
+# then updates the document with AI-suggested title, correspondent,
+# document type, and tags.
+#
+# Workflow:
+#   1. Tag a document in paperless-ngx with "paperless-gpt-auto"
+#   2. paperless-gpt detects it, sends content to Claude Haiku
+#   3. Document metadata is updated; tag is replaced with suggestions
+#
+# NOTE: PAPERLESS_API_TOKEN must be generated after first paperless-ngx login:
+#   Settings → Profile → Generate API Token
+#   Then re-seal the paperless-secret with the new token value.
+# =============================================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: paperless-gpt
+  namespace: paperless-ngx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: paperless-gpt
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: paperless-gpt
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+      containers:
+        - name: paperless-gpt
+          image: ghcr.io/icereed/paperless-gpt:v0.25.1
+          envFrom:
+            - secretRef:
+                name: paperless-secret
+          env:
+            - name: PAPERLESS_BASE_URL
+              value: "http://paperless-ngx:8000"
+            - name: LLM_PROVIDER
+              value: "anthropic"
+            - name: LLM_MODEL
+              value: "claude-haiku-4-5-20251001"
+            - name: LLM_LANGUAGE
+              value: "English"
+            - name: AUTO_TAG
+              value: "paperless-gpt-auto"
+          resources:
+            requests:
+              cpu: 20m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL

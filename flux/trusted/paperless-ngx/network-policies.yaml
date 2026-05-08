@@ -1,0 +1,88 @@
+---
+# =============================================================================
+# paperless-ngx Network Policy - Trusted Zone
+# =============================================================================
+# paperless-ngx: receives HTTPS from Traefik, reaches Redis and Anthropic API
+# paperless-redis: receives connections only from the paperless-ngx pod
+# paperless-gpt: client-only (no ingress); reaches paperless API + Anthropic
+# =============================================================================
+
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: paperless-ngx
+  namespace: paperless-ngx
+spec:
+  description: "Network policy for paperless-ngx webserver/worker"
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: paperless-ngx
+
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            io.cilium.k8s.namespace.labels.network-zone: dmz
+            app.kubernetes.io/name: traefik
+      toPorts:
+        - ports:
+            - port: "8000"
+              protocol: TCP
+
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            app.kubernetes.io/name: paperless-redis
+      toPorts:
+        - ports:
+            - port: "6379"
+              protocol: TCP
+
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: paperless-redis
+  namespace: paperless-ngx
+spec:
+  description: "Network policy for Redis — accept connections from paperless-ngx only"
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: paperless-redis
+
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            app.kubernetes.io/name: paperless-ngx
+      toPorts:
+        - ports:
+            - port: "6379"
+              protocol: TCP
+
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: paperless-gpt
+  namespace: paperless-ngx
+spec:
+  description: "Network policy for paperless-gpt — no inbound; reaches paperless API and Anthropic"
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: paperless-gpt
+
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            app.kubernetes.io/name: paperless-ngx
+      toPorts:
+        - ports:
+            - port: "8000"
+              protocol: TCP
+
+    - toEntities:
+        - world
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP
