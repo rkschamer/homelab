@@ -42,7 +42,7 @@ spec:
             - secretRef:
                 name: paperless-secret
           env:
-            - name: PAPERLESS_REDIS_URL
+            - name: PAPERLESS_REDIS
               value: "redis://paperless-redis:6379"
             - name: PAPERLESS_TIKA_ENABLED
               value: "1"
