@@ -8,9 +8,7 @@ parameters:
   server: 192.168.123.5
   share: /volume1/k8s
   # Creates namespace/pvc-name subdirectory automatically on the NAS.
-  # Set onDeletePolicy=retain to keep NAS data when the PVC is deleted.
   subDir: ${pvc.metadata.namespace}/${pvc.metadata.name}
-  onDeletePolicy: retain
 reclaimPolicy: Retain
 volumeBindingMode: Immediate
 mountOptions:
