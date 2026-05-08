@@ -1,0 +1,50 @@
+---
+# =============================================================================
+# paperless-ngx PersistentVolumeClaims
+# =============================================================================
+# paperless-data: SQLite database + search index on Longhorn (fast local I/O)
+# paperless-media: Processed document archive on Synology NAS via NFS
+# paperless-consume: Drop-box for new documents (inbox) on Synology NAS via NFS
+# =============================================================================
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: paperless-data
+  namespace: paperless-ngx
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: longhorn
+  resources:
+    requests:
+      storage: 10Gi
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: paperless-media
+  namespace: paperless-ngx
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: nfs-synology
+  resources:
+    requests:
+      storage: 50Gi
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: paperless-consume
+  namespace: paperless-ngx
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: nfs-synology
+  resources:
+    requests:
+      storage: 5Gi
