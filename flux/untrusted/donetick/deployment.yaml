@@ -44,6 +44,8 @@ spec:
           env:
             - name: DT_ENV
               value: selfhosted
+            - name: DT_SERVER_PUBLIC_HOST
+              value: "https://todo.kschamer.info"
             - name: DT_IS_USER_CREATION_DISABLED
               value: "true"
             - name: DT_SQLITE_PATH
