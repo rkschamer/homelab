@@ -169,3 +169,19 @@ spec:
               access_token_signed_response_alg: 'none'
               userinfo_signed_response_alg: 'none'
               token_endpoint_auth_method: 'client_secret_basic'
+            - client_id: 'paperless'
+              client_name: 'Paperless-ngx'
+              client_secret: '$pbkdf2-sha512$310000$0SUV3FCuRVj55bR/sNKesA$DaA9xXDrpvcAYVAE3WEC.Mj7pzz4WFkjxZeDUUlizdUMLSgJGC9pmWRS.FSIB1wlY3623BjXnnWx86lTd5pzqQ'
+              public: false
+              authorization_policy: 'two_factor'
+              require_pkce: false
+              pkce_challenge_method: ''
+              redirect_uris:
+                - 'https://paperless.kschamer.info/accounts/oidc/authelia/login/callback/'
+              scopes:
+                - 'openid'
+                - 'profile'
+                - 'email'
+              access_token_signed_response_alg: 'none'
+              userinfo_signed_response_alg: 'none'
+              token_endpoint_auth_method: 'client_secret_basic'
