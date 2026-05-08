@@ -472,6 +472,10 @@ spec:
         protocol: TCP
       - port: "50001"    # Talos trustd (worker -> control-plane)
         protocol: TCP
+      - port: "2049"     # NFS (CSI driver mounts from Synology NAS)
+        protocol: TCP
+      - port: "2049"     # NFS
+        protocol: UDP
 
   # Allow ICMP to management network
   - toCIDR:
