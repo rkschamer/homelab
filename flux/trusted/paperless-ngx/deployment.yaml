@@ -62,6 +62,14 @@ spec:
               value: "https://paperless.kschamer.info"
             - name: PAPERLESS_ALLOWED_HOSTS
               value: "*"
+            - name: PAPERLESS_ENABLE_HTTP_REMOTE_USER
+              value: "true"
+            - name: PAPERLESS_LOGOUT_REDIRECT_URL
+              value: "https://auth.kschamer.info/logout"
+            - name: PAPERLESS_EMAIL_PORT
+              value: "587"
+            - name: PAPERLESS_EMAIL_USE_TLS
+              value: "true"
             - name: USERMAP_UID
               value: "1000"
             - name: USERMAP_GID
