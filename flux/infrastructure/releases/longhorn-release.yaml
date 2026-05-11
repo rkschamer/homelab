@@ -79,5 +79,6 @@ spec:
     defaultSettings:
       defaultDataPath: /var/mnt/longhorn
       defaultReplicaCount: "2"
-      # Allow up to 5 concurrent replica rebuilds per node to recover faster after failures.
-      concurrentReplicaRebuildPerNodeLimit: "5"
+      # 3 concurrent rebuilds balances recovery speed against NVMe I/O saturation.
+      # Raise to 5 temporarily when draining a large rebuild queue after a node failure.
+      concurrentReplicaRebuildPerNodeLimit: "3"
