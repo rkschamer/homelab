@@ -79,5 +79,5 @@ spec:
     defaultSettings:
       defaultDataPath: /var/mnt/longhorn
       defaultReplicaCount: "2"
-      # Throttle rebuild pressure after node restarts/failures to avoid CPU spikes.
-      concurrentReplicaRebuildPerNodeLimit: "1"
+      # Allow up to 5 concurrent replica rebuilds per node to recover faster after failures.
+      concurrentReplicaRebuildPerNodeLimit: "5"
