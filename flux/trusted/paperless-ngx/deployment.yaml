@@ -62,8 +62,6 @@ spec:
               value: "https://paperless.kschamer.info"
             - name: PAPERLESS_ALLOWED_HOSTS
               value: "*"
-            - name: PAPERLESS_ENABLE_HTTP_REMOTE_USER
-              value: "true"
             - name: PAPERLESS_LOGOUT_REDIRECT_URL
               value: "https://auth.kschamer.info/logout"
             - name: PAPERLESS_EMAIL_PORT
