@@ -62,6 +62,20 @@ spec:
               value: "https://paperless.kschamer.info"
             - name: PAPERLESS_ALLOWED_HOSTS
               value: "*"
+            - name: PAPERLESS_APPS
+              value: "allauth.socialaccount.providers.openid_connect"
+            - name: PAPERLESS_DISABLE_REGULAR_LOGIN
+              value: "true"
+            - name: PAPERLESS_REDIRECT_LOGIN_TO_SSO
+              value: "true"
+            - name: PAPERLESS_SOCIAL_AUTO_SIGNUP
+              value: "true"
+            - name: PAPERLESS_SOCIALACCOUNT_ALLOW_SIGNUPS
+              value: "true"
+            - name: PAPERLESS_ACCOUNT_ALLOW_SIGNUPS
+              value: "false"
+            - name: PAPERLESS_ACCOUNT_EMAIL_VERIFICATION
+              value: "none"
             - name: PAPERLESS_LOGOUT_REDIRECT_URL
               value: "https://auth.kschamer.info/logout"
             - name: PAPERLESS_EMAIL_PORT
