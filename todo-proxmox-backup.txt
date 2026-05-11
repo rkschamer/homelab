@@ -1,0 +1,31 @@
+TODO: Fix weekly Proxmox backup causing talos-worker-2 outage
+=============================================================
+
+Root cause: vzdump I/O saturation on shared storage causes worker-2's kubelet
+to miss heartbeats every Sunday at ~1am, faulting Longhorn volumes.
+
+## Quick fixes (Proxmox side) — do these first
+
+[ ] Set ionice priority on backup job
+    - Datacenter → Backup → Edit → add: ionice: 7
+    - Deprioritizes backup I/O vs. running VMs
+
+[ ] Set bandwidth limit on backup job
+    - Datacenter → Backup → Edit → Bandwidth Limit (e.g. 100 MB/s)
+    - Caps how fast vzdump reads/writes, reducing contention
+
+## Longhorn resilience
+
+[ ] Check default replica count is at least 2
+    kubectl get settings -n longhorn-system default-replica-count -o jsonpath='{.value}'
+    - If 1, bump to 2 so a single-node outage doesn't fault volumes
+    - Change in Longhorn UI: Setting → General → Default Replica Count
+
+## Medium-term improvement
+
+[ ] Evaluate Proxmox Backup Server (PBS)
+    - Incremental chunk-based backups: after first run, only changed blocks are sent
+    - Dramatically reduces weekly backup I/O if VMs are stable
+    - Also gives: dedup, compression, pruning, verify
+    - Does NOT replace ionice/throttle — do both
+    - Note: first backup run is still a full read (same I/O as now)
