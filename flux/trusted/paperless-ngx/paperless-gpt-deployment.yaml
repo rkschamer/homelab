@@ -56,6 +56,8 @@ spec:
           volumeMounts:
             - name: config
               mountPath: /app/config
+            - name: db
+              mountPath: /app/db
           resources:
             requests:
               cpu: 20m
@@ -71,4 +73,6 @@ spec:
                 - ALL
       volumes:
         - name: config
+          emptyDir: {}
+        - name: db
           emptyDir: {}
