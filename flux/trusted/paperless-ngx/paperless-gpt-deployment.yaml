@@ -22,7 +22,7 @@ metadata:
   name: paperless-gpt
   namespace: paperless-ngx
 spec:
-  replicas: 0  # set to 1 after adding PAPERLESS_API_TOKEN to the SealedSecret
+  replicas: 1
   selector:
     matchLabels:
       app.kubernetes.io/name: paperless-gpt
