@@ -59,6 +59,8 @@ spec:
       replicas: 1
       strategy:
         type: Recreate
+      podSecurityContext:
+        fsGroup: 65532
 
     env:
       # Disable CNAME support for DNS challenge - ACME/LEGO would otherwise
