@@ -36,6 +36,7 @@ spec:
         runAsNonRoot: true
         runAsUser: 1000
         runAsGroup: 1000
+        fsGroup: 1000
       containers:
         - name: paperless-gpt
           image: ghcr.io/icereed/paperless-gpt:v0.25.1
