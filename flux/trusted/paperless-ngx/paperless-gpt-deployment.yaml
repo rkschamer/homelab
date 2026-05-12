@@ -54,10 +54,15 @@ spec:
             - name: AUTO_TAG
               value: "paperless-gpt-auto"
           volumeMounts:
-            - name: config
+            - name: app-data
               mountPath: /app/config
-            - name: db
+              subPath: config
+            - name: app-data
               mountPath: /app/db
+              subPath: db
+            - name: app-data
+              mountPath: /app/prompts
+              subPath: prompts
           resources:
             requests:
               cpu: 20m
@@ -72,7 +77,6 @@ spec:
               drop:
                 - ALL
       volumes:
-        - name: config
-          emptyDir: {}
-        - name: db
-          emptyDir: {}
+        - name: app-data
+          persistentVolumeClaim:
+            claimName: paperless-gpt-data
