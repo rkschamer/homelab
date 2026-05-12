@@ -24,6 +24,8 @@ spec:
         - matchLabels:
             io.cilium.k8s.namespace.labels.network-zone: dmz
             app.kubernetes.io/name: traefik
+        - matchLabels:
+            app.kubernetes.io/name: paperless-gpt
       toPorts:
         - ports:
             - port: "8000"
