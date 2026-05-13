@@ -45,7 +45,7 @@ spec:
         fsGroup: 999
       containers:
         - name: redis
-          image: docker.io/library/redis:8.0.6-alpine
+          image: docker.io/library/redis:8.6.2-alpine
           command:
             - redis-server
             - --save
