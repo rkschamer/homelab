@@ -127,6 +127,9 @@ spec:
           ports:
             - containerPort: 3000
               protocol: TCP
+          volumeMounts:
+            - name: gotenberg-tmp
+              mountPath: /tmp
           resources:
             requests:
               cpu: 100m
@@ -174,6 +177,8 @@ spec:
         - name: consume
           persistentVolumeClaim:
             claimName: paperless-consume
+        - name: gotenberg-tmp
+          emptyDir: {}
 
 ---
 # =============================================================================
