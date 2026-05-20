@@ -69,6 +69,10 @@ spec:
               mountPath: /data
           securityContext:
             runAsUser: 65532
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
 
     podSecurityContext:
       fsGroup: 65532
