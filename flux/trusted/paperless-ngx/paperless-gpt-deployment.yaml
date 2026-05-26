@@ -3,14 +3,19 @@
 # paperless-gpt Deployment
 # =============================================================================
 # LLM companion for paperless-ngx. Polls for documents tagged with
-# AUTO_TAG ("paperless-gpt-auto"), calls Claude Haiku via Anthropic API,
-# then updates the document with AI-suggested title, correspondent,
-# document type, and tags.
+# AUTO_TAG ("paperless-gpt-auto"), sends content to Ollama running on the
+# gaming PC (lumpy-new.fritz.box), then updates the document with
+# AI-suggested title, correspondent, document type, and tags.
 #
 # Workflow:
 #   1. Tag a document in paperless-ngx with "paperless-gpt-auto"
-#   2. paperless-gpt detects it, sends content to Claude Haiku
+#   2. paperless-gpt detects it, sends content to the Ollama instance
 #   3. Document metadata is updated; tag is replaced with suggestions
+#   4. If Ollama is unavailable (PC off), the tag stays and is retried next poll
+#
+# Required Ollama models — pull these on the gaming PC before use:
+#   ollama pull qwen3.5:9b   # text LLM for title/tags/correspondent
+#   ollama pull minicpm-v    # vision LLM for OCR on image-based documents
 #
 # NOTE: PAPERLESS_API_TOKEN must be generated after first paperless-ngx login:
 #   Settings → Profile → Generate API Token
@@ -49,13 +54,17 @@ spec:
             - name: LLM_PROVIDER
               value: "ollama"
             - name: LLM_MODEL
-              value: "qwen3.5:9b"
+              value: "qwen3.5:9b"  # ollama pull qwen3.5:9b
             - name: OLLAMA_HOST
               value: "http://lumpy-new.fritz.box:11434"
             - name: LLM_LANGUAGE
               value: "English"
             - name: AUTO_TAG
               value: "paperless-gpt-auto"
+            - name: VISION_LLM_PROVIDER
+              value: "ollama"
+            - name: VISION_LLM_MODEL
+              value: "minicpm-v"  # ollama pull minicpm-v
           volumeMounts:
             - name: app-data
               mountPath: /app/config
