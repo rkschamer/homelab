@@ -14,7 +14,7 @@
 #   4. If Ollama is unavailable (PC off), the tag stays and is retried next poll
 #
 # Required Ollama models — pull these on the gaming PC before use:
-#   ollama pull llama3.1:8b  # text LLM for title/tags/correspondent
+#   ollama pull mistral:7b   # text LLM for title/tags/correspondent
 #   ollama pull minicpm-v    # vision LLM for OCR on image-based documents
 #
 # NOTE: PAPERLESS_API_TOKEN must be generated after first paperless-ngx login:
@@ -54,7 +54,7 @@ spec:
             - name: LLM_PROVIDER
               value: "ollama"
             - name: LLM_MODEL
-              value: "llama3.1:8b"  # ollama pull llama3.1:8b
+              value: "mistral:7b"  # ollama pull mistral:7b
             - name: OLLAMA_HOST
               value: "http://lumpy-new.fritz.box:11434"
             - name: LLM_LANGUAGE
