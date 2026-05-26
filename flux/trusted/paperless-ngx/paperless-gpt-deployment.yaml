@@ -47,9 +47,11 @@ spec:
             - name: PAPERLESS_BASE_URL
               value: "http://paperless-ngx:8000"
             - name: LLM_PROVIDER
-              value: "anthropic"
+              value: "ollama"
             - name: LLM_MODEL
-              value: "claude-haiku-4-5-20251001"
+              value: "qwen3.5:9b"
+            - name: OLLAMA_HOST
+              value: "http://lumpy-new.fritz.box:11434"
             - name: LLM_LANGUAGE
               value: "English"
             - name: AUTO_TAG
