@@ -136,7 +136,7 @@ paperless-gpt polls for documents tagged `paperless-gpt-auto`, sends them to a l
 Pull these on the gaming PC before use:
 
 ```bash
-ollama pull llama3.1:8b  # text LLM: title, tags, correspondent, document type
+ollama pull mistral:7b   # text LLM: title, tags, correspondent, document type
 ollama pull minicpm-v    # vision LLM: OCR on image-based/scanned documents
 ```
 
