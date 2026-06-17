@@ -36,7 +36,7 @@ spec:
         kind: HelmRepository
         name: traefik
         namespace: traefik
-      version: "40.3.0"
+      version: "41.0.0"
   values:
     priorityClassName: homelab-critical
 
