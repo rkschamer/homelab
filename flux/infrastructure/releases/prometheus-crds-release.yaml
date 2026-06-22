@@ -1,0 +1,34 @@
+# Installs only the Prometheus Operator CRDs (ServiceMonitor, PodMonitor, etc.)
+# without deploying the full monitoring stack. This must run before Traefik and
+# Cilium, both of which reference ServiceMonitor CRDs in their Helm templates
+# and fail to install if those CRDs are absent.
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: prometheus-community
+  namespace: kube-system
+spec:
+  interval: 1h
+  url: https://prometheus-community.github.io/helm-charts
+
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: prometheus-crds
+  namespace: kube-system
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: prometheus-operator-crds
+      sourceRef:
+        kind: HelmRepository
+        name: prometheus-community
+        namespace: kube-system
+      version: ">=0.0.0"
+  install:
+    crds: Create
+  upgrade:
+    crds: CreateReplace

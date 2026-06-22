@@ -34,6 +34,9 @@ metadata:
 spec:
   interval: 30m
   releaseName: traefik
+  dependsOn:
+    - name: prometheus-crds
+      namespace: kube-system
   install:
     crds: CreateReplace
   upgrade:
@@ -154,7 +157,6 @@ spec:
         addServicesLabels: true
         serviceMonitor:
           enabled: true
-          trustCRDsExist: true
 
     providers:
       kubernetesCRD:
