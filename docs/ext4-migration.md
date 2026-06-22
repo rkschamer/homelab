@@ -288,7 +288,49 @@ The installer-created `pve/swap` LV is safe to keep. Unlike the old ZFS zvol, an
 is a plain block device with no deadlock risk. With `vm.swappiness=10` it only activates under
 genuine memory pressure. Leave it as-is.
 
-### 3.3 Enable LVM thin discard
+### 3.3 Configure APT repositories
+
+The fresh install points at the enterprise repo (requires a subscription) and will nag on
+every login. Switch to the no-subscription repo:
+
+```bash
+# Disable enterprise repo
+echo "# disabled" > /etc/apt/sources.list.d/pve-enterprise.list
+
+# Disable Ceph enterprise repo (also added by installer)
+echo "# disabled" > /etc/apt/sources.list.d/ceph.list  2>/dev/null || true
+
+# Add no-subscription repo
+echo "deb http://download.proxmox.com/debian/pve bookworm pve-no-subscription" \
+  > /etc/apt/sources.list.d/pve-no-subscription.list
+
+apt-get update
+```
+
+### 3.4 Restore PVE configuration
+
+Restores users, 2FA, backup job schedules, and host identity. Do this before logging into
+the web UI.
+
+```bash
+# Wait for pve-cluster to be fully up
+systemctl is-active pve-cluster
+
+# Users, API tokens, TOTP/2FA
+cp /mnt/nas-backup/pve-config/user.cfg                /etc/pve/
+cp /mnt/nas-backup/pve-config/pve-priv/shadow.cfg     /etc/pve/priv/  2>/dev/null || true
+cp /mnt/nas-backup/pve-config/pve-priv/tfa.cfg        /etc/pve/priv/  2>/dev/null || true
+
+# Backup job schedules
+cp /mnt/nas-backup/pve-config/jobs.cfg           /etc/pve/  2>/dev/null || true
+
+# Hostname entries
+cp /mnt/nas-backup/pve-config/hosts              /etc/hosts
+```
+
+The web UI will reflect the restored users immediately — no restart needed.
+
+### 3.5 Enable LVM thin discard
 
 Required so thin pools reclaim freed blocks from VMs; without this the pool fills up
 even when VMs delete data.
@@ -305,7 +347,7 @@ sed -i 's/issue_discards = 0/issue_discards = 1/' /etc/lvm/lvm.conf
 lvchange --discard passdown pve/data
 ```
 
-### 3.5 Restore SSH and host identity (optional but recommended)
+### 3.6 Restore SSH and host identity (optional but recommended)
 
 Restoring the original SSH host keys prevents "host key changed" warnings from your
 operator workstation:
@@ -322,7 +364,7 @@ chmod 700 /root/.ssh
 chmod 600 /root/.ssh/authorized_keys
 ```
 
-### 3.6 Sync clock before booting VMs
+### 3.7 Sync clock before booting VMs
 
 A fresh PVE install may have unsynced time. etcd requires tight clock agreement.
 
@@ -332,7 +374,7 @@ timedatectl status        # verify NTP active
 # If not synced: chronyc makestep
 ```
 
-### 3.7 Add NAS as backup storage
+### 3.8 Add NAS as backup storage
 
 Datacenter → Storage → Add → NFS:
 - Server: `192.168.123.5`
@@ -343,7 +385,7 @@ Datacenter → Storage → Add → NFS:
 
 This makes the vzdump files from Phase 0.6 accessible for qmrestore in Phase 5.
 
-### 3.8 Set up data-sata LVM thin pool
+### 3.9 Set up data-sata LVM thin pool
 
 ```bash
 # Partition the SATA SSD — single partition, full disk for LVM
@@ -368,12 +410,16 @@ Register in Proxmox: **Datacenter → Storage → Add → LVM-Thin**
 - Thin Pool: `data-sata-pool`
 - Content: Disk image
 
-### 3.9 Restore vzdump bandwidth limit
+### 3.10 Restore datacenter config
 
+Restores the bandwidth limit and other datacenter-wide settings:
+
+```bash
+cp /mnt/nas-backup/pve-config/datacenter.cfg /etc/pve/  2>/dev/null || true
+```
+
+If the file wasn't backed up, set the bandwidth limit manually:
 Datacenter → Backup → Options → Bandwidth limit: **50 MiB/s**
-
-(This is a Datacenter-level setting stored in `datacenter.cfg`, which was wiped with
-reinstall. Set it manually here — the backed-up `datacenter.cfg` is for reference only.)
 
 ---
 
