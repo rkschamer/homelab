@@ -60,15 +60,6 @@ resource "proxmox_virtual_environment_vm" "control_plane" {
     backup       = false
   }
 
-  # Swap disk
-  disk {
-    datastore_id = "local-zfs"
-    interface    = "virtio1"
-    size         = each.value.disks.swap_size_in_gb
-    discard      = "on"
-    backup       = false
-  }
-
   operating_system {
     type = "l26" # Linux Kernel 2.6 - 5.X
   }
@@ -155,15 +146,6 @@ resource "proxmox_virtual_environment_vm" "workers" {
     datastore_id = "local-zfs"
     interface    = "virtio0"
     size         = each.value.disks.system_size_in_gb
-    discard      = "on"
-    backup       = false
-  }
-
-  # Swap disk
-  disk {
-    datastore_id = "local-zfs"
-    interface    = "virtio1"
-    size         = each.value.disks.swap_size_in_gb
     discard      = "on"
     backup       = false
   }
