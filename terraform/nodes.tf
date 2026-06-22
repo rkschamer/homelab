@@ -28,13 +28,13 @@ resource "proxmox_virtual_environment_vm" "control_plane" {
   machine = "q35"
 
   efi_disk {
-    datastore_id      = "local-zfs"
+    datastore_id      = "local-lvm"
     pre_enrolled_keys = false
     type              = "4m"
   }
 
   tpm_state {
-    datastore_id = "local-zfs"
+    datastore_id = "local-lvm"
     version      = "v2.0"
   }
 
@@ -53,7 +53,7 @@ resource "proxmox_virtual_environment_vm" "control_plane" {
 
   # System disk
   disk {
-    datastore_id = "local-zfs"
+    datastore_id = "local-lvm"
     interface    = "virtio0"
     size         = each.value.disks.system_size_in_gb
     discard      = "on"
@@ -106,19 +106,19 @@ resource "proxmox_virtual_environment_vm" "workers" {
   machine = "q35"
 
   efi_disk {
-    datastore_id      = "local-zfs"
+    datastore_id      = "local-lvm"
     pre_enrolled_keys = false
     type              = "4m"
   }
 
   tpm_state {
-    datastore_id = "local-zfs"
+    datastore_id = "local-lvm"
     version      = "v2.0"
   }
 
   # Cloud-init network configuration
   initialization {
-    datastore_id = "local-zfs"
+    datastore_id = "local-lvm"
 
     ip_config {
       ipv4 {
@@ -143,7 +143,7 @@ resource "proxmox_virtual_environment_vm" "workers" {
 
   # System disk
   disk {
-    datastore_id = "local-zfs"
+    datastore_id = "local-lvm"
     interface    = "virtio0"
     size         = each.value.disks.system_size_in_gb
     discard      = "on"
@@ -152,7 +152,7 @@ resource "proxmox_virtual_environment_vm" "workers" {
 
   # User volume disk (for Longhorn CSI)
   disk {
-    datastore_id = "local-zfs"
+    datastore_id = "local-lvm"
     interface    = "virtio2"
     size         = each.value.disks.user_size_in_gb
     discard      = "on"
