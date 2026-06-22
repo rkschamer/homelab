@@ -1,6 +1,14 @@
+# Traefik is placed in infrastructure-releases (not flux/dmz) because its
+# HelmRelease installs the IngressRoute CRDs that every other kustomization
+# (dmz, trusted, untrusted, monitoring) references. If Traefik were reconciled
+# as part of the dmz kustomization, Flux dry-run validation of IngressRoute
+# resources in that same pass would fail with "no matches for kind IngressRoute"
+# before the CRDs exist — blocking the entire dmz, trusted, untrusted, and
+# monitoring kustomizations. infrastructure-releases runs before all of those,
+# so the CRDs are guaranteed to be present when the workload kustomizations
+# are applied.
 ---
-apiVersion: v1
-kind: Namespace
+
 metadata:
   name: traefik
   labels:
