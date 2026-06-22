@@ -163,17 +163,17 @@ spec:
         enabled: true
 
     # Enable access logs so the CrowdSec agent can parse them
-    logs:
-      general:
-        format: json
-        level: INFO
-      access:
-        enabled: true
-        format: json
-        fields:
-          defaultMode: keep
-          names:
-            ServiceName: keep
+    log:
+      level: INFO
+      format: json
+
+    accessLog:
+      enabled: true
+      format: json
+      fields:
+        defaultMode: keep
+        names:
+          ServiceName: keep
 
     # CrowdSec bouncer plugin - inspects/blocks requests via CrowdSec LAPI + AppSec
     experimental:
