@@ -1,0 +1,1947 @@
+{
+  "version": 4,
+  "terraform_version": "1.14.9",
+  "serial": 1484,
+  "lineage": "2560721d-e0e8-f1a7-c17c-5652e43e8c9a",
+  "outputs": {
+    "controlplane_config_files": {
+      "value": {
+        "talos-controlplane-1": "./../talos/gen/talos-controlplane-1.yaml"
+      },
+      "type": [
+        "object",
+        {
+          "talos-controlplane-1": "string"
+        }
+      ]
+    },
+    "installer_image": {
+      "value": "factory.talos.dev/installer-secureboot/a72961cff61328db9bf029a0cc90eef92a5de708c83853e0c97fd87b8efe247e:v1.13.2",
+      "type": "string"
+    },
+    "schematic_id": {
+      "value": "a72961cff61328db9bf029a0cc90eef92a5de708c83853e0c97fd87b8efe247e",
+      "type": "string"
+    },
+    "talosconfig": {
+      "value": "context: homelab\ncontexts:\n    homelab:\n        endpoints:\n            - 192.168.123.20\n        ca: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJQekNCOHFBREFnRUNBaEVBcXZhV3ZYb0w5N2F3c09BOGh1VlU4VEFGQmdNclpYQXdFREVPTUF3R0ExVUUKQ2hNRmRHRnNiM013SGhjTk1qWXdNekU0TVRJeU1UQTRXaGNOTXpZd016RTFNVEl5TVRBNFdqQVFNUTR3REFZRApWUVFLRXdWMFlXeHZjekFxTUFVR0F5dGxjQU1oQUZiMkVYMFkxUU10cjFpcE5RSE5MaFdKdU91dWxjalFuTU1OCi9MbEJHQ1FIbzJFd1h6QU9CZ05WSFE4QkFmOEVCQU1DQW9Rd0hRWURWUjBsQkJZd0ZBWUlLd1lCQlFVSEF3RUcKQ0NzR0FRVUZCd01DTUE4R0ExVWRFd0VCL3dRRk1BTUJBZjh3SFFZRFZSME9CQllFRkh1b3pCOC94eXVHR3BTcAovTUNUa3d3MjcrWTdNQVVHQXl0bGNBTkJBTFk3aU8vS0k1ajVxK0J0Z01aY0E5Ryt2TTVFZm1sRjVNUzBRanFRCnVaZ2ljT1BxL2krSDdGbHBGUzRCZ3UzbTJGTi9USkF3QjJEMk03K05EUjBoT2drPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==\n        crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJLRENCMjZBREFnRUNBaEFjU2JSNk1wTDNFa1pIWWxka2Znc0FNQVVHQXl0bGNEQVFNUTR3REFZRFZRUUsKRXdWMFlXeHZjekFlRncweU5qQXpNVGd4TWpJeE1EaGFGdzB5TnpBek1UZ3hNakl4TURoYU1CTXhFVEFQQmdOVgpCQW9UQ0c5ek9tRmtiV2x1TUNvd0JRWURLMlZ3QXlFQWdMbG12eDFQdnNIUHR1ZlRGZWtYQmdTakl2eG5iWldjCjh5K21BMlMwNFRpalNEQkdNQTRHQTFVZER3RUIvd1FFQXdJSGdEQVRCZ05WSFNVRUREQUtCZ2dyQmdFRkJRY0QKQWpBZkJnTlZIU01FR0RBV2dCUjdxTXdmUDhjcmhocVVxZnpBazVNTU51L21PekFGQmdNclpYQURRUUJEOGUxVApRbHlEY2tGdUVXbHQ0enU3TzNRTlhXWWtqdWdNaWZIcFZOWTR2aHNBcFEyV3FjdXNDYUR4TXJNU0R4aGM0N21BCksvL1dabFRmWGRPZ1FJTU4KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=\n        key: LS0tLS1CRUdJTiBFRDI1NTE5IFBSSVZBVEUgS0VZLS0tLS0KTUM0Q0FRQXdCUVlESzJWd0JDSUVJS2dzM1h2M2pBMHppSjZnTEUyRFNMdTcwSlBHbkdvVnl3ZjAxcEhjWlVKRgotLS0tLUVORCBFRDI1NTE5IFBSSVZBVEUgS0VZLS0tLS0K\n",
+      "type": "string",
+      "sensitive": true
+    },
+    "talosconfig_file": {
+      "value": "./../talosconfig",
+      "type": "string"
+    },
+    "worker_config_files": {
+      "value": {
+        "talos-worker-1": "./../talos/gen/talos-worker-1.yaml",
+        "talos-worker-2": "./../talos/gen/talos-worker-2.yaml"
+      },
+      "type": [
+        "object",
+        {
+          "talos-worker-1": "string",
+          "talos-worker-2": "string"
+        }
+      ]
+    }
+  },
+  "resources": [
+    {
+      "mode": "data",
+      "type": "talos_client_configuration",
+      "name": "this",
+      "provider": "provider[\"registry.terraform.io/siderolabs/talos\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "client_configuration": {
+              "ca_certificate": "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJQekNCOHFBREFnRUNBaEVBcXZhV3ZYb0w5N2F3c09BOGh1VlU4VEFGQmdNclpYQXdFREVPTUF3R0ExVUUKQ2hNRmRHRnNiM013SGhjTk1qWXdNekU0TVRJeU1UQTRXaGNOTXpZd016RTFNVEl5TVRBNFdqQVFNUTR3REFZRApWUVFLRXdWMFlXeHZjekFxTUFVR0F5dGxjQU1oQUZiMkVYMFkxUU10cjFpcE5RSE5MaFdKdU91dWxjalFuTU1OCi9MbEJHQ1FIbzJFd1h6QU9CZ05WSFE4QkFmOEVCQU1DQW9Rd0hRWURWUjBsQkJZd0ZBWUlLd1lCQlFVSEF3RUcKQ0NzR0FRVUZCd01DTUE4R0ExVWRFd0VCL3dRRk1BTUJBZjh3SFFZRFZSME9CQllFRkh1b3pCOC94eXVHR3BTcAovTUNUa3d3MjcrWTdNQVVHQXl0bGNBTkJBTFk3aU8vS0k1ajVxK0J0Z01aY0E5Ryt2TTVFZm1sRjVNUzBRanFRCnVaZ2ljT1BxL2krSDdGbHBGUzRCZ3UzbTJGTi9USkF3QjJEMk03K05EUjBoT2drPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==",
+              "client_certificate": "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJLRENCMjZBREFnRUNBaEFjU2JSNk1wTDNFa1pIWWxka2Znc0FNQVVHQXl0bGNEQVFNUTR3REFZRFZRUUsKRXdWMFlXeHZjekFlRncweU5qQXpNVGd4TWpJeE1EaGFGdzB5TnpBek1UZ3hNakl4TURoYU1CTXhFVEFQQmdOVgpCQW9UQ0c5ek9tRmtiV2x1TUNvd0JRWURLMlZ3QXlFQWdMbG12eDFQdnNIUHR1ZlRGZWtYQmdTakl2eG5iWldjCjh5K21BMlMwNFRpalNEQkdNQTRHQTFVZER3RUIvd1FFQXdJSGdEQVRCZ05WSFNVRUREQUtCZ2dyQmdFRkJRY0QKQWpBZkJnTlZIU01FR0RBV2dCUjdxTXdmUDhjcmhocVVxZnpBazVNTU51L21PekFGQmdNclpYQURRUUJEOGUxVApRbHlEY2tGdUVXbHQ0enU3TzNRTlhXWWtqdWdNaWZIcFZOWTR2aHNBcFEyV3FjdXNDYUR4TXJNU0R4aGM0N21BCksvL1dabFRmWGRPZ1FJTU4KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=",
+              "client_key": "LS0tLS1CRUdJTiBFRDI1NTE5IFBSSVZBVEUgS0VZLS0tLS0KTUM0Q0FRQXdCUVlESzJWd0JDSUVJS2dzM1h2M2pBMHppSjZnTEUyRFNMdTcwSlBHbkdvVnl3ZjAxcEhjWlVKRgotLS0tLUVORCBFRDI1NTE5IFBSSVZBVEUgS0VZLS0tLS0K"
+            },
+            "cluster_name": "homelab",
+            "endpoints": [
+              "192.168.123.20"
+            ],
+            "id": "homelab",
+            "nodes": null,
+            "talos_config": "context: homelab\ncontexts:\n    homelab:\n        endpoints:\n            - 192.168.123.20\n        ca: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJQekNCOHFBREFnRUNBaEVBcXZhV3ZYb0w5N2F3c09BOGh1VlU4VEFGQmdNclpYQXdFREVPTUF3R0ExVUUKQ2hNRmRHRnNiM013SGhjTk1qWXdNekU0TVRJeU1UQTRXaGNOTXpZd016RTFNVEl5TVRBNFdqQVFNUTR3REFZRApWUVFLRXdWMFlXeHZjekFxTUFVR0F5dGxjQU1oQUZiMkVYMFkxUU10cjFpcE5RSE5MaFdKdU91dWxjalFuTU1OCi9MbEJHQ1FIbzJFd1h6QU9CZ05WSFE4QkFmOEVCQU1DQW9Rd0hRWURWUjBsQkJZd0ZBWUlLd1lCQlFVSEF3RUcKQ0NzR0FRVUZCd01DTUE4R0ExVWRFd0VCL3dRRk1BTUJBZjh3SFFZRFZSME9CQllFRkh1b3pCOC94eXVHR3BTcAovTUNUa3d3MjcrWTdNQVVHQXl0bGNBTkJBTFk3aU8vS0k1ajVxK0J0Z01aY0E5Ryt2TTVFZm1sRjVNUzBRanFRCnVaZ2ljT1BxL2krSDdGbHBGUzRCZ3UzbTJGTi9USkF3QjJEMk03K05EUjBoT2drPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==\n        crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJLRENCMjZBREFnRUNBaEFjU2JSNk1wTDNFa1pIWWxka2Znc0FNQVVHQXl0bGNEQVFNUTR3REFZRFZRUUsKRXdWMFlXeHZjekFlRncweU5qQXpNVGd4TWpJeE1EaGFGdzB5TnpBek1UZ3hNakl4TURoYU1CTXhFVEFQQmdOVgpCQW9UQ0c5ek9tRmtiV2x1TUNvd0JRWURLMlZ3QXlFQWdMbG12eDFQdnNIUHR1ZlRGZWtYQmdTakl2eG5iWldjCjh5K21BMlMwNFRpalNEQkdNQTRHQTFVZER3RUIvd1FFQXdJSGdEQVRCZ05WSFNVRUREQUtCZ2dyQmdFRkJRY0QKQWpBZkJnTlZIU01FR0RBV2dCUjdxTXdmUDhjcmhocVVxZnpBazVNTU51L21PekFGQmdNclpYQURRUUJEOGUxVApRbHlEY2tGdUVXbHQ0enU3TzNRTlhXWWtqdWdNaWZIcFZOWTR2aHNBcFEyV3FjdXNDYUR4TXJNU0R4aGM0N21BCksvL1dabFRmWGRPZ1FJTU4KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=\n        key: LS0tLS1CRUdJTiBFRDI1NTE5IFBSSVZBVEUgS0VZLS0tLS0KTUM0Q0FRQXdCUVlESzJWd0JDSUVJS2dzM1h2M2pBMHppSjZnTEUyRFNMdTcwSlBHbkdvVnl3ZjAxcEhjWlVKRgotLS0tLUVORCBFRDI1NTE5IFBSSVZBVEUgS0VZLS0tLS0K\n"
+          },
+          "sensitive_attributes": [
+            [
+              {
+                "type": "get_attr",
+                "value": "client_configuration"
+              },
+              {
+                "type": "get_attr",
+                "value": "client_key"
+              }
+            ],
+            [
+              {
+                "type": "get_attr",
+                "value": "talos_config"
+              }
+            ]
+          ],
+          "identity_schema_version": 0
+        }
+      ]
+    },
+    {
+      "mode": "data",
+      "type": "talos_image_factory_extensions_versions",
+      "name": "this",
+      "provider": "provider[\"registry.terraform.io/siderolabs/talos\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "exact_filters": null,
+            "extensions_info": [
+              {
+                "author": "Sidero Labs",
+                "description": "[core] This system extension provides AMDGPU firmware binaries and kernel modules.\n",
+                "digest": "sha256:dd0cdf9faf4863f1a9942198814a412a328a7142bc00e7e8cfd6a4c8b0e642cc",
+                "name": "siderolabs/amdgpu",
+                "ref": "ghcr.io/siderolabs/amdgpu:20260410-v1.13.2"
+              },
+              {
+                "author": "Sidero Labs",
+                "description": "[core] This system extension provides AMD microcode binaries.\n",
+                "digest": "sha256:7630b050ec235fd095df54cc2480bfa6b48ea2e045bc1a00f7ffe3c9876c37f6",
+                "name": "siderolabs/amd-ucode",
+                "ref": "ghcr.io/siderolabs/amd-ucode:20260410"
+              },
+              {
+                "author": "Sidero Labs",
+                "description": "[core] This system extension provides iscsi-tools.\n",
+                "digest": "sha256:d186f4ecb90e1984701949f1a36423f0f83793ce65250429c664118a89490900",
+                "name": "siderolabs/iscsi-tools",
+                "ref": "ghcr.io/siderolabs/iscsi-tools:v0.2.0"
+              },
+              {
+                "author": "Markus Reiter",
+                "description": "[extra] This system extension provides the QEMU Guest Agent service.\n",
+                "digest": "sha256:e4a0ed2fe8cf067f19b68257b261b1883842f11ef7726e383249695222fcfbed",
+                "name": "siderolabs/qemu-guest-agent",
+                "ref": "ghcr.io/siderolabs/qemu-guest-agent:11.0.0"
+              },
+              {
+                "author": "Sidero Labs",
+                "description": "[contrib] This system extension provides a minimal util-linux package.\n",
+                "digest": "sha256:45d2a7590c3c1601abc077f4ea3e98ee8c66390e915e2f92fa2e4ba5ffdaf65a",
+                "name": "siderolabs/util-linux-tools",
+                "ref": "ghcr.io/siderolabs/util-linux-tools:2.41.4"
+              }
+            ],
+            "filters": {
+              "names": [
+                "siderolabs/amd-ucode",
+                "siderolabs/amdgpu",
+                "siderolabs/qemu-guest-agent",
+                "siderolabs/iscsi-tools",
+                "siderolabs/util-linux-tools"
+              ]
+            },
+            "id": "extensions_info",
+            "talos_version": "v1.13.2"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0
+        }
+      ]
+    },
+    {
+      "mode": "data",
+      "type": "talos_machine_configuration",
+      "name": "controlplane",
+      "provider": "provider[\"registry.terraform.io/siderolabs/talos\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "cluster_endpoint": "https://192.168.123.20:6443",
+            "cluster_name": "homelab",
+            "config_patches": null,
+            "docs": null,
+            "examples": null,
+            "id": "homelab",
+            "kubernetes_version": "1.36.0",
+            "machine_configuration": "version: v1alpha1\ndebug: false\npersist: true\nmachine:\n    type: controlplane\n    token: 6ri18o.4tv3sdtnnve14u2l\n    ca:\n        crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJQekNCOHFBREFnRUNBaEVBcXZhV3ZYb0w5N2F3c09BOGh1VlU4VEFGQmdNclpYQXdFREVPTUF3R0ExVUUKQ2hNRmRHRnNiM013SGhjTk1qWXdNekU0TVRJeU1UQTRXaGNOTXpZd016RTFNVEl5TVRBNFdqQVFNUTR3REFZRApWUVFLRXdWMFlXeHZjekFxTUFVR0F5dGxjQU1oQUZiMkVYMFkxUU10cjFpcE5RSE5MaFdKdU91dWxjalFuTU1OCi9MbEJHQ1FIbzJFd1h6QU9CZ05WSFE4QkFmOEVCQU1DQW9Rd0hRWURWUjBsQkJZd0ZBWUlLd1lCQlFVSEF3RUcKQ0NzR0FRVUZCd01DTUE4R0ExVWRFd0VCL3dRRk1BTUJBZjh3SFFZRFZSME9CQllFRkh1b3pCOC94eXVHR3BTcAovTUNUa3d3MjcrWTdNQVVHQXl0bGNBTkJBTFk3aU8vS0k1ajVxK0J0Z01aY0E5Ryt2TTVFZm1sRjVNUzBRanFRCnVaZ2ljT1BxL2krSDdGbHBGUzRCZ3UzbTJGTi9USkF3QjJEMk03K05EUjBoT2drPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==\n        key: LS0tLS1CRUdJTiBFRDI1NTE5IFBSSVZBVEUgS0VZLS0tLS0KTUM0Q0FRQXdCUVlESzJWd0JDSUVJTlFvVzFtbk0rVC9sTkwwSklxYzNiVUtaWHhua3ErcXdmWks5djdLUjFyZgotLS0tLUVORCBFRDI1NTE5IFBSSVZBVEUgS0VZLS0tLS0K\n    certSANs: []\n    kubelet:\n        image: ghcr.io/siderolabs/kubelet:v1.36.0\n        defaultRuntimeSeccompProfileEnabled: true\n        disableManifestsDirectory: true\n    install:\n        disk: /dev/sda\n        image: ghcr.io/siderolabs/installer:v1.13.0\n        wipe: false\n        grubUseUKICmdline: true\n    features:\n        diskQuotaSupport: true\n        kubePrism:\n            enabled: true\n            port: 7445\n        hostDNS:\n            enabled: true\n            forwardKubeDNSToHost: true\n    nodeLabels:\n        node.kubernetes.io/exclude-from-external-load-balancers: \"\"\ncluster:\n    id: _VziAGjGXw2N-AUG_8gTAnxdXabIVZGA3VbC37_8TjY=\n    secret: WQt00uAIAlN0hjhJBHi486ewsGRXkTFGbdKOpcI2BB8=\n    controlPlane:\n        endpoint: https://192.168.123.20:6443\n    clusterName: homelab\n    network:\n        dnsDomain: cluster.local\n        podSubnets:\n            - 10.244.0.0/16\n        serviceSubnets:\n            - 10.96.0.0/12\n    token: cvtkew.stk8xcp5u4no1q8w\n    secretboxEncryptionSecret: 1ZbLP1sC0LAa+bsLcT0V8fwjP3Gfjp03LdUtNNjXqH0=\n    ca:\n        crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJpakNDQVRDZ0F3SUJBZ0lSQU9GbkRiSDJxS0hkK1J6SnVlZk5IVm93Q2dZSUtvWkl6ajBFQXdJd0ZURVQKTUJFR0ExVUVDaE1LYTNWaVpYSnVaWFJsY3pBZUZ3MHlOakF6TVRneE1qSXhNRGhhRncwek5qQXpNVFV4TWpJeApNRGhhTUJVeEV6QVJCZ05WQkFvVENtdDFZbVZ5Ym1WMFpYTXdXVEFUQmdjcWhrak9QUUlCQmdncWhrak9QUU1CCkJ3TkNBQVJhSlVQYTRFSU5VanNNK0hVU21ITTAvendxdWc0SFBGQUFoVm9nL1FkZHJnS2pFWlNFWnBkT0VuaXgKUEVnakNBU3pEYnJMUXI3RldKTE0vSXkwampUcG8yRXdYekFPQmdOVkhROEJBZjhFQkFNQ0FvUXdIUVlEVlIwbApCQll3RkFZSUt3WUJCUVVIQXdFR0NDc0dBUVVGQndNQ01BOEdBMVVkRXdFQi93UUZNQU1CQWY4d0hRWURWUjBPCkJCWUVGRkhNaENXSnR3MmNBYWhWazhvY0JxeVBTTGtMTUFvR0NDcUdTTTQ5QkFNQ0EwZ0FNRVVDSVFERU1xeXgKVUMxQkZmY3RsSHdKVGEyMVllZ0JyVnpLUnNEYzlabWJSak9iMUFJZ2RRSk4yMkcwUU1wVVlnQnpEcnBDM0pqNgpiQUEwQmlmQzZaaVQ2ekN3b0ZvPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==\n        key: LS0tLS1CRUdJTiBFQyBQUklWQVRFIEtFWS0tLS0tCk1IY0NBUUVFSUMrOUpLRlRjSzFNWDljN29ycWNLZ1NIVE1KWjZXV1dlQXR5VThwZWY1ekdvQW9HQ0NxR1NNNDkKQXdFSG9VUURRZ0FFV2lWRDJ1QkNEVkk3RFBoMUVwaHpOUDg4S3JvT0J6eFFBSVZhSVAwSFhhNENveEdVaEdhWApUaEo0c1R4SUl3Z0VzdzI2eTBLK3hWaVN6UHlNdEk0MDZRPT0KLS0tLS1FTkQgRUMgUFJJVkFURSBLRVktLS0tLQo=\n    aggregatorCA:\n        crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJZRENDQVFXZ0F3SUJBZ0lRV3hqaEZiY1BmemdHMkJEeGVjZEtkekFLQmdncWhrak9QUVFEQWpBQU1CNFgKRFRJMk1ETXhPREV5TWpFd09Gb1hEVE0yTURNeE5URXlNakV3T0Zvd0FEQlpNQk1HQnlxR1NNNDlBZ0VHQ0NxRwpTTTQ5QXdFSEEwSUFCSHUwbzk3cmlrbjJrdW5qZVkwekR6T0JPbEM3cnpjb3djNG56VlpGQjlqS0J5YmxlcDR3CmgySXQ2ZjJvM1pyQWhQb2Zub3hPaitqb0lMUzQxOU1JR1JhallUQmZNQTRHQTFVZER3RUIvd1FFQXdJQ2hEQWQKQmdOVkhTVUVGakFVQmdnckJnRUZCUWNEQVFZSUt3WUJCUVVIQXdJd0R3WURWUjBUQVFIL0JBVXdBd0VCL3pBZApCZ05WSFE0RUZnUVV1Wm8vZWdiQVdTOVphcG16QlFwcHBsblNWSUV3Q2dZSUtvWkl6ajBFQXdJRFNRQXdSZ0loCkFNSWxrQlEzMTNiVEJJenYwN2tLcWlVV2VDamtCUTZVV0ZSOTZqK09FRTQwQWlFQXBLeTJIOFRqejVveHh6R2sKNE9ScmVBK3d2RCtNbTBTZkdweFVXRkNOS1AwPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==\n        key: LS0tLS1CRUdJTiBFQyBQUklWQVRFIEtFWS0tLS0tCk1IY0NBUUVFSUFvQmtUUE16SndYUjFRbGI2R09CRXMwMUNyazFielduTmU3L2FhYko2d3ZvQW9HQ0NxR1NNNDkKQXdFSG9VUURRZ0FFZTdTajN1dUtTZmFTNmVONWpUTVBNNEU2VUx1dk55akJ6aWZOVmtVSDJNb0hKdVY2bmpDSApZaTNwL2FqZG1zQ0UraCtlakU2UDZPZ2d0TGpYMHdnWkZnPT0KLS0tLS1FTkQgRUMgUFJJVkFURSBLRVktLS0tLQo=\n    serviceAccount:\n        key: LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQpNSUlKS0FJQkFBS0NBZ0VBeTY0eFJxaHFBZng2U1Q5QzBMUkVTZnFWUWFpSkRneXB0YzdlREVLR2h1VWZ4WEFZClFsUllYOHFNanNId1hZbU4zdFVLazFsZXQvTWNhNU1aYzVEOWJEMjJkampYaEFlU3BWT2FURmt3Y016NDQ4Q28Kc2hCYVpzTm5vMEZvbTFLdHYyNnJSK0ZRUlErR2dITkl2c2thWW5xOHpSODE3SkpScWRvN1pWeEZTK3FlTU03MApyQi9TSnNmSmVIRXpPZG9BdkZlbFdhLzhuc3AvWUZOM20wUFBGdTZMWnV0UXo0VUZidllUem1Hc2FwM0l6N0U5CnhET1RrNGdaMDRYVlk1aUIwR09VTzFiQnBVa1lTRVlSRUVCWFhNUEp0aHVTR0lYUWF0b0V1cTduRDJ6MUZMdzIKdjNXb2xhUlVlZkpMcEZJRGEzUGJZZWNSUmhyOUdzV25INDhrVEJIYmsxN05ubnBXbWljZG5VNkpXVy9lU0I4VQpZREt4RFFsMVdrdE95by9Yd1lkenM2SXh0YUJOVS8xakZIQmt3R1BFcVdFeXJybGNOL3BJdFpGUTY0cnFVWjZTCjR2NmRZbEJjMmw3RXhTVzNBdk91K0RyM3NBRzI2Ry9XOGN4ZFlqanhuR1d0eXU0a0lWZ05NVDFUdFhBR2FsdFkKbE5nVmRjdHdrZU1hWDE2aitERG94WnhEeC8rT2VNREg5c2VoQVc3NnBFdGx2Rms3TktrNy9ZU1NnMUZYakxwbworT0YwU1Z3WDFJRGo4VEtXWGNHaEVkaTNuUUsxQ01uVERSZ3F6blNsblVXZG5EdWgwNC9nMWdLRHoxZVhsc043CmQrLzhVNjhUZ3RJbWZ4QkRkSXVtMCtnZW5Qbk00YkVEVGZKcWhUM2J1Qy8xQU9Cem9YRGtpOVZIeWpjQ0F3RUEKQVFLQ0FnQUtCV2NCMGo2UmlpblBPYUJKekNTOUlNVTI1SDZZb0lGd2ZxYzYvY0phcWlKa3dKQWcvWnJOT0V6NApwMmdXejhSMHVPeWZrTHJOU21oZC9FdUNJajN1M21pM0Qzd0htVjRSMTI1MHZBcWtPMFlOVDdzcXhucnA0TnpCCnlNMFFuMHN0L1pBVGdXMXFDRzhXWXhXcWRWdnkwd05rY24ycC9lbUhoL294a1h2bjZDYkc1ZnhlVm5lYVZrZ1EKbkQzRHI1MXdPUmx0czRJMmZtWU1oKzdHSWlPRlBnZWM4TmMrM0VRcmRMaEhVWnpybmZVc1dJT25ta3poeFh3TQpZU3U5Uk5xZldmdDF4amxqWlhQNmlUSkUza2ZTcUNrVzZIM0k3czJuMzUxTjg4T1haU0Vjb0h4S3pUa0R2aE1RCk9nd0VINGFWakJ5NFkyZVRjOXd5R1hCSGFEalBTOThCU0Y4dUhJSHNuYmgvU0Qra29JQ1R2WGt0RThnam1VengKT2oxam9ES09qc2U5YkwyYXJtdEN2b3hzWWZmZGN5RE5XazQ5UkRjSVQveXBGbThWNG9tck4yeUxoUEx6VlF0WQpXS1JxOW50allSWjIwRUVJUm0yTVhDUFI4TGtQQ29aQ3BCUGlPRGVGV0QwSWZ2Nms2eTZQUnd5N0I1TTBHeFYrCmE4L21wQnpEcTdpMVdSdzZEdVl1cjQwTGhmcUxsYjdKR083RUtDc3RtN0JKUll6VGZHQkN6dWI3bXBQL1BYNksKTW9yNTZqc283NUtnZnE4ZEFTTkZWZzRuK3YyV0FoQjJxV0VxZ2VwMWpQZzJkdkJJaURvZFdWQWIvaG5talIwWQpCWXRBeFVGTXBMb3h2QXRwQXhUY1Zjc292aDN1MlhWK2x1cmFHRlkrZm5yRms4aUVJUUtDQVFFQXphajNPVFRWClJtWmlXU0J2b3d0TTJGQ2FJNnpxNGY4UDg3K1o2SXJQTXFQQkNGL3pNbnp6S2lGVFAvTVpKSXRiSyswMWhGbkEKV3duRWZYQVVyck5pMSs4QmM2L3RVT1JqclRRYjdUUXlVUFQ1YzB0dEtQV1EyTE56dnVGZlBzOTNIVkhpa1p6OQpzK0Q2NS9wRG1GOXpzZkI4SFZ0OWFzR3lFVWVDeWpUOFdSMkpmZUNCcHhqNEJIdVRvU203UjY4VWM3QkExSlZqClpSZ0pVS3pFR01wM1BqRFRNcWJhQXFSUGtWYlVYaUJBQUFGa3k2Slo2ekRWY2pvZTNveXpoc2NtR2VlbFZncUIKZlluaTRnSFd5bER0eitmVWoyMUQ3d2piRmw5VkRieXh6Mml6SGVXZVUvRTJ5QzQvVERjRXFQYkZUd2EreWhKSApJRDdiVkZTWmNsNHBjUUtDQVFFQS9Za3V0azU0Q3E5SllQNnM0UTRmLzNtbk1nNTFsenlSbmx4U3lQbllKVi90Ckc5NHF6d2gvZnlYalQ3T2tYT1l6aW0vSVhQKzFscUpOWForMVhJRmJuRkpoNWlaK2oxS2xHcVpoMDNFd0J4UEIKZk10bCtHdnlJVWZyNjVncU1wU1NldzNkdTZPQ1pZSFpkTVlITEVhTXYrS1ZQL2tNSnN1cDBtc3RPemJKU28zbQp2UWRMdmNpMnFySmN2dlhhenJXdGZTQitES2Ivc29nS1BPZWRsWEd5b0krQ2s2WmlIaXFaNzVaajloNnlyYUwwCmpDUVMxOXhCTzQxYUt1QW4zZldlSnRsYnhPV21LY0VhVnBvWUMrVHZmRXNRYUF0MzJKclEwRGVOdWYycU8vdTIKVE5TWitIQzdhWm84RDB2LzlqUjhud09FazZ3WEdtSE51NDVNTjFvYUp3S0NBUUIza0ZUeWNESFI5UElXYU5JZQpVeEtBN0JOQXpHWGRyNkRCajlIVnJPV2F4ak1TUUY0dUt4QmZuUEkrU29HQ2luWWR5cEdEZVg1b0x2eUtCS0F4CmxON1JOUVYrRVhpQnY5WG5PMVZGQ1VSN1pvQ2pzK1VwbStKeTZabFFEc3lGd3EyNFlRTzhyaTJjNXg1WHdWcU0KK21sVHVNRWZmRElrMzZrN2ZIeWdQRCs5TzN2VXI3SVF5R1pnak11ZU5abklxaFBVMGxKT2hPODlOY1VzbnRSKwpxUzY3L0R5OHhONFlEUmlwSVhianBoSXZMcUEvOXdvWnZ0RkkwRnRqL1I3ZUsyZU9SZXNNWTUwMnMvUXdldXM1CndlVVFLdktiMCtWYjBhVTFrNFRxTUpxYlAzNXEwalRERG9oUHh2dEx2dXk1b29YQlZPV1VxeDJvdElKa3U2NWUKSERveEFvSUJBQ1VFdjdaTXRNaFNtYk00M0VNc0RjMytsRVFCeW5lZmwxOTQrWGx3eVhlRGp4cFBrUTZUbmhJUgpsU1FSQmNHdXR2M1NubjI5dEdUZkk4NjB3QVZXdWVxVU9Na2krNzJ2Z24zbXAwZjVNZHNHcm15clFpTklsNXoyClpHTU0zN1JzN3dwYWx2S0x5RUZMK1ZWTWlNV1ZNMzNjOW8vVnJFbUoyU3pwQ3p5bkhqTHRqekF3ZllXalpkQjgKcElBWlk2NWs1b1RybHB3QVVqdGVFNmlhNU81cUlIdkRHSHk0Z1lFSUZWdmZLSTlLSWlxcUxXeTg0NmR5K0c5YQpqenpOWitUSHRTVFUvY285QWNyODcveVBHVTI3U3FCcVVXWHZycnNJdDg1L0hnbDNHVUVTMnFaVE1Id084YjVVCmo4cG4vV0tVZlZHMmNNZ2pDMmlGdVVWV1hKaUVabWNDZ2dFQkFJMmpvL096NjdDd3VMZ0gxUGdTTVRlenRRYTIKRWlhNzBPZTVMNUhKamVPTVMweGtVc0pVWktBUnlUbVdOZnpXdTFrZVZ5Q2RmYnZEbVFVci9kOXorRHVjRlpUOQpWRHp0c0dyMlhjeUhrbHNEUnpiRkp3MEYxSGZkSnpPWVpnaGgxZVhhVElHNjkvaCtFcmRRN2gyRC96OVkrL29SCnF5WU1wZmlLUjZzQnRqUmFUQUIrYXR2VHRuLy9qajN3RVdUQzdpK05halJoM0V5TVpsaGVaaE1JRlg4Ni9YOVoKRkx4anVQSXR6eTFLU24zWHBHM0lBL3NaQmxvZTk3Y21jTTRROVAvRzAyemRXaTNJUlUyUEdKU2NlMDdtRGdvMwpEeFRJbjBpQXQwNm1uWWwyQitDVElkZHRtZXErT1pXNmI3VS94N09xOEEyMzVXNHZ6RkVQYzR0Z0pCaz0KLS0tLS1FTkQgUlNBIFBSSVZBVEUgS0VZLS0tLS0K\n    apiServer:\n        image: registry.k8s.io/kube-apiserver:v1.36.0\n        admissionControl:\n            - name: PodSecurity\n              configuration:\n                apiVersion: pod-security.admission.config.k8s.io/v1alpha1\n                defaults:\n                    audit: restricted\n                    audit-version: latest\n                    enforce: baseline\n                    enforce-version: latest\n                    warn: restricted\n                    warn-version: latest\n                exemptions:\n                    namespaces:\n                        - kube-system\n                    runtimeClasses: []\n                    usernames: []\n                kind: PodSecurityConfiguration\n        auditPolicy:\n            apiVersion: audit.k8s.io/v1\n            kind: Policy\n            rules:\n                - level: Metadata\n    controllerManager:\n        image: registry.k8s.io/kube-controller-manager:v1.36.0\n    proxy:\n        image: registry.k8s.io/kube-proxy:v1.36.0\n    scheduler:\n        image: registry.k8s.io/kube-scheduler:v1.36.0\n    discovery:\n        enabled: true\n        registries:\n            kubernetes:\n                disabled: true\n            service: {}\n    etcd:\n        ca:\n            crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJmakNDQVNTZ0F3SUJBZ0lSQU5sb2NPeHVXanhKN1hrZmpBOU11R3N3Q2dZSUtvWkl6ajBFQXdJd0R6RU4KTUFzR0ExVUVDaE1FWlhSalpEQWVGdzB5TmpBek1UZ3hNakl4TURoYUZ3MHpOakF6TVRVeE1qSXhNRGhhTUE4eApEVEFMQmdOVkJBb1RCR1YwWTJRd1dUQVRCZ2NxaGtqT1BRSUJCZ2dxaGtqT1BRTUJCd05DQUFRZERSSGkvbzJIClpvenRCaVVNRXNWKzZCelpmbzZldkR4TXVCZm9QSG5ZblBENFUzRmdTV052clN0YjNOUjBHNk9pK2dmRDduSzIKbWpNL3haVExIZnljbzJFd1h6QU9CZ05WSFE4QkFmOEVCQU1DQW9Rd0hRWURWUjBsQkJZd0ZBWUlLd1lCQlFVSApBd0VHQ0NzR0FRVUZCd01DTUE4R0ExVWRFd0VCL3dRRk1BTUJBZjh3SFFZRFZSME9CQllFRkt1d3JQTXh6VTB4CmRaMWV6bE9rbVhPRENHMmlNQW9HQ0NxR1NNNDlCQU1DQTBnQU1FVUNJUUNuc2EzZ3Z0VGtDR0VzMmtPL0d2OW4KWkRPVGNoaklXaFByYjFRTG5pREtRd0lnTHBvb2RWcVVMMzYzQ05Nd3oveXV3UzF2Y1ZLdVNQTS9CS3QzZU44Qwp6Ync9Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K\n            key: LS0tLS1CRUdJTiBFQyBQUklWQVRFIEtFWS0tLS0tCk1IY0NBUUVFSUh6Y3JxVEhsazh4YnRYaFZzL3prVUV4d05RWVpST0N0NHVvdS9CdEVXTVdvQW9HQ0NxR1NNNDkKQXdFSG9VUURRZ0FFSFEwUjR2Nk5oMmFNN1FZbERCTEZmdWdjMlg2T25ydzhUTGdYNkR4NTJKencrRk54WUVsagpiNjByVzl6VWRCdWpvdm9Idys1eXRwb3pQOFdVeXgzOG5BPT0KLS0tLS1FTkQgRUMgUFJJVkFURSBLRVktLS0tLQo=\n---\napiVersion: v1alpha1\nkind: HostnameConfig\nauto: stable\n",
+            "machine_secrets": {
+              "certs": {
+                "etcd": {
+                  "cert": "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJmakNDQVNTZ0F3SUJBZ0lSQU5sb2NPeHVXanhKN1hrZmpBOU11R3N3Q2dZSUtvWkl6ajBFQXdJd0R6RU4KTUFzR0ExVUVDaE1FWlhSalpEQWVGdzB5TmpBek1UZ3hNakl4TURoYUZ3MHpOakF6TVRVeE1qSXhNRGhhTUE4eApEVEFMQmdOVkJBb1RCR1YwWTJRd1dUQVRCZ2NxaGtqT1BRSUJCZ2dxaGtqT1BRTUJCd05DQUFRZERSSGkvbzJIClpvenRCaVVNRXNWKzZCelpmbzZldkR4TXVCZm9QSG5ZblBENFUzRmdTV052clN0YjNOUjBHNk9pK2dmRDduSzIKbWpNL3haVExIZnljbzJFd1h6QU9CZ05WSFE4QkFmOEVCQU1DQW9Rd0hRWURWUjBsQkJZd0ZBWUlLd1lCQlFVSApBd0VHQ0NzR0FRVUZCd01DTUE4R0ExVWRFd0VCL3dRRk1BTUJBZjh3SFFZRFZSME9CQllFRkt1d3JQTXh6VTB4CmRaMWV6bE9rbVhPRENHMmlNQW9HQ0NxR1NNNDlCQU1DQTBnQU1FVUNJUUNuc2EzZ3Z0VGtDR0VzMmtPL0d2OW4KWkRPVGNoaklXaFByYjFRTG5pREtRd0lnTHBvb2RWcVVMMzYzQ05Nd3oveXV3UzF2Y1ZLdVNQTS9CS3QzZU44Qwp6Ync9Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K",
+                  "key": "LS0tLS1CRUdJTiBFQyBQUklWQVRFIEtFWS0tLS0tCk1IY0NBUUVFSUh6Y3JxVEhsazh4YnRYaFZzL3prVUV4d05RWVpST0N0NHVvdS9CdEVXTVdvQW9HQ0NxR1NNNDkKQXdFSG9VUURRZ0FFSFEwUjR2Nk5oMmFNN1FZbERCTEZmdWdjMlg2T25ydzhUTGdYNkR4NTJKencrRk54WUVsagpiNjByVzl6VWRCdWpvdm9Idys1eXRwb3pQOFdVeXgzOG5BPT0KLS0tLS1FTkQgRUMgUFJJVkFURSBLRVktLS0tLQo="
+                },
+                "k8s": {
+                  "cert": "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJpakNDQVRDZ0F3SUJBZ0lSQU9GbkRiSDJxS0hkK1J6SnVlZk5IVm93Q2dZSUtvWkl6ajBFQXdJd0ZURVQKTUJFR0ExVUVDaE1LYTNWaVpYSnVaWFJsY3pBZUZ3MHlOakF6TVRneE1qSXhNRGhhRncwek5qQXpNVFV4TWpJeApNRGhhTUJVeEV6QVJCZ05WQkFvVENtdDFZbVZ5Ym1WMFpYTXdXVEFUQmdjcWhrak9QUUlCQmdncWhrak9QUU1CCkJ3TkNBQVJhSlVQYTRFSU5VanNNK0hVU21ITTAvendxdWc0SFBGQUFoVm9nL1FkZHJnS2pFWlNFWnBkT0VuaXgKUEVnakNBU3pEYnJMUXI3RldKTE0vSXkwampUcG8yRXdYekFPQmdOVkhROEJBZjhFQkFNQ0FvUXdIUVlEVlIwbApCQll3RkFZSUt3WUJCUVVIQXdFR0NDc0dBUVVGQndNQ01BOEdBMVVkRXdFQi93UUZNQU1CQWY4d0hRWURWUjBPCkJCWUVGRkhNaENXSnR3MmNBYWhWazhvY0JxeVBTTGtMTUFvR0NDcUdTTTQ5QkFNQ0EwZ0FNRVVDSVFERU1xeXgKVUMxQkZmY3RsSHdKVGEyMVllZ0JyVnpLUnNEYzlabWJSak9iMUFJZ2RRSk4yMkcwUU1wVVlnQnpEcnBDM0pqNgpiQUEwQmlmQzZaaVQ2ekN3b0ZvPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==",
+                  "key": "LS0tLS1CRUdJTiBFQyBQUklWQVRFIEtFWS0tLS0tCk1IY0NBUUVFSUMrOUpLRlRjSzFNWDljN29ycWNLZ1NIVE1KWjZXV1dlQXR5VThwZWY1ekdvQW9HQ0NxR1NNNDkKQXdFSG9VUURRZ0FFV2lWRDJ1QkNEVkk3RFBoMUVwaHpOUDg4S3JvT0J6eFFBSVZhSVAwSFhhNENveEdVaEdhWApUaEo0c1R4SUl3Z0VzdzI2eTBLK3hWaVN6UHlNdEk0MDZRPT0KLS0tLS1FTkQgRUMgUFJJVkFURSBLRVktLS0tLQo="
+                },
+                "k8s_aggregator": {
+                  "cert": "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJZRENDQVFXZ0F3SUJBZ0lRV3hqaEZiY1BmemdHMkJEeGVjZEtkekFLQmdncWhrak9QUVFEQWpBQU1CNFgKRFRJMk1ETXhPREV5TWpFd09Gb1hEVE0yTURNeE5URXlNakV3T0Zvd0FEQlpNQk1HQnlxR1NNNDlBZ0VHQ0NxRwpTTTQ5QXdFSEEwSUFCSHUwbzk3cmlrbjJrdW5qZVkwekR6T0JPbEM3cnpjb3djNG56VlpGQjlqS0J5YmxlcDR3CmgySXQ2ZjJvM1pyQWhQb2Zub3hPaitqb0lMUzQxOU1JR1JhallUQmZNQTRHQTFVZER3RUIvd1FFQXdJQ2hEQWQKQmdOVkhTVUVGakFVQmdnckJnRUZCUWNEQVFZSUt3WUJCUVVIQXdJd0R3WURWUjBUQVFIL0JBVXdBd0VCL3pBZApCZ05WSFE0RUZnUVV1Wm8vZWdiQVdTOVphcG16QlFwcHBsblNWSUV3Q2dZSUtvWkl6ajBFQXdJRFNRQXdSZ0loCkFNSWxrQlEzMTNiVEJJenYwN2tLcWlVV2VDamtCUTZVV0ZSOTZqK09FRTQwQWlFQXBLeTJIOFRqejVveHh6R2sKNE9ScmVBK3d2RCtNbTBTZkdweFVXRkNOS1AwPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==",
+                  "key": "LS0tLS1CRUdJTiBFQyBQUklWQVRFIEtFWS0tLS0tCk1IY0NBUUVFSUFvQmtUUE16SndYUjFRbGI2R09CRXMwMUNyazFielduTmU3L2FhYko2d3ZvQW9HQ0NxR1NNNDkKQXdFSG9VUURRZ0FFZTdTajN1dUtTZmFTNmVONWpUTVBNNEU2VUx1dk55akJ6aWZOVmtVSDJNb0hKdVY2bmpDSApZaTNwL2FqZG1zQ0UraCtlakU2UDZPZ2d0TGpYMHdnWkZnPT0KLS0tLS1FTkQgRUMgUFJJVkFURSBLRVktLS0tLQo="
+                },
+                "k8s_serviceaccount": {
+                  "key": "LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQpNSUlKS0FJQkFBS0NBZ0VBeTY0eFJxaHFBZng2U1Q5QzBMUkVTZnFWUWFpSkRneXB0YzdlREVLR2h1VWZ4WEFZClFsUllYOHFNanNId1hZbU4zdFVLazFsZXQvTWNhNU1aYzVEOWJEMjJkampYaEFlU3BWT2FURmt3Y016NDQ4Q28Kc2hCYVpzTm5vMEZvbTFLdHYyNnJSK0ZRUlErR2dITkl2c2thWW5xOHpSODE3SkpScWRvN1pWeEZTK3FlTU03MApyQi9TSnNmSmVIRXpPZG9BdkZlbFdhLzhuc3AvWUZOM20wUFBGdTZMWnV0UXo0VUZidllUem1Hc2FwM0l6N0U5CnhET1RrNGdaMDRYVlk1aUIwR09VTzFiQnBVa1lTRVlSRUVCWFhNUEp0aHVTR0lYUWF0b0V1cTduRDJ6MUZMdzIKdjNXb2xhUlVlZkpMcEZJRGEzUGJZZWNSUmhyOUdzV25INDhrVEJIYmsxN05ubnBXbWljZG5VNkpXVy9lU0I4VQpZREt4RFFsMVdrdE95by9Yd1lkenM2SXh0YUJOVS8xakZIQmt3R1BFcVdFeXJybGNOL3BJdFpGUTY0cnFVWjZTCjR2NmRZbEJjMmw3RXhTVzNBdk91K0RyM3NBRzI2Ry9XOGN4ZFlqanhuR1d0eXU0a0lWZ05NVDFUdFhBR2FsdFkKbE5nVmRjdHdrZU1hWDE2aitERG94WnhEeC8rT2VNREg5c2VoQVc3NnBFdGx2Rms3TktrNy9ZU1NnMUZYakxwbworT0YwU1Z3WDFJRGo4VEtXWGNHaEVkaTNuUUsxQ01uVERSZ3F6blNsblVXZG5EdWgwNC9nMWdLRHoxZVhsc043CmQrLzhVNjhUZ3RJbWZ4QkRkSXVtMCtnZW5Qbk00YkVEVGZKcWhUM2J1Qy8xQU9Cem9YRGtpOVZIeWpjQ0F3RUEKQVFLQ0FnQUtCV2NCMGo2UmlpblBPYUJKekNTOUlNVTI1SDZZb0lGd2ZxYzYvY0phcWlKa3dKQWcvWnJOT0V6NApwMmdXejhSMHVPeWZrTHJOU21oZC9FdUNJajN1M21pM0Qzd0htVjRSMTI1MHZBcWtPMFlOVDdzcXhucnA0TnpCCnlNMFFuMHN0L1pBVGdXMXFDRzhXWXhXcWRWdnkwd05rY24ycC9lbUhoL294a1h2bjZDYkc1ZnhlVm5lYVZrZ1EKbkQzRHI1MXdPUmx0czRJMmZtWU1oKzdHSWlPRlBnZWM4TmMrM0VRcmRMaEhVWnpybmZVc1dJT25ta3poeFh3TQpZU3U5Uk5xZldmdDF4amxqWlhQNmlUSkUza2ZTcUNrVzZIM0k3czJuMzUxTjg4T1haU0Vjb0h4S3pUa0R2aE1RCk9nd0VINGFWakJ5NFkyZVRjOXd5R1hCSGFEalBTOThCU0Y4dUhJSHNuYmgvU0Qra29JQ1R2WGt0RThnam1VengKT2oxam9ES09qc2U5YkwyYXJtdEN2b3hzWWZmZGN5RE5XazQ5UkRjSVQveXBGbThWNG9tck4yeUxoUEx6VlF0WQpXS1JxOW50allSWjIwRUVJUm0yTVhDUFI4TGtQQ29aQ3BCUGlPRGVGV0QwSWZ2Nms2eTZQUnd5N0I1TTBHeFYrCmE4L21wQnpEcTdpMVdSdzZEdVl1cjQwTGhmcUxsYjdKR083RUtDc3RtN0JKUll6VGZHQkN6dWI3bXBQL1BYNksKTW9yNTZqc283NUtnZnE4ZEFTTkZWZzRuK3YyV0FoQjJxV0VxZ2VwMWpQZzJkdkJJaURvZFdWQWIvaG5talIwWQpCWXRBeFVGTXBMb3h2QXRwQXhUY1Zjc292aDN1MlhWK2x1cmFHRlkrZm5yRms4aUVJUUtDQVFFQXphajNPVFRWClJtWmlXU0J2b3d0TTJGQ2FJNnpxNGY4UDg3K1o2SXJQTXFQQkNGL3pNbnp6S2lGVFAvTVpKSXRiSyswMWhGbkEKV3duRWZYQVVyck5pMSs4QmM2L3RVT1JqclRRYjdUUXlVUFQ1YzB0dEtQV1EyTE56dnVGZlBzOTNIVkhpa1p6OQpzK0Q2NS9wRG1GOXpzZkI4SFZ0OWFzR3lFVWVDeWpUOFdSMkpmZUNCcHhqNEJIdVRvU203UjY4VWM3QkExSlZqClpSZ0pVS3pFR01wM1BqRFRNcWJhQXFSUGtWYlVYaUJBQUFGa3k2Slo2ekRWY2pvZTNveXpoc2NtR2VlbFZncUIKZlluaTRnSFd5bER0eitmVWoyMUQ3d2piRmw5VkRieXh6Mml6SGVXZVUvRTJ5QzQvVERjRXFQYkZUd2EreWhKSApJRDdiVkZTWmNsNHBjUUtDQVFFQS9Za3V0azU0Q3E5SllQNnM0UTRmLzNtbk1nNTFsenlSbmx4U3lQbllKVi90Ckc5NHF6d2gvZnlYalQ3T2tYT1l6aW0vSVhQKzFscUpOWForMVhJRmJuRkpoNWlaK2oxS2xHcVpoMDNFd0J4UEIKZk10bCtHdnlJVWZyNjVncU1wU1NldzNkdTZPQ1pZSFpkTVlITEVhTXYrS1ZQL2tNSnN1cDBtc3RPemJKU28zbQp2UWRMdmNpMnFySmN2dlhhenJXdGZTQitES2Ivc29nS1BPZWRsWEd5b0krQ2s2WmlIaXFaNzVaajloNnlyYUwwCmpDUVMxOXhCTzQxYUt1QW4zZldlSnRsYnhPV21LY0VhVnBvWUMrVHZmRXNRYUF0MzJKclEwRGVOdWYycU8vdTIKVE5TWitIQzdhWm84RDB2LzlqUjhud09FazZ3WEdtSE51NDVNTjFvYUp3S0NBUUIza0ZUeWNESFI5UElXYU5JZQpVeEtBN0JOQXpHWGRyNkRCajlIVnJPV2F4ak1TUUY0dUt4QmZuUEkrU29HQ2luWWR5cEdEZVg1b0x2eUtCS0F4CmxON1JOUVYrRVhpQnY5WG5PMVZGQ1VSN1pvQ2pzK1VwbStKeTZabFFEc3lGd3EyNFlRTzhyaTJjNXg1WHdWcU0KK21sVHVNRWZmRElrMzZrN2ZIeWdQRCs5TzN2VXI3SVF5R1pnak11ZU5abklxaFBVMGxKT2hPODlOY1VzbnRSKwpxUzY3L0R5OHhONFlEUmlwSVhianBoSXZMcUEvOXdvWnZ0RkkwRnRqL1I3ZUsyZU9SZXNNWTUwMnMvUXdldXM1CndlVVFLdktiMCtWYjBhVTFrNFRxTUpxYlAzNXEwalRERG9oUHh2dEx2dXk1b29YQlZPV1VxeDJvdElKa3U2NWUKSERveEFvSUJBQ1VFdjdaTXRNaFNtYk00M0VNc0RjMytsRVFCeW5lZmwxOTQrWGx3eVhlRGp4cFBrUTZUbmhJUgpsU1FSQmNHdXR2M1NubjI5dEdUZkk4NjB3QVZXdWVxVU9Na2krNzJ2Z24zbXAwZjVNZHNHcm15clFpTklsNXoyClpHTU0zN1JzN3dwYWx2S0x5RUZMK1ZWTWlNV1ZNMzNjOW8vVnJFbUoyU3pwQ3p5bkhqTHRqekF3ZllXalpkQjgKcElBWlk2NWs1b1RybHB3QVVqdGVFNmlhNU81cUlIdkRHSHk0Z1lFSUZWdmZLSTlLSWlxcUxXeTg0NmR5K0c5YQpqenpOWitUSHRTVFUvY285QWNyODcveVBHVTI3U3FCcVVXWHZycnNJdDg1L0hnbDNHVUVTMnFaVE1Id084YjVVCmo4cG4vV0tVZlZHMmNNZ2pDMmlGdVVWV1hKaUVabWNDZ2dFQkFJMmpvL096NjdDd3VMZ0gxUGdTTVRlenRRYTIKRWlhNzBPZTVMNUhKamVPTVMweGtVc0pVWktBUnlUbVdOZnpXdTFrZVZ5Q2RmYnZEbVFVci9kOXorRHVjRlpUOQpWRHp0c0dyMlhjeUhrbHNEUnpiRkp3MEYxSGZkSnpPWVpnaGgxZVhhVElHNjkvaCtFcmRRN2gyRC96OVkrL29SCnF5WU1wZmlLUjZzQnRqUmFUQUIrYXR2VHRuLy9qajN3RVdUQzdpK05halJoM0V5TVpsaGVaaE1JRlg4Ni9YOVoKRkx4anVQSXR6eTFLU24zWHBHM0lBL3NaQmxvZTk3Y21jTTRROVAvRzAyemRXaTNJUlUyUEdKU2NlMDdtRGdvMwpEeFRJbjBpQXQwNm1uWWwyQitDVElkZHRtZXErT1pXNmI3VS94N09xOEEyMzVXNHZ6RkVQYzR0Z0pCaz0KLS0tLS1FTkQgUlNBIFBSSVZBVEUgS0VZLS0tLS0K"
+                },
+                "os": {
+                  "cert": "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJQekNCOHFBREFnRUNBaEVBcXZhV3ZYb0w5N2F3c09BOGh1VlU4VEFGQmdNclpYQXdFREVPTUF3R0ExVUUKQ2hNRmRHRnNiM013SGhjTk1qWXdNekU0TVRJeU1UQTRXaGNOTXpZd016RTFNVEl5TVRBNFdqQVFNUTR3REFZRApWUVFLRXdWMFlXeHZjekFxTUFVR0F5dGxjQU1oQUZiMkVYMFkxUU10cjFpcE5RSE5MaFdKdU91dWxjalFuTU1OCi9MbEJHQ1FIbzJFd1h6QU9CZ05WSFE4QkFmOEVCQU1DQW9Rd0hRWURWUjBsQkJZd0ZBWUlLd1lCQlFVSEF3RUcKQ0NzR0FRVUZCd01DTUE4R0ExVWRFd0VCL3dRRk1BTUJBZjh3SFFZRFZSME9CQllFRkh1b3pCOC94eXVHR3BTcAovTUNUa3d3MjcrWTdNQVVHQXl0bGNBTkJBTFk3aU8vS0k1ajVxK0J0Z01aY0E5Ryt2TTVFZm1sRjVNUzBRanFRCnVaZ2ljT1BxL2krSDdGbHBGUzRCZ3UzbTJGTi9USkF3QjJEMk03K05EUjBoT2drPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==",
+                  "key": "LS0tLS1CRUdJTiBFRDI1NTE5IFBSSVZBVEUgS0VZLS0tLS0KTUM0Q0FRQXdCUVlESzJWd0JDSUVJTlFvVzFtbk0rVC9sTkwwSklxYzNiVUtaWHhua3ErcXdmWks5djdLUjFyZgotLS0tLUVORCBFRDI1NTE5IFBSSVZBVEUgS0VZLS0tLS0K"
+                }
+              },
+              "cluster": {
+                "id": "_VziAGjGXw2N-AUG_8gTAnxdXabIVZGA3VbC37_8TjY=",
+                "secret": "WQt00uAIAlN0hjhJBHi486ewsGRXkTFGbdKOpcI2BB8="
+              },
+              "secrets": {
+                "aescbc_encryption_secret": null,
+                "bootstrap_token": "cvtkew.stk8xcp5u4no1q8w",
+                "secretbox_encryption_secret": "1ZbLP1sC0LAa+bsLcT0V8fwjP3Gfjp03LdUtNNjXqH0="
+              },
+              "trustdinfo": {
+                "token": "6ri18o.4tv3sdtnnve14u2l"
+              }
+            },
+            "machine_type": "controlplane",
+            "talos_version": "v1.13"
+          },
+          "sensitive_attributes": [
+            [
+              {
+                "type": "get_attr",
+                "value": "machine_configuration"
+              }
+            ],
+            [
+              {
+                "type": "get_attr",
+                "value": "machine_secrets"
+              },
+              {
+                "type": "get_attr",
+                "value": "certs"
+              },
+              {
+                "type": "get_attr",
+                "value": "etcd"
+              },
+              {
+                "type": "get_attr",
+                "value": "key"
+              }
+            ],
+            [
+              {
+                "type": "get_attr",
+                "value": "machine_secrets"
+              },
+              {
+                "type": "get_attr",
+                "value": "certs"
+              },
+              {
+                "type": "get_attr",
+                "value": "k8s"
+              },
+              {
+                "type": "get_attr",
+                "value": "key"
+              }
+            ],
+            [
+              {
+                "type": "get_attr",
+                "value": "machine_secrets"
+              },
+              {
+                "type": "get_attr",
+                "value": "certs"
+              },
+              {
+                "type": "get_attr",
+                "value": "k8s_aggregator"
+              },
+              {
+                "type": "get_attr",
+                "value": "key"
+              }
+            ],
+            [
+              {
+                "type": "get_attr",
+                "value": "machine_secrets"
+              },
+              {
+                "type": "get_attr",
+                "value": "certs"
+              },
+              {
+                "type": "get_attr",
+                "value": "k8s_serviceaccount"
+              },
+              {
+                "type": "get_attr",
+                "value": "key"
+              }
+            ],
+            [
+              {
+                "type": "get_attr",
+                "value": "machine_secrets"
+              },
+              {
+                "type": "get_attr",
+                "value": "certs"
+              },
+              {
+                "type": "get_attr",
+                "value": "os"
+              },
+              {
+                "type": "get_attr",
+                "value": "key"
+              }
+            ],
+            [
+              {
+                "type": "get_attr",
+                "value": "machine_secrets"
+              },
+              {
+                "type": "get_attr",
+                "value": "cluster"
+              },
+              {
+                "type": "get_attr",
+                "value": "secret"
+              }
+            ],
+            [
+              {
+                "type": "get_attr",
+                "value": "machine_secrets"
+              },
+              {
+                "type": "get_attr",
+                "value": "secrets"
+              },
+              {
+                "type": "get_attr",
+                "value": "aescbc_encryption_secret"
+              }
+            ],
+            [
+              {
+                "type": "get_attr",
+                "value": "machine_secrets"
+              },
+              {
+                "type": "get_attr",
+                "value": "secrets"
+              },
+              {
+                "type": "get_attr",
+                "value": "bootstrap_token"
+              }
+            ],
+            [
+              {
+                "type": "get_attr",
+                "value": "machine_secrets"
+              },
+              {
+                "type": "get_attr",
+                "value": "secrets"
+              },
+              {
+                "type": "get_attr",
+                "value": "secretbox_encryption_secret"
+              }
+            ],
+            [
+              {
+                "type": "get_attr",
+                "value": "machine_secrets"
+              },
+              {
+                "type": "get_attr",
+                "value": "trustdinfo"
+              },
+              {
+                "type": "get_attr",
+                "value": "token"
+              }
+            ]
+          ],
+          "identity_schema_version": 0
+        }
+      ]
+    },
+    {
+      "mode": "data",
+      "type": "talos_machine_configuration",
+      "name": "worker",
+      "provider": "provider[\"registry.terraform.io/siderolabs/talos\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "cluster_endpoint": "https://192.168.123.20:6443",
+            "cluster_name": "homelab",
+            "config_patches": null,
+            "docs": null,
+            "examples": null,
+            "id": "homelab",
+            "kubernetes_version": "1.36.0",
+            "machine_configuration": "version: v1alpha1\ndebug: false\npersist: true\nmachine:\n    type: worker\n    token: 6ri18o.4tv3sdtnnve14u2l\n    ca:\n        crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJQekNCOHFBREFnRUNBaEVBcXZhV3ZYb0w5N2F3c09BOGh1VlU4VEFGQmdNclpYQXdFREVPTUF3R0ExVUUKQ2hNRmRHRnNiM013SGhjTk1qWXdNekU0TVRJeU1UQTRXaGNOTXpZd016RTFNVEl5TVRBNFdqQVFNUTR3REFZRApWUVFLRXdWMFlXeHZjekFxTUFVR0F5dGxjQU1oQUZiMkVYMFkxUU10cjFpcE5RSE5MaFdKdU91dWxjalFuTU1OCi9MbEJHQ1FIbzJFd1h6QU9CZ05WSFE4QkFmOEVCQU1DQW9Rd0hRWURWUjBsQkJZd0ZBWUlLd1lCQlFVSEF3RUcKQ0NzR0FRVUZCd01DTUE4R0ExVWRFd0VCL3dRRk1BTUJBZjh3SFFZRFZSME9CQllFRkh1b3pCOC94eXVHR3BTcAovTUNUa3d3MjcrWTdNQVVHQXl0bGNBTkJBTFk3aU8vS0k1ajVxK0J0Z01aY0E5Ryt2TTVFZm1sRjVNUzBRanFRCnVaZ2ljT1BxL2krSDdGbHBGUzRCZ3UzbTJGTi9USkF3QjJEMk03K05EUjBoT2drPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==\n        key: \"\"\n    certSANs: []\n    kubelet:\n        image: ghcr.io/siderolabs/kubelet:v1.36.0\n        defaultRuntimeSeccompProfileEnabled: true\n        disableManifestsDirectory: true\n    install:\n        disk: /dev/sda\n        image: ghcr.io/siderolabs/installer:v1.13.0\n        wipe: false\n        grubUseUKICmdline: true\n    features:\n        diskQuotaSupport: true\n        kubePrism:\n            enabled: true\n            port: 7445\n        hostDNS:\n            enabled: true\n            forwardKubeDNSToHost: true\ncluster:\n    id: _VziAGjGXw2N-AUG_8gTAnxdXabIVZGA3VbC37_8TjY=\n    secret: WQt00uAIAlN0hjhJBHi486ewsGRXkTFGbdKOpcI2BB8=\n    controlPlane:\n        endpoint: https://192.168.123.20:6443\n    clusterName: homelab\n    network:\n        dnsDomain: cluster.local\n        podSubnets:\n            - 10.244.0.0/16\n        serviceSubnets:\n            - 10.96.0.0/12\n    token: cvtkew.stk8xcp5u4no1q8w\n    ca:\n        crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJpakNDQVRDZ0F3SUJBZ0lSQU9GbkRiSDJxS0hkK1J6SnVlZk5IVm93Q2dZSUtvWkl6ajBFQXdJd0ZURVQKTUJFR0ExVUVDaE1LYTNWaVpYSnVaWFJsY3pBZUZ3MHlOakF6TVRneE1qSXhNRGhhRncwek5qQXpNVFV4TWpJeApNRGhhTUJVeEV6QVJCZ05WQkFvVENtdDFZbVZ5Ym1WMFpYTXdXVEFUQmdjcWhrak9QUUlCQmdncWhrak9QUU1CCkJ3TkNBQVJhSlVQYTRFSU5VanNNK0hVU21ITTAvendxdWc0SFBGQUFoVm9nL1FkZHJnS2pFWlNFWnBkT0VuaXgKUEVnakNBU3pEYnJMUXI3RldKTE0vSXkwampUcG8yRXdYekFPQmdOVkhROEJBZjhFQkFNQ0FvUXdIUVlEVlIwbApCQll3RkFZSUt3WUJCUVVIQXdFR0NDc0dBUVVGQndNQ01BOEdBMVVkRXdFQi93UUZNQU1CQWY4d0hRWURWUjBPCkJCWUVGRkhNaENXSnR3MmNBYWhWazhvY0JxeVBTTGtMTUFvR0NDcUdTTTQ5QkFNQ0EwZ0FNRVVDSVFERU1xeXgKVUMxQkZmY3RsSHdKVGEyMVllZ0JyVnpLUnNEYzlabWJSak9iMUFJZ2RRSk4yMkcwUU1wVVlnQnpEcnBDM0pqNgpiQUEwQmlmQzZaaVQ2ekN3b0ZvPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==\n        key: \"\"\n    discovery:\n        enabled: true\n        registries:\n            kubernetes:\n                disabled: true\n            service: {}\n---\napiVersion: v1alpha1\nkind: HostnameConfig\nauto: stable\n",
+            "machine_secrets": {
+              "certs": {
+                "etcd": {
+                  "cert": "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJmakNDQVNTZ0F3SUJBZ0lSQU5sb2NPeHVXanhKN1hrZmpBOU11R3N3Q2dZSUtvWkl6ajBFQXdJd0R6RU4KTUFzR0ExVUVDaE1FWlhSalpEQWVGdzB5TmpBek1UZ3hNakl4TURoYUZ3MHpOakF6TVRVeE1qSXhNRGhhTUE4eApEVEFMQmdOVkJBb1RCR1YwWTJRd1dUQVRCZ2NxaGtqT1BRSUJCZ2dxaGtqT1BRTUJCd05DQUFRZERSSGkvbzJIClpvenRCaVVNRXNWKzZCelpmbzZldkR4TXVCZm9QSG5ZblBENFUzRmdTV052clN0YjNOUjBHNk9pK2dmRDduSzIKbWpNL3haVExIZnljbzJFd1h6QU9CZ05WSFE4QkFmOEVCQU1DQW9Rd0hRWURWUjBsQkJZd0ZBWUlLd1lCQlFVSApBd0VHQ0NzR0FRVUZCd01DTUE4R0ExVWRFd0VCL3dRRk1BTUJBZjh3SFFZRFZSME9CQllFRkt1d3JQTXh6VTB4CmRaMWV6bE9rbVhPRENHMmlNQW9HQ0NxR1NNNDlCQU1DQTBnQU1FVUNJUUNuc2EzZ3Z0VGtDR0VzMmtPL0d2OW4KWkRPVGNoaklXaFByYjFRTG5pREtRd0lnTHBvb2RWcVVMMzYzQ05Nd3oveXV3UzF2Y1ZLdVNQTS9CS3QzZU44Qwp6Ync9Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K",
+                  "key": "LS0tLS1CRUdJTiBFQyBQUklWQVRFIEtFWS0tLS0tCk1IY0NBUUVFSUh6Y3JxVEhsazh4YnRYaFZzL3prVUV4d05RWVpST0N0NHVvdS9CdEVXTVdvQW9HQ0NxR1NNNDkKQXdFSG9VUURRZ0FFSFEwUjR2Nk5oMmFNN1FZbERCTEZmdWdjMlg2T25ydzhUTGdYNkR4NTJKencrRk54WUVsagpiNjByVzl6VWRCdWpvdm9Idys1eXRwb3pQOFdVeXgzOG5BPT0KLS0tLS1FTkQgRUMgUFJJVkFURSBLRVktLS0tLQo="
+                },
+                "k8s": {
+                  "cert": "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJpakNDQVRDZ0F3SUJBZ0lSQU9GbkRiSDJxS0hkK1J6SnVlZk5IVm93Q2dZSUtvWkl6ajBFQXdJd0ZURVQKTUJFR0ExVUVDaE1LYTNWaVpYSnVaWFJsY3pBZUZ3MHlOakF6TVRneE1qSXhNRGhhRncwek5qQXpNVFV4TWpJeApNRGhhTUJVeEV6QVJCZ05WQkFvVENtdDFZbVZ5Ym1WMFpYTXdXVEFUQmdjcWhrak9QUUlCQmdncWhrak9QUU1CCkJ3TkNBQVJhSlVQYTRFSU5VanNNK0hVU21ITTAvendxdWc0SFBGQUFoVm9nL1FkZHJnS2pFWlNFWnBkT0VuaXgKUEVnakNBU3pEYnJMUXI3RldKTE0vSXkwampUcG8yRXdYekFPQmdOVkhROEJBZjhFQkFNQ0FvUXdIUVlEVlIwbApCQll3RkFZSUt3WUJCUVVIQXdFR0NDc0dBUVVGQndNQ01BOEdBMVVkRXdFQi93UUZNQU1CQWY4d0hRWURWUjBPCkJCWUVGRkhNaENXSnR3MmNBYWhWazhvY0JxeVBTTGtMTUFvR0NDcUdTTTQ5QkFNQ0EwZ0FNRVVDSVFERU1xeXgKVUMxQkZmY3RsSHdKVGEyMVllZ0JyVnpLUnNEYzlabWJSak9iMUFJZ2RRSk4yMkcwUU1wVVlnQnpEcnBDM0pqNgpiQUEwQmlmQzZaaVQ2ekN3b0ZvPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==",
+                  "key": "LS0tLS1CRUdJTiBFQyBQUklWQVRFIEtFWS0tLS0tCk1IY0NBUUVFSUMrOUpLRlRjSzFNWDljN29ycWNLZ1NIVE1KWjZXV1dlQXR5VThwZWY1ekdvQW9HQ0NxR1NNNDkKQXdFSG9VUURRZ0FFV2lWRDJ1QkNEVkk3RFBoMUVwaHpOUDg4S3JvT0J6eFFBSVZhSVAwSFhhNENveEdVaEdhWApUaEo0c1R4SUl3Z0VzdzI2eTBLK3hWaVN6UHlNdEk0MDZRPT0KLS0tLS1FTkQgRUMgUFJJVkFURSBLRVktLS0tLQo="
+                },
+                "k8s_aggregator": {
+                  "cert": "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJZRENDQVFXZ0F3SUJBZ0lRV3hqaEZiY1BmemdHMkJEeGVjZEtkekFLQmdncWhrak9QUVFEQWpBQU1CNFgKRFRJMk1ETXhPREV5TWpFd09Gb1hEVE0yTURNeE5URXlNakV3T0Zvd0FEQlpNQk1HQnlxR1NNNDlBZ0VHQ0NxRwpTTTQ5QXdFSEEwSUFCSHUwbzk3cmlrbjJrdW5qZVkwekR6T0JPbEM3cnpjb3djNG56VlpGQjlqS0J5YmxlcDR3CmgySXQ2ZjJvM1pyQWhQb2Zub3hPaitqb0lMUzQxOU1JR1JhallUQmZNQTRHQTFVZER3RUIvd1FFQXdJQ2hEQWQKQmdOVkhTVUVGakFVQmdnckJnRUZCUWNEQVFZSUt3WUJCUVVIQXdJd0R3WURWUjBUQVFIL0JBVXdBd0VCL3pBZApCZ05WSFE0RUZnUVV1Wm8vZWdiQVdTOVphcG16QlFwcHBsblNWSUV3Q2dZSUtvWkl6ajBFQXdJRFNRQXdSZ0loCkFNSWxrQlEzMTNiVEJJenYwN2tLcWlVV2VDamtCUTZVV0ZSOTZqK09FRTQwQWlFQXBLeTJIOFRqejVveHh6R2sKNE9ScmVBK3d2RCtNbTBTZkdweFVXRkNOS1AwPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==",
+                  "key": "LS0tLS1CRUdJTiBFQyBQUklWQVRFIEtFWS0tLS0tCk1IY0NBUUVFSUFvQmtUUE16SndYUjFRbGI2R09CRXMwMUNyazFielduTmU3L2FhYko2d3ZvQW9HQ0NxR1NNNDkKQXdFSG9VUURRZ0FFZTdTajN1dUtTZmFTNmVONWpUTVBNNEU2VUx1dk55akJ6aWZOVmtVSDJNb0hKdVY2bmpDSApZaTNwL2FqZG1zQ0UraCtlakU2UDZPZ2d0TGpYMHdnWkZnPT0KLS0tLS1FTkQgRUMgUFJJVkFURSBLRVktLS0tLQo="
+                },
+                "k8s_serviceaccount": {
+                  "key": "LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQpNSUlKS0FJQkFBS0NBZ0VBeTY0eFJxaHFBZng2U1Q5QzBMUkVTZnFWUWFpSkRneXB0YzdlREVLR2h1VWZ4WEFZClFsUllYOHFNanNId1hZbU4zdFVLazFsZXQvTWNhNU1aYzVEOWJEMjJkampYaEFlU3BWT2FURmt3Y016NDQ4Q28Kc2hCYVpzTm5vMEZvbTFLdHYyNnJSK0ZRUlErR2dITkl2c2thWW5xOHpSODE3SkpScWRvN1pWeEZTK3FlTU03MApyQi9TSnNmSmVIRXpPZG9BdkZlbFdhLzhuc3AvWUZOM20wUFBGdTZMWnV0UXo0VUZidllUem1Hc2FwM0l6N0U5CnhET1RrNGdaMDRYVlk1aUIwR09VTzFiQnBVa1lTRVlSRUVCWFhNUEp0aHVTR0lYUWF0b0V1cTduRDJ6MUZMdzIKdjNXb2xhUlVlZkpMcEZJRGEzUGJZZWNSUmhyOUdzV25INDhrVEJIYmsxN05ubnBXbWljZG5VNkpXVy9lU0I4VQpZREt4RFFsMVdrdE95by9Yd1lkenM2SXh0YUJOVS8xakZIQmt3R1BFcVdFeXJybGNOL3BJdFpGUTY0cnFVWjZTCjR2NmRZbEJjMmw3RXhTVzNBdk91K0RyM3NBRzI2Ry9XOGN4ZFlqanhuR1d0eXU0a0lWZ05NVDFUdFhBR2FsdFkKbE5nVmRjdHdrZU1hWDE2aitERG94WnhEeC8rT2VNREg5c2VoQVc3NnBFdGx2Rms3TktrNy9ZU1NnMUZYakxwbworT0YwU1Z3WDFJRGo4VEtXWGNHaEVkaTNuUUsxQ01uVERSZ3F6blNsblVXZG5EdWgwNC9nMWdLRHoxZVhsc043CmQrLzhVNjhUZ3RJbWZ4QkRkSXVtMCtnZW5Qbk00YkVEVGZKcWhUM2J1Qy8xQU9Cem9YRGtpOVZIeWpjQ0F3RUEKQVFLQ0FnQUtCV2NCMGo2UmlpblBPYUJKekNTOUlNVTI1SDZZb0lGd2ZxYzYvY0phcWlKa3dKQWcvWnJOT0V6NApwMmdXejhSMHVPeWZrTHJOU21oZC9FdUNJajN1M21pM0Qzd0htVjRSMTI1MHZBcWtPMFlOVDdzcXhucnA0TnpCCnlNMFFuMHN0L1pBVGdXMXFDRzhXWXhXcWRWdnkwd05rY24ycC9lbUhoL294a1h2bjZDYkc1ZnhlVm5lYVZrZ1EKbkQzRHI1MXdPUmx0czRJMmZtWU1oKzdHSWlPRlBnZWM4TmMrM0VRcmRMaEhVWnpybmZVc1dJT25ta3poeFh3TQpZU3U5Uk5xZldmdDF4amxqWlhQNmlUSkUza2ZTcUNrVzZIM0k3czJuMzUxTjg4T1haU0Vjb0h4S3pUa0R2aE1RCk9nd0VINGFWakJ5NFkyZVRjOXd5R1hCSGFEalBTOThCU0Y4dUhJSHNuYmgvU0Qra29JQ1R2WGt0RThnam1VengKT2oxam9ES09qc2U5YkwyYXJtdEN2b3hzWWZmZGN5RE5XazQ5UkRjSVQveXBGbThWNG9tck4yeUxoUEx6VlF0WQpXS1JxOW50allSWjIwRUVJUm0yTVhDUFI4TGtQQ29aQ3BCUGlPRGVGV0QwSWZ2Nms2eTZQUnd5N0I1TTBHeFYrCmE4L21wQnpEcTdpMVdSdzZEdVl1cjQwTGhmcUxsYjdKR083RUtDc3RtN0JKUll6VGZHQkN6dWI3bXBQL1BYNksKTW9yNTZqc283NUtnZnE4ZEFTTkZWZzRuK3YyV0FoQjJxV0VxZ2VwMWpQZzJkdkJJaURvZFdWQWIvaG5talIwWQpCWXRBeFVGTXBMb3h2QXRwQXhUY1Zjc292aDN1MlhWK2x1cmFHRlkrZm5yRms4aUVJUUtDQVFFQXphajNPVFRWClJtWmlXU0J2b3d0TTJGQ2FJNnpxNGY4UDg3K1o2SXJQTXFQQkNGL3pNbnp6S2lGVFAvTVpKSXRiSyswMWhGbkEKV3duRWZYQVVyck5pMSs4QmM2L3RVT1JqclRRYjdUUXlVUFQ1YzB0dEtQV1EyTE56dnVGZlBzOTNIVkhpa1p6OQpzK0Q2NS9wRG1GOXpzZkI4SFZ0OWFzR3lFVWVDeWpUOFdSMkpmZUNCcHhqNEJIdVRvU203UjY4VWM3QkExSlZqClpSZ0pVS3pFR01wM1BqRFRNcWJhQXFSUGtWYlVYaUJBQUFGa3k2Slo2ekRWY2pvZTNveXpoc2NtR2VlbFZncUIKZlluaTRnSFd5bER0eitmVWoyMUQ3d2piRmw5VkRieXh6Mml6SGVXZVUvRTJ5QzQvVERjRXFQYkZUd2EreWhKSApJRDdiVkZTWmNsNHBjUUtDQVFFQS9Za3V0azU0Q3E5SllQNnM0UTRmLzNtbk1nNTFsenlSbmx4U3lQbllKVi90Ckc5NHF6d2gvZnlYalQ3T2tYT1l6aW0vSVhQKzFscUpOWForMVhJRmJuRkpoNWlaK2oxS2xHcVpoMDNFd0J4UEIKZk10bCtHdnlJVWZyNjVncU1wU1NldzNkdTZPQ1pZSFpkTVlITEVhTXYrS1ZQL2tNSnN1cDBtc3RPemJKU28zbQp2UWRMdmNpMnFySmN2dlhhenJXdGZTQitES2Ivc29nS1BPZWRsWEd5b0krQ2s2WmlIaXFaNzVaajloNnlyYUwwCmpDUVMxOXhCTzQxYUt1QW4zZldlSnRsYnhPV21LY0VhVnBvWUMrVHZmRXNRYUF0MzJKclEwRGVOdWYycU8vdTIKVE5TWitIQzdhWm84RDB2LzlqUjhud09FazZ3WEdtSE51NDVNTjFvYUp3S0NBUUIza0ZUeWNESFI5UElXYU5JZQpVeEtBN0JOQXpHWGRyNkRCajlIVnJPV2F4ak1TUUY0dUt4QmZuUEkrU29HQ2luWWR5cEdEZVg1b0x2eUtCS0F4CmxON1JOUVYrRVhpQnY5WG5PMVZGQ1VSN1pvQ2pzK1VwbStKeTZabFFEc3lGd3EyNFlRTzhyaTJjNXg1WHdWcU0KK21sVHVNRWZmRElrMzZrN2ZIeWdQRCs5TzN2VXI3SVF5R1pnak11ZU5abklxaFBVMGxKT2hPODlOY1VzbnRSKwpxUzY3L0R5OHhONFlEUmlwSVhianBoSXZMcUEvOXdvWnZ0RkkwRnRqL1I3ZUsyZU9SZXNNWTUwMnMvUXdldXM1CndlVVFLdktiMCtWYjBhVTFrNFRxTUpxYlAzNXEwalRERG9oUHh2dEx2dXk1b29YQlZPV1VxeDJvdElKa3U2NWUKSERveEFvSUJBQ1VFdjdaTXRNaFNtYk00M0VNc0RjMytsRVFCeW5lZmwxOTQrWGx3eVhlRGp4cFBrUTZUbmhJUgpsU1FSQmNHdXR2M1NubjI5dEdUZkk4NjB3QVZXdWVxVU9Na2krNzJ2Z24zbXAwZjVNZHNHcm15clFpTklsNXoyClpHTU0zN1JzN3dwYWx2S0x5RUZMK1ZWTWlNV1ZNMzNjOW8vVnJFbUoyU3pwQ3p5bkhqTHRqekF3ZllXalpkQjgKcElBWlk2NWs1b1RybHB3QVVqdGVFNmlhNU81cUlIdkRHSHk0Z1lFSUZWdmZLSTlLSWlxcUxXeTg0NmR5K0c5YQpqenpOWitUSHRTVFUvY285QWNyODcveVBHVTI3U3FCcVVXWHZycnNJdDg1L0hnbDNHVUVTMnFaVE1Id084YjVVCmo4cG4vV0tVZlZHMmNNZ2pDMmlGdVVWV1hKaUVabWNDZ2dFQkFJMmpvL096NjdDd3VMZ0gxUGdTTVRlenRRYTIKRWlhNzBPZTVMNUhKamVPTVMweGtVc0pVWktBUnlUbVdOZnpXdTFrZVZ5Q2RmYnZEbVFVci9kOXorRHVjRlpUOQpWRHp0c0dyMlhjeUhrbHNEUnpiRkp3MEYxSGZkSnpPWVpnaGgxZVhhVElHNjkvaCtFcmRRN2gyRC96OVkrL29SCnF5WU1wZmlLUjZzQnRqUmFUQUIrYXR2VHRuLy9qajN3RVdUQzdpK05halJoM0V5TVpsaGVaaE1JRlg4Ni9YOVoKRkx4anVQSXR6eTFLU24zWHBHM0lBL3NaQmxvZTk3Y21jTTRROVAvRzAyemRXaTNJUlUyUEdKU2NlMDdtRGdvMwpEeFRJbjBpQXQwNm1uWWwyQitDVElkZHRtZXErT1pXNmI3VS94N09xOEEyMzVXNHZ6RkVQYzR0Z0pCaz0KLS0tLS1FTkQgUlNBIFBSSVZBVEUgS0VZLS0tLS0K"
+                },
+                "os": {
+                  "cert": "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJQekNCOHFBREFnRUNBaEVBcXZhV3ZYb0w5N2F3c09BOGh1VlU4VEFGQmdNclpYQXdFREVPTUF3R0ExVUUKQ2hNRmRHRnNiM013SGhjTk1qWXdNekU0TVRJeU1UQTRXaGNOTXpZd016RTFNVEl5TVRBNFdqQVFNUTR3REFZRApWUVFLRXdWMFlXeHZjekFxTUFVR0F5dGxjQU1oQUZiMkVYMFkxUU10cjFpcE5RSE5MaFdKdU91dWxjalFuTU1OCi9MbEJHQ1FIbzJFd1h6QU9CZ05WSFE4QkFmOEVCQU1DQW9Rd0hRWURWUjBsQkJZd0ZBWUlLd1lCQlFVSEF3RUcKQ0NzR0FRVUZCd01DTUE4R0ExVWRFd0VCL3dRRk1BTUJBZjh3SFFZRFZSME9CQllFRkh1b3pCOC94eXVHR3BTcAovTUNUa3d3MjcrWTdNQVVHQXl0bGNBTkJBTFk3aU8vS0k1ajVxK0J0Z01aY0E5Ryt2TTVFZm1sRjVNUzBRanFRCnVaZ2ljT1BxL2krSDdGbHBGUzRCZ3UzbTJGTi9USkF3QjJEMk03K05EUjBoT2drPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==",
+                  "key": "LS0tLS1CRUdJTiBFRDI1NTE5IFBSSVZBVEUgS0VZLS0tLS0KTUM0Q0FRQXdCUVlESzJWd0JDSUVJTlFvVzFtbk0rVC9sTkwwSklxYzNiVUtaWHhua3ErcXdmWks5djdLUjFyZgotLS0tLUVORCBFRDI1NTE5IFBSSVZBVEUgS0VZLS0tLS0K"
+                }
+              },
+              "cluster": {
+                "id": "_VziAGjGXw2N-AUG_8gTAnxdXabIVZGA3VbC37_8TjY=",
+                "secret": "WQt00uAIAlN0hjhJBHi486ewsGRXkTFGbdKOpcI2BB8="
+              },
+              "secrets": {
+                "aescbc_encryption_secret": null,
+                "bootstrap_token": "cvtkew.stk8xcp5u4no1q8w",
+                "secretbox_encryption_secret": "1ZbLP1sC0LAa+bsLcT0V8fwjP3Gfjp03LdUtNNjXqH0="
+              },
+              "trustdinfo": {
+                "token": "6ri18o.4tv3sdtnnve14u2l"
+              }
+            },
+            "machine_type": "worker",
+            "talos_version": "v1.13"
+          },
+          "sensitive_attributes": [
+            [
+              {
+                "type": "get_attr",
+                "value": "machine_configuration"
+              }
+            ],
+            [
+              {
+                "type": "get_attr",
+                "value": "machine_secrets"
+              },
+              {
+                "type": "get_attr",
+                "value": "certs"
+              },
+              {
+                "type": "get_attr",
+                "value": "etcd"
+              },
+              {
+                "type": "get_attr",
+                "value": "key"
+              }
+            ],
+            [
+              {
+                "type": "get_attr",
+                "value": "machine_secrets"
+              },
+              {
+                "type": "get_attr",
+                "value": "certs"
+              },
+              {
+                "type": "get_attr",
+                "value": "k8s"
+              },
+              {
+                "type": "get_attr",
+                "value": "key"
+              }
+            ],
+            [
+              {
+                "type": "get_attr",
+                "value": "machine_secrets"
+              },
+              {
+                "type": "get_attr",
+                "value": "certs"
+              },
+              {
+                "type": "get_attr",
+                "value": "k8s_aggregator"
+              },
+              {
+                "type": "get_attr",
+                "value": "key"
+              }
+            ],
+            [
+              {
+                "type": "get_attr",
+                "value": "machine_secrets"
+              },
+              {
+                "type": "get_attr",
+                "value": "certs"
+              },
+              {
+                "type": "get_attr",
+                "value": "k8s_serviceaccount"
+              },
+              {
+                "type": "get_attr",
+                "value": "key"
+              }
+            ],
+            [
+              {
+                "type": "get_attr",
+                "value": "machine_secrets"
+              },
+              {
+                "type": "get_attr",
+                "value": "certs"
+              },
+              {
+                "type": "get_attr",
+                "value": "os"
+              },
+              {
+                "type": "get_attr",
+                "value": "key"
+              }
+            ],
+            [
+              {
+                "type": "get_attr",
+                "value": "machine_secrets"
+              },
+              {
+                "type": "get_attr",
+                "value": "cluster"
+              },
+              {
+                "type": "get_attr",
+                "value": "secret"
+              }
+            ],
+            [
+              {
+                "type": "get_attr",
+                "value": "machine_secrets"
+              },
+              {
+                "type": "get_attr",
+                "value": "secrets"
+              },
+              {
+                "type": "get_attr",
+                "value": "aescbc_encryption_secret"
+              }
+            ],
+            [
+              {
+                "type": "get_attr",
+                "value": "machine_secrets"
+              },
+              {
+                "type": "get_attr",
+                "value": "secrets"
+              },
+              {
+                "type": "get_attr",
+                "value": "bootstrap_token"
+              }
+            ],
+            [
+              {
+                "type": "get_attr",
+                "value": "machine_secrets"
+              },
+              {
+                "type": "get_attr",
+                "value": "secrets"
+              },
+              {
+                "type": "get_attr",
+                "value": "secretbox_encryption_secret"
+              }
+            ],
+            [
+              {
+                "type": "get_attr",
+                "value": "machine_secrets"
+              },
+              {
+                "type": "get_attr",
+                "value": "trustdinfo"
+              },
+              {
+                "type": "get_attr",
+                "value": "token"
+              }
+            ]
+          ],
+          "identity_schema_version": 0
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "local_file",
+      "name": "controlplane_config",
+      "provider": "provider[\"registry.terraform.io/hashicorp/local\"]",
+      "instances": [
+        {
+          "index_key": "talos-controlplane-1",
+          "schema_version": 0,
+          "attributes": {
+            "content": "\"cluster\":\n  \"aggregatorCA\":\n    \"crt\": \"LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJZRENDQVFXZ0F3SUJBZ0lRV3hqaEZiY1BmemdHMkJEeGVjZEtkekFLQmdncWhrak9QUVFEQWpBQU1CNFgKRFRJMk1ETXhPREV5TWpFd09Gb1hEVE0yTURNeE5URXlNakV3T0Zvd0FEQlpNQk1HQnlxR1NNNDlBZ0VHQ0NxRwpTTTQ5QXdFSEEwSUFCSHUwbzk3cmlrbjJrdW5qZVkwekR6T0JPbEM3cnpjb3djNG56VlpGQjlqS0J5YmxlcDR3CmgySXQ2ZjJvM1pyQWhQb2Zub3hPaitqb0lMUzQxOU1JR1JhallUQmZNQTRHQTFVZER3RUIvd1FFQXdJQ2hEQWQKQmdOVkhTVUVGakFVQmdnckJnRUZCUWNEQVFZSUt3WUJCUVVIQXdJd0R3WURWUjBUQVFIL0JBVXdBd0VCL3pBZApCZ05WSFE0RUZnUVV1Wm8vZWdiQVdTOVphcG16QlFwcHBsblNWSUV3Q2dZSUtvWkl6ajBFQXdJRFNRQXdSZ0loCkFNSWxrQlEzMTNiVEJJenYwN2tLcWlVV2VDamtCUTZVV0ZSOTZqK09FRTQwQWlFQXBLeTJIOFRqejVveHh6R2sKNE9ScmVBK3d2RCtNbTBTZkdweFVXRkNOS1AwPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==\"\n    \"key\": \"LS0tLS1CRUdJTiBFQyBQUklWQVRFIEtFWS0tLS0tCk1IY0NBUUVFSUFvQmtUUE16SndYUjFRbGI2R09CRXMwMUNyazFielduTmU3L2FhYko2d3ZvQW9HQ0NxR1NNNDkKQXdFSG9VUURRZ0FFZTdTajN1dUtTZmFTNmVONWpUTVBNNEU2VUx1dk55akJ6aWZOVmtVSDJNb0hKdVY2bmpDSApZaTNwL2FqZG1zQ0UraCtlakU2UDZPZ2d0TGpYMHdnWkZnPT0KLS0tLS1FTkQgRUMgUFJJVkFURSBLRVktLS0tLQo=\"\n  \"apiServer\":\n    \"admissionControl\":\n    - \"configuration\":\n        \"apiVersion\": \"pod-security.admission.config.k8s.io/v1alpha1\"\n        \"defaults\":\n          \"audit\": \"restricted\"\n          \"audit-version\": \"latest\"\n          \"enforce\": \"baseline\"\n          \"enforce-version\": \"latest\"\n          \"warn\": \"restricted\"\n          \"warn-version\": \"latest\"\n        \"exemptions\":\n          \"namespaces\":\n          - \"kube-system\"\n          \"runtimeClasses\": []\n          \"usernames\": []\n        \"kind\": \"PodSecurityConfiguration\"\n      \"name\": \"PodSecurity\"\n    \"auditPolicy\":\n      \"apiVersion\": \"audit.k8s.io/v1\"\n      \"kind\": \"Policy\"\n      \"rules\":\n      - \"level\": \"Metadata\"\n    \"image\": \"registry.k8s.io/kube-apiserver:v1.36.0\"\n  \"ca\":\n    \"crt\": \"LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJpakNDQVRDZ0F3SUJBZ0lSQU9GbkRiSDJxS0hkK1J6SnVlZk5IVm93Q2dZSUtvWkl6ajBFQXdJd0ZURVQKTUJFR0ExVUVDaE1LYTNWaVpYSnVaWFJsY3pBZUZ3MHlOakF6TVRneE1qSXhNRGhhRncwek5qQXpNVFV4TWpJeApNRGhhTUJVeEV6QVJCZ05WQkFvVENtdDFZbVZ5Ym1WMFpYTXdXVEFUQmdjcWhrak9QUUlCQmdncWhrak9QUU1CCkJ3TkNBQVJhSlVQYTRFSU5VanNNK0hVU21ITTAvendxdWc0SFBGQUFoVm9nL1FkZHJnS2pFWlNFWnBkT0VuaXgKUEVnakNBU3pEYnJMUXI3RldKTE0vSXkwampUcG8yRXdYekFPQmdOVkhROEJBZjhFQkFNQ0FvUXdIUVlEVlIwbApCQll3RkFZSUt3WUJCUVVIQXdFR0NDc0dBUVVGQndNQ01BOEdBMVVkRXdFQi93UUZNQU1CQWY4d0hRWURWUjBPCkJCWUVGRkhNaENXSnR3MmNBYWhWazhvY0JxeVBTTGtMTUFvR0NDcUdTTTQ5QkFNQ0EwZ0FNRVVDSVFERU1xeXgKVUMxQkZmY3RsSHdKVGEyMVllZ0JyVnpLUnNEYzlabWJSak9iMUFJZ2RRSk4yMkcwUU1wVVlnQnpEcnBDM0pqNgpiQUEwQmlmQzZaaVQ2ekN3b0ZvPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==\"\n    \"key\": \"LS0tLS1CRUdJTiBFQyBQUklWQVRFIEtFWS0tLS0tCk1IY0NBUUVFSUMrOUpLRlRjSzFNWDljN29ycWNLZ1NIVE1KWjZXV1dlQXR5VThwZWY1ekdvQW9HQ0NxR1NNNDkKQXdFSG9VUURRZ0FFV2lWRDJ1QkNEVkk3RFBoMUVwaHpOUDg4S3JvT0J6eFFBSVZhSVAwSFhhNENveEdVaEdhWApUaEo0c1R4SUl3Z0VzdzI2eTBLK3hWaVN6UHlNdEk0MDZRPT0KLS0tLS1FTkQgRUMgUFJJVkFURSBLRVktLS0tLQo=\"\n  \"clusterName\": \"homelab\"\n  \"controlPlane\":\n    \"endpoint\": \"https://192.168.123.20:6443\"\n  \"controllerManager\":\n    \"extraArgs\":\n      \"bind-address\": \"0.0.0.0\"\n    \"image\": \"registry.k8s.io/kube-controller-manager:v1.36.0\"\n  \"discovery\":\n    \"enabled\": true\n    \"registries\":\n      \"kubernetes\":\n        \"disabled\": true\n      \"service\": {}\n  \"etcd\":\n    \"ca\":\n      \"crt\": \"LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJmakNDQVNTZ0F3SUJBZ0lSQU5sb2NPeHVXanhKN1hrZmpBOU11R3N3Q2dZSUtvWkl6ajBFQXdJd0R6RU4KTUFzR0ExVUVDaE1FWlhSalpEQWVGdzB5TmpBek1UZ3hNakl4TURoYUZ3MHpOakF6TVRVeE1qSXhNRGhhTUE4eApEVEFMQmdOVkJBb1RCR1YwWTJRd1dUQVRCZ2NxaGtqT1BRSUJCZ2dxaGtqT1BRTUJCd05DQUFRZERSSGkvbzJIClpvenRCaVVNRXNWKzZCelpmbzZldkR4TXVCZm9QSG5ZblBENFUzRmdTV052clN0YjNOUjBHNk9pK2dmRDduSzIKbWpNL3haVExIZnljbzJFd1h6QU9CZ05WSFE4QkFmOEVCQU1DQW9Rd0hRWURWUjBsQkJZd0ZBWUlLd1lCQlFVSApBd0VHQ0NzR0FRVUZCd01DTUE4R0ExVWRFd0VCL3dRRk1BTUJBZjh3SFFZRFZSME9CQllFRkt1d3JQTXh6VTB4CmRaMWV6bE9rbVhPRENHMmlNQW9HQ0NxR1NNNDlCQU1DQTBnQU1FVUNJUUNuc2EzZ3Z0VGtDR0VzMmtPL0d2OW4KWkRPVGNoaklXaFByYjFRTG5pREtRd0lnTHBvb2RWcVVMMzYzQ05Nd3oveXV3UzF2Y1ZLdVNQTS9CS3QzZU44Qwp6Ync9Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K\"\n      \"key\": \"LS0tLS1CRUdJTiBFQyBQUklWQVRFIEtFWS0tLS0tCk1IY0NBUUVFSUh6Y3JxVEhsazh4YnRYaFZzL3prVUV4d05RWVpST0N0NHVvdS9CdEVXTVdvQW9HQ0NxR1NNNDkKQXdFSG9VUURRZ0FFSFEwUjR2Nk5oMmFNN1FZbERCTEZmdWdjMlg2T25ydzhUTGdYNkR4NTJKencrRk54WUVsagpiNjByVzl6VWRCdWpvdm9Idys1eXRwb3pQOFdVeXgzOG5BPT0KLS0tLS1FTkQgRUMgUFJJVkFURSBLRVktLS0tLQo=\"\n  \"id\": \"_VziAGjGXw2N-AUG_8gTAnxdXabIVZGA3VbC37_8TjY=\"\n  \"network\":\n    \"cni\":\n      \"name\": \"none\"\n    \"dnsDomain\": \"cluster.local\"\n    \"podSubnets\":\n    - \"10.244.0.0/16\"\n    \"serviceSubnets\":\n    - \"10.96.0.0/12\"\n  \"proxy\":\n    \"disabled\": true\n  \"scheduler\":\n    \"extraArgs\":\n      \"bind-address\": \"0.0.0.0\"\n    \"image\": \"registry.k8s.io/kube-scheduler:v1.36.0\"\n  \"secret\": \"WQt00uAIAlN0hjhJBHi486ewsGRXkTFGbdKOpcI2BB8=\"\n  \"secretboxEncryptionSecret\": \"1ZbLP1sC0LAa+bsLcT0V8fwjP3Gfjp03LdUtNNjXqH0=\"\n  \"serviceAccount\":\n    \"key\": \"LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQpNSUlKS0FJQkFBS0NBZ0VBeTY0eFJxaHFBZng2U1Q5QzBMUkVTZnFWUWFpSkRneXB0YzdlREVLR2h1VWZ4WEFZClFsUllYOHFNanNId1hZbU4zdFVLazFsZXQvTWNhNU1aYzVEOWJEMjJkampYaEFlU3BWT2FURmt3Y016NDQ4Q28Kc2hCYVpzTm5vMEZvbTFLdHYyNnJSK0ZRUlErR2dITkl2c2thWW5xOHpSODE3SkpScWRvN1pWeEZTK3FlTU03MApyQi9TSnNmSmVIRXpPZG9BdkZlbFdhLzhuc3AvWUZOM20wUFBGdTZMWnV0UXo0VUZidllUem1Hc2FwM0l6N0U5CnhET1RrNGdaMDRYVlk1aUIwR09VTzFiQnBVa1lTRVlSRUVCWFhNUEp0aHVTR0lYUWF0b0V1cTduRDJ6MUZMdzIKdjNXb2xhUlVlZkpMcEZJRGEzUGJZZWNSUmhyOUdzV25INDhrVEJIYmsxN05ubnBXbWljZG5VNkpXVy9lU0I4VQpZREt4RFFsMVdrdE95by9Yd1lkenM2SXh0YUJOVS8xakZIQmt3R1BFcVdFeXJybGNOL3BJdFpGUTY0cnFVWjZTCjR2NmRZbEJjMmw3RXhTVzNBdk91K0RyM3NBRzI2Ry9XOGN4ZFlqanhuR1d0eXU0a0lWZ05NVDFUdFhBR2FsdFkKbE5nVmRjdHdrZU1hWDE2aitERG94WnhEeC8rT2VNREg5c2VoQVc3NnBFdGx2Rms3TktrNy9ZU1NnMUZYakxwbworT0YwU1Z3WDFJRGo4VEtXWGNHaEVkaTNuUUsxQ01uVERSZ3F6blNsblVXZG5EdWgwNC9nMWdLRHoxZVhsc043CmQrLzhVNjhUZ3RJbWZ4QkRkSXVtMCtnZW5Qbk00YkVEVGZKcWhUM2J1Qy8xQU9Cem9YRGtpOVZIeWpjQ0F3RUEKQVFLQ0FnQUtCV2NCMGo2UmlpblBPYUJKekNTOUlNVTI1SDZZb0lGd2ZxYzYvY0phcWlKa3dKQWcvWnJOT0V6NApwMmdXejhSMHVPeWZrTHJOU21oZC9FdUNJajN1M21pM0Qzd0htVjRSMTI1MHZBcWtPMFlOVDdzcXhucnA0TnpCCnlNMFFuMHN0L1pBVGdXMXFDRzhXWXhXcWRWdnkwd05rY24ycC9lbUhoL294a1h2bjZDYkc1ZnhlVm5lYVZrZ1EKbkQzRHI1MXdPUmx0czRJMmZtWU1oKzdHSWlPRlBnZWM4TmMrM0VRcmRMaEhVWnpybmZVc1dJT25ta3poeFh3TQpZU3U5Uk5xZldmdDF4amxqWlhQNmlUSkUza2ZTcUNrVzZIM0k3czJuMzUxTjg4T1haU0Vjb0h4S3pUa0R2aE1RCk9nd0VINGFWakJ5NFkyZVRjOXd5R1hCSGFEalBTOThCU0Y4dUhJSHNuYmgvU0Qra29JQ1R2WGt0RThnam1VengKT2oxam9ES09qc2U5YkwyYXJtdEN2b3hzWWZmZGN5RE5XazQ5UkRjSVQveXBGbThWNG9tck4yeUxoUEx6VlF0WQpXS1JxOW50allSWjIwRUVJUm0yTVhDUFI4TGtQQ29aQ3BCUGlPRGVGV0QwSWZ2Nms2eTZQUnd5N0I1TTBHeFYrCmE4L21wQnpEcTdpMVdSdzZEdVl1cjQwTGhmcUxsYjdKR083RUtDc3RtN0JKUll6VGZHQkN6dWI3bXBQL1BYNksKTW9yNTZqc283NUtnZnE4ZEFTTkZWZzRuK3YyV0FoQjJxV0VxZ2VwMWpQZzJkdkJJaURvZFdWQWIvaG5talIwWQpCWXRBeFVGTXBMb3h2QXRwQXhUY1Zjc292aDN1MlhWK2x1cmFHRlkrZm5yRms4aUVJUUtDQVFFQXphajNPVFRWClJtWmlXU0J2b3d0TTJGQ2FJNnpxNGY4UDg3K1o2SXJQTXFQQkNGL3pNbnp6S2lGVFAvTVpKSXRiSyswMWhGbkEKV3duRWZYQVVyck5pMSs4QmM2L3RVT1JqclRRYjdUUXlVUFQ1YzB0dEtQV1EyTE56dnVGZlBzOTNIVkhpa1p6OQpzK0Q2NS9wRG1GOXpzZkI4SFZ0OWFzR3lFVWVDeWpUOFdSMkpmZUNCcHhqNEJIdVRvU203UjY4VWM3QkExSlZqClpSZ0pVS3pFR01wM1BqRFRNcWJhQXFSUGtWYlVYaUJBQUFGa3k2Slo2ekRWY2pvZTNveXpoc2NtR2VlbFZncUIKZlluaTRnSFd5bER0eitmVWoyMUQ3d2piRmw5VkRieXh6Mml6SGVXZVUvRTJ5QzQvVERjRXFQYkZUd2EreWhKSApJRDdiVkZTWmNsNHBjUUtDQVFFQS9Za3V0azU0Q3E5SllQNnM0UTRmLzNtbk1nNTFsenlSbmx4U3lQbllKVi90Ckc5NHF6d2gvZnlYalQ3T2tYT1l6aW0vSVhQKzFscUpOWForMVhJRmJuRkpoNWlaK2oxS2xHcVpoMDNFd0J4UEIKZk10bCtHdnlJVWZyNjVncU1wU1NldzNkdTZPQ1pZSFpkTVlITEVhTXYrS1ZQL2tNSnN1cDBtc3RPemJKU28zbQp2UWRMdmNpMnFySmN2dlhhenJXdGZTQitES2Ivc29nS1BPZWRsWEd5b0krQ2s2WmlIaXFaNzVaajloNnlyYUwwCmpDUVMxOXhCTzQxYUt1QW4zZldlSnRsYnhPV21LY0VhVnBvWUMrVHZmRXNRYUF0MzJKclEwRGVOdWYycU8vdTIKVE5TWitIQzdhWm84RDB2LzlqUjhud09FazZ3WEdtSE51NDVNTjFvYUp3S0NBUUIza0ZUeWNESFI5UElXYU5JZQpVeEtBN0JOQXpHWGRyNkRCajlIVnJPV2F4ak1TUUY0dUt4QmZuUEkrU29HQ2luWWR5cEdEZVg1b0x2eUtCS0F4CmxON1JOUVYrRVhpQnY5WG5PMVZGQ1VSN1pvQ2pzK1VwbStKeTZabFFEc3lGd3EyNFlRTzhyaTJjNXg1WHdWcU0KK21sVHVNRWZmRElrMzZrN2ZIeWdQRCs5TzN2VXI3SVF5R1pnak11ZU5abklxaFBVMGxKT2hPODlOY1VzbnRSKwpxUzY3L0R5OHhONFlEUmlwSVhianBoSXZMcUEvOXdvWnZ0RkkwRnRqL1I3ZUsyZU9SZXNNWTUwMnMvUXdldXM1CndlVVFLdktiMCtWYjBhVTFrNFRxTUpxYlAzNXEwalRERG9oUHh2dEx2dXk1b29YQlZPV1VxeDJvdElKa3U2NWUKSERveEFvSUJBQ1VFdjdaTXRNaFNtYk00M0VNc0RjMytsRVFCeW5lZmwxOTQrWGx3eVhlRGp4cFBrUTZUbmhJUgpsU1FSQmNHdXR2M1NubjI5dEdUZkk4NjB3QVZXdWVxVU9Na2krNzJ2Z24zbXAwZjVNZHNHcm15clFpTklsNXoyClpHTU0zN1JzN3dwYWx2S0x5RUZMK1ZWTWlNV1ZNMzNjOW8vVnJFbUoyU3pwQ3p5bkhqTHRqekF3ZllXalpkQjgKcElBWlk2NWs1b1RybHB3QVVqdGVFNmlhNU81cUlIdkRHSHk0Z1lFSUZWdmZLSTlLSWlxcUxXeTg0NmR5K0c5YQpqenpOWitUSHRTVFUvY285QWNyODcveVBHVTI3U3FCcVVXWHZycnNJdDg1L0hnbDNHVUVTMnFaVE1Id084YjVVCmo4cG4vV0tVZlZHMmNNZ2pDMmlGdVVWV1hKaUVabWNDZ2dFQkFJMmpvL096NjdDd3VMZ0gxUGdTTVRlenRRYTIKRWlhNzBPZTVMNUhKamVPTVMweGtVc0pVWktBUnlUbVdOZnpXdTFrZVZ5Q2RmYnZEbVFVci9kOXorRHVjRlpUOQpWRHp0c0dyMlhjeUhrbHNEUnpiRkp3MEYxSGZkSnpPWVpnaGgxZVhhVElHNjkvaCtFcmRRN2gyRC96OVkrL29SCnF5WU1wZmlLUjZzQnRqUmFUQUIrYXR2VHRuLy9qajN3RVdUQzdpK05halJoM0V5TVpsaGVaaE1JRlg4Ni9YOVoKRkx4anVQSXR6eTFLU24zWHBHM0lBL3NaQmxvZTk3Y21jTTRROVAvRzAyemRXaTNJUlUyUEdKU2NlMDdtRGdvMwpEeFRJbjBpQXQwNm1uWWwyQitDVElkZHRtZXErT1pXNmI3VS94N09xOEEyMzVXNHZ6RkVQYzR0Z0pCaz0KLS0tLS1FTkQgUlNBIFBSSVZBVEUgS0VZLS0tLS0K\"\n  \"token\": \"cvtkew.stk8xcp5u4no1q8w\"\n\"debug\": false\n\"machine\":\n  \"ca\":\n    \"crt\": \"LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJQekNCOHFBREFnRUNBaEVBcXZhV3ZYb0w5N2F3c09BOGh1VlU4VEFGQmdNclpYQXdFREVPTUF3R0ExVUUKQ2hNRmRHRnNiM013SGhjTk1qWXdNekU0TVRJeU1UQTRXaGNOTXpZd016RTFNVEl5TVRBNFdqQVFNUTR3REFZRApWUVFLRXdWMFlXeHZjekFxTUFVR0F5dGxjQU1oQUZiMkVYMFkxUU10cjFpcE5RSE5MaFdKdU91dWxjalFuTU1OCi9MbEJHQ1FIbzJFd1h6QU9CZ05WSFE4QkFmOEVCQU1DQW9Rd0hRWURWUjBsQkJZd0ZBWUlLd1lCQlFVSEF3RUcKQ0NzR0FRVUZCd01DTUE4R0ExVWRFd0VCL3dRRk1BTUJBZjh3SFFZRFZSME9CQllFRkh1b3pCOC94eXVHR3BTcAovTUNUa3d3MjcrWTdNQVVHQXl0bGNBTkJBTFk3aU8vS0k1ajVxK0J0Z01aY0E5Ryt2TTVFZm1sRjVNUzBRanFRCnVaZ2ljT1BxL2krSDdGbHBGUzRCZ3UzbTJGTi9USkF3QjJEMk03K05EUjBoT2drPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==\"\n    \"key\": \"LS0tLS1CRUdJTiBFRDI1NTE5IFBSSVZBVEUgS0VZLS0tLS0KTUM0Q0FRQXdCUVlESzJWd0JDSUVJTlFvVzFtbk0rVC9sTkwwSklxYzNiVUtaWHhua3ErcXdmWks5djdLUjFyZgotLS0tLUVORCBFRDI1NTE5IFBSSVZBVEUgS0VZLS0tLS0K\"\n  \"certSANs\": []\n  \"features\":\n    \"diskQuotaSupport\": true\n    \"hostDNS\":\n      \"enabled\": true\n      \"forwardKubeDNSToHost\": true\n      \"resolveMemberNames\": true\n    \"kubePrism\":\n      \"enabled\": true\n      \"port\": 7445\n    \"stableHostname\": false\n  \"install\":\n    \"disk\": \"/dev/vda\"\n    \"grubUseUKICmdline\": true\n    \"image\": \"factory.talos.dev/installer-secureboot/a72961cff61328db9bf029a0cc90eef92a5de708c83853e0c97fd87b8efe247e:v1.13.2\"\n    \"wipe\": false\n  \"kubelet\":\n    \"defaultRuntimeSeccompProfileEnabled\": true\n    \"disableManifestsDirectory\": true\n    \"image\": \"ghcr.io/siderolabs/kubelet:v1.36.0\"\n  \"logging\":\n    \"destinations\":\n    - \"endpoint\": \"tcp://127.0.0.1:30517/\"\n      \"extraTags\":\n        \"node\": \"talos-controlplane-1\"\n      \"format\": \"json_lines\"\n  \"nodeLabels\":\n    \"node.kubernetes.io/exclude-from-external-load-balancers\": \"\"\n  \"sysctls\":\n    \"net.ipv4.ip_forward\": \"1\"\n    \"net.ipv6.conf.all.forwarding\": \"1\"\n    \"vm.page-cluster\": \"0\"\n    \"vm.swappiness\": \"130\"\n  \"token\": \"6ri18o.4tv3sdtnnve14u2l\"\n  \"type\": \"controlplane\"\n\"persist\": true\n\"version\": \"v1alpha1\"\n---\n---\napiVersion: v1alpha1\nkind: VolumeConfig\nname: STATE\nencryption:\n  provider: luks2\n  keys:\n    - tpm:\n        options:\n          pcrs: [7]\n      slot: 0\n---\napiVersion: v1alpha1\nkind: VolumeConfig\nname: EPHEMERAL\nencryption:\n  provider: luks2\n  keys:\n    - tpm:\n        options:\n          pcrs: [7]\n      slot: 0\n      lockToState: true\n---\napiVersion: v1alpha1\nkind: HostnameConfig\nhostname: talos-controlplane-1\n---\napiVersion: v1alpha1\nkind: DHCPv4Config\nname: ens18\n---\napiVersion: v1alpha1\nkind: LinkConfig\nname: ens18\nroutes:\n  - gateway: 192.168.123.1  # FritzBox - default route\n---\napiVersion: v1alpha1\nkind: LinkConfig\nname: ens19\nup: true\naddresses:\n  - address: 10.10.20.2/24\n---\napiVersion: v1alpha1\nkind: ResolverConfig\nnameservers:\n  - address: 192.168.123.1\n  - address: 8.8.8.8\n  - address: 1.1.1.1\n---\n# Forward kernel (dmesg) logs to Fluent Bit via local NodePort on this node.\n# Service log forwarding (machine.logging) is configured in terraform/talos.tf.\napiVersion: v1alpha1\nkind: KmsgLogConfig\nname: fluent-bit\nurl: \"tcp://127.0.0.1:30517/\"\n",
+            "content_base64": null,
+            "content_base64sha256": "xCHuYfsWd4AkUxkPyCCLF5pYevY5MO1WeBP+62WsizQ=",
+            "content_base64sha512": "pRx7Y310jSCuR6e1UzcHj0laCH4vo4MkRehMiTykLOk1OdUyNJUYMXE9n4wQqkS8EvXV1GBogp1Bnogf3OozHA==",
+            "content_md5": "05386c77b10b0872961d8315776766ad",
+            "content_sha1": "9b43426cb4d98b4f6dd14a6fe72f79053c4f35e8",
+            "content_sha256": "c421ee61fb1677802453190fc8208b179a587af63930ed567813feeb65ac8b34",
+            "content_sha512": "a51c7b637d748d20ae47a7b55337078f495a087e2fa3832445e84c893ca42ce93539d53234951831713d9f8c10aa44bc12f5d5d46068829d419e881fdcea331c",
+            "directory_permission": "0777",
+            "file_permission": "0777",
+            "filename": "./../talos/gen/talos-controlplane-1.yaml",
+            "id": "9b43426cb4d98b4f6dd14a6fe72f79053c4f35e8",
+            "sensitive_content": null,
+            "source": null
+          },
+          "sensitive_attributes": [
+            [
+              {
+                "type": "get_attr",
+                "value": "content"
+              }
+            ],
+            [
+              {
+                "type": "get_attr",
+                "value": "sensitive_content"
+              }
+            ]
+          ],
+          "identity_schema_version": 0,
+          "dependencies": [
+            "data.talos_image_factory_extensions_versions.this",
+            "data.talos_machine_configuration.controlplane",
+            "talos_image_factory_schematic.this",
+            "talos_machine_secrets.this"
+          ]
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "local_file",
+      "name": "talosconfig",
+      "provider": "provider[\"registry.terraform.io/hashicorp/local\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "content": "context: homelab\ncontexts:\n    homelab:\n        endpoints:\n            - 192.168.123.20\n        ca: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJQekNCOHFBREFnRUNBaEVBcXZhV3ZYb0w5N2F3c09BOGh1VlU4VEFGQmdNclpYQXdFREVPTUF3R0ExVUUKQ2hNRmRHRnNiM013SGhjTk1qWXdNekU0TVRJeU1UQTRXaGNOTXpZd016RTFNVEl5TVRBNFdqQVFNUTR3REFZRApWUVFLRXdWMFlXeHZjekFxTUFVR0F5dGxjQU1oQUZiMkVYMFkxUU10cjFpcE5RSE5MaFdKdU91dWxjalFuTU1OCi9MbEJHQ1FIbzJFd1h6QU9CZ05WSFE4QkFmOEVCQU1DQW9Rd0hRWURWUjBsQkJZd0ZBWUlLd1lCQlFVSEF3RUcKQ0NzR0FRVUZCd01DTUE4R0ExVWRFd0VCL3dRRk1BTUJBZjh3SFFZRFZSME9CQllFRkh1b3pCOC94eXVHR3BTcAovTUNUa3d3MjcrWTdNQVVHQXl0bGNBTkJBTFk3aU8vS0k1ajVxK0J0Z01aY0E5Ryt2TTVFZm1sRjVNUzBRanFRCnVaZ2ljT1BxL2krSDdGbHBGUzRCZ3UzbTJGTi9USkF3QjJEMk03K05EUjBoT2drPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==\n        crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJLRENCMjZBREFnRUNBaEFjU2JSNk1wTDNFa1pIWWxka2Znc0FNQVVHQXl0bGNEQVFNUTR3REFZRFZRUUsKRXdWMFlXeHZjekFlRncweU5qQXpNVGd4TWpJeE1EaGFGdzB5TnpBek1UZ3hNakl4TURoYU1CTXhFVEFQQmdOVgpCQW9UQ0c5ek9tRmtiV2x1TUNvd0JRWURLMlZ3QXlFQWdMbG12eDFQdnNIUHR1ZlRGZWtYQmdTakl2eG5iWldjCjh5K21BMlMwNFRpalNEQkdNQTRHQTFVZER3RUIvd1FFQXdJSGdEQVRCZ05WSFNVRUREQUtCZ2dyQmdFRkJRY0QKQWpBZkJnTlZIU01FR0RBV2dCUjdxTXdmUDhjcmhocVVxZnpBazVNTU51L21PekFGQmdNclpYQURRUUJEOGUxVApRbHlEY2tGdUVXbHQ0enU3TzNRTlhXWWtqdWdNaWZIcFZOWTR2aHNBcFEyV3FjdXNDYUR4TXJNU0R4aGM0N21BCksvL1dabFRmWGRPZ1FJTU4KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=\n        key: LS0tLS1CRUdJTiBFRDI1NTE5IFBSSVZBVEUgS0VZLS0tLS0KTUM0Q0FRQXdCUVlESzJWd0JDSUVJS2dzM1h2M2pBMHppSjZnTEUyRFNMdTcwSlBHbkdvVnl3ZjAxcEhjWlVKRgotLS0tLUVORCBFRDI1NTE5IFBSSVZBVEUgS0VZLS0tLS0K\n",
+            "content_base64": null,
+            "content_base64sha256": "raEYJ0dqt677P0XLnIW1TN2fRwsIWy6BQMZRhCtvaIo=",
+            "content_base64sha512": "Lh+7Gq1JMxSO1KpwtqAlS0NQeSz+SPdE4Z0FGG70YsT62oMQbzWotj5aBK1X+LJVcKMs3GesWjWxfwZv/gPHbA==",
+            "content_md5": "2100da2d893a18d9cdd5df3bfb1480cf",
+            "content_sha1": "3691251493689e1ba2f3a339c9aa7cf67447e6a7",
+            "content_sha256": "ada11827476ab7aefb3f45cb9c85b54cdd9f470b085b2e8140c651842b6f688a",
+            "content_sha512": "2e1fbb1aad4933148ed4aa70b6a0254b4350792cfe48f744e19d05186ef462c4fada83106f35a8b63e5a04ad57f8b25570a32cdc67ac5a35b17f066ffe03c76c",
+            "directory_permission": "0777",
+            "file_permission": "0777",
+            "filename": "./../talosconfig",
+            "id": "3691251493689e1ba2f3a339c9aa7cf67447e6a7",
+            "sensitive_content": null,
+            "source": null
+          },
+          "sensitive_attributes": [
+            [
+              {
+                "type": "get_attr",
+                "value": "content"
+              }
+            ],
+            [
+              {
+                "type": "get_attr",
+                "value": "sensitive_content"
+              }
+            ]
+          ],
+          "identity_schema_version": 0,
+          "dependencies": [
+            "data.talos_client_configuration.this",
+            "talos_machine_secrets.this"
+          ]
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "local_file",
+      "name": "worker_config",
+      "provider": "provider[\"registry.terraform.io/hashicorp/local\"]",
+      "instances": [
+        {
+          "index_key": "talos-worker-1",
+          "schema_version": 0,
+          "attributes": {
+            "content": "\"cluster\":\n  \"ca\":\n    \"crt\": \"LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJpakNDQVRDZ0F3SUJBZ0lSQU9GbkRiSDJxS0hkK1J6SnVlZk5IVm93Q2dZSUtvWkl6ajBFQXdJd0ZURVQKTUJFR0ExVUVDaE1LYTNWaVpYSnVaWFJsY3pBZUZ3MHlOakF6TVRneE1qSXhNRGhhRncwek5qQXpNVFV4TWpJeApNRGhhTUJVeEV6QVJCZ05WQkFvVENtdDFZbVZ5Ym1WMFpYTXdXVEFUQmdjcWhrak9QUUlCQmdncWhrak9QUU1CCkJ3TkNBQVJhSlVQYTRFSU5VanNNK0hVU21ITTAvendxdWc0SFBGQUFoVm9nL1FkZHJnS2pFWlNFWnBkT0VuaXgKUEVnakNBU3pEYnJMUXI3RldKTE0vSXkwampUcG8yRXdYekFPQmdOVkhROEJBZjhFQkFNQ0FvUXdIUVlEVlIwbApCQll3RkFZSUt3WUJCUVVIQXdFR0NDc0dBUVVGQndNQ01BOEdBMVVkRXdFQi93UUZNQU1CQWY4d0hRWURWUjBPCkJCWUVGRkhNaENXSnR3MmNBYWhWazhvY0JxeVBTTGtMTUFvR0NDcUdTTTQ5QkFNQ0EwZ0FNRVVDSVFERU1xeXgKVUMxQkZmY3RsSHdKVGEyMVllZ0JyVnpLUnNEYzlabWJSak9iMUFJZ2RRSk4yMkcwUU1wVVlnQnpEcnBDM0pqNgpiQUEwQmlmQzZaaVQ2ekN3b0ZvPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==\"\n    \"key\": \"\"\n  \"clusterName\": \"homelab\"\n  \"controlPlane\":\n    \"endpoint\": \"https://192.168.123.20:6443\"\n  \"discovery\":\n    \"enabled\": true\n    \"registries\":\n      \"kubernetes\":\n        \"disabled\": true\n      \"service\": {}\n  \"id\": \"_VziAGjGXw2N-AUG_8gTAnxdXabIVZGA3VbC37_8TjY=\"\n  \"network\":\n    \"dnsDomain\": \"cluster.local\"\n    \"podSubnets\":\n    - \"10.244.0.0/16\"\n    \"serviceSubnets\":\n    - \"10.96.0.0/12\"\n  \"secret\": \"WQt00uAIAlN0hjhJBHi486ewsGRXkTFGbdKOpcI2BB8=\"\n  \"token\": \"cvtkew.stk8xcp5u4no1q8w\"\n\"debug\": false\n\"machine\":\n  \"ca\":\n    \"crt\": \"LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJQekNCOHFBREFnRUNBaEVBcXZhV3ZYb0w5N2F3c09BOGh1VlU4VEFGQmdNclpYQXdFREVPTUF3R0ExVUUKQ2hNRmRHRnNiM013SGhjTk1qWXdNekU0TVRJeU1UQTRXaGNOTXpZd016RTFNVEl5TVRBNFdqQVFNUTR3REFZRApWUVFLRXdWMFlXeHZjekFxTUFVR0F5dGxjQU1oQUZiMkVYMFkxUU10cjFpcE5RSE5MaFdKdU91dWxjalFuTU1OCi9MbEJHQ1FIbzJFd1h6QU9CZ05WSFE4QkFmOEVCQU1DQW9Rd0hRWURWUjBsQkJZd0ZBWUlLd1lCQlFVSEF3RUcKQ0NzR0FRVUZCd01DTUE4R0ExVWRFd0VCL3dRRk1BTUJBZjh3SFFZRFZSME9CQllFRkh1b3pCOC94eXVHR3BTcAovTUNUa3d3MjcrWTdNQVVHQXl0bGNBTkJBTFk3aU8vS0k1ajVxK0J0Z01aY0E5Ryt2TTVFZm1sRjVNUzBRanFRCnVaZ2ljT1BxL2krSDdGbHBGUzRCZ3UzbTJGTi9USkF3QjJEMk03K05EUjBoT2drPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==\"\n    \"key\": \"\"\n  \"certSANs\": []\n  \"features\":\n    \"diskQuotaSupport\": true\n    \"hostDNS\":\n      \"enabled\": true\n      \"forwardKubeDNSToHost\": true\n    \"kubePrism\":\n      \"enabled\": true\n      \"port\": 7445\n    \"stableHostname\": false\n  \"install\":\n    \"disk\": \"/dev/vda\"\n    \"grubUseUKICmdline\": true\n    \"image\": \"factory.talos.dev/installer-secureboot/a72961cff61328db9bf029a0cc90eef92a5de708c83853e0c97fd87b8efe247e:v1.13.2\"\n    \"wipe\": false\n  \"kernel\":\n    \"modules\":\n    - \"name\": \"nvme_tcp\"\n    - \"name\": \"vfio_pci\"\n  \"kubelet\":\n    \"defaultRuntimeSeccompProfileEnabled\": true\n    \"disableManifestsDirectory\": true\n    \"extraConfig\":\n      \"memorySwap\":\n        \"swapBehavior\": \"LimitedSwap\"\n    \"extraMounts\":\n    - \"destination\": \"/var/lib/longhorn\"\n      \"options\":\n      - \"bind\"\n      - \"rshared\"\n      - \"rw\"\n      \"source\": \"/var/lib/longhorn\"\n      \"type\": \"bind\"\n    \"image\": \"ghcr.io/siderolabs/kubelet:v1.36.0\"\n  \"logging\":\n    \"destinations\":\n    - \"endpoint\": \"tcp://127.0.0.1:30517/\"\n      \"extraTags\":\n        \"node\": \"talos-worker-1\"\n      \"format\": \"json_lines\"\n  \"sysctls\":\n    \"vm.page-cluster\": \"0\"\n    \"vm.swappiness\": \"130\"\n  \"token\": \"6ri18o.4tv3sdtnnve14u2l\"\n  \"type\": \"worker\"\n\"persist\": true\n\"version\": \"v1alpha1\"\n---\n---\napiVersion: v1alpha1\nkind: VolumeConfig\nname: STATE\nencryption:\n  provider: luks2\n  keys:\n    - tpm:\n        options:\n          pcrs: [7]\n      slot: 0\n---\napiVersion: v1alpha1\nkind: VolumeConfig\nname: EPHEMERAL\nencryption:\n  provider: luks2\n  keys:\n    - tpm:\n        options:\n          pcrs: [7]\n      slot: 0\n      lockToState: true\n---\napiVersion: v1alpha1\nkind: HostnameConfig\nhostname: talos-worker-1\n---\napiVersion: v1alpha1\nkind: LinkConfig\nname: ens18\nup: true\naddresses:\n  - address: 10.10.20.21/24\nroutes:\n  - gateway: 10.10.20.2  # Control plane - has internet access\n  - destination: 192.168.123.0/24\n    gateway: 10.10.20.2  # Management network via control plane\n  - destination: 192.168.178.0/24\n    gateway: 10.10.20.2  # Horsmar network via FritzBox VPN\n---\napiVersion: v1alpha1\nkind: ResolverConfig\nnameservers:\n  - address: 192.168.123.1\n  - address: 8.8.8.8\n  - address: 1.1.1.1\n---\n# Forward kernel (dmesg) logs to Fluent Bit via local NodePort on this node.\n# Service log forwarding (machine.logging) is configured in terraform/talos.tf.\napiVersion: v1alpha1\nkind: KmsgLogConfig\nname: fluent-bit\nurl: \"tcp://127.0.0.1:30517/\"\n---\n# Longhorn CSI storage volume\n# This creates a formatted partition on the dedicated user volume disk (virtio2)\n# and mounts it at /var/mnt/longhorn for use by Longhorn as hostPath storage\napiVersion: v1alpha1\nkind: UserVolumeConfig\nname: longhorn\nprovisioning:\n  diskSelector:\n    # Match the dedicated storage disk: non-system virtio disk larger than 100GB\n    # This excludes the system disk (64GB) and swap disk (8GB)\n    match: '!system_disk \u0026\u0026 disk.transport == \"virtio\" \u0026\u0026 disk.size \u003e 100u * GiB'\n  grow: true  # Use all available space on the disk\n  minSize: 10GiB\nencryption:\n  provider: luks2\n  keys:\n    - tpm:\n        options:\n          pcrs: [7]\n      slot: 0\n      lockToState: true\n",
+            "content_base64": null,
+            "content_base64sha256": "b7My3VoSuEh+NxoS5dadb2d8BDQHHtGsB8s3GY/6BSM=",
+            "content_base64sha512": "ujt0EtDBxU/ctUUNGtVxoxg/RmKAk0fcyzOgjqein2AoTDkTUJLWkOMa33P7fUeTQrdLfY9M0xCgvx1ObjqhmQ==",
+            "content_md5": "8820c4866d82034d3a53646d073015f7",
+            "content_sha1": "8e0860ecbe520b2df8c269b6f88107b099f1bbca",
+            "content_sha256": "6fb332dd5a12b8487e371a12e5d69d6f677c0434071ed1ac07cb37198ffa0523",
+            "content_sha512": "ba3b7412d0c1c54fdcb5450d1ad571a3183f4662809347dccb33a08ea7a29f60284c39135092d690e31adf73fb7d479342b74b7d8f4cd310a0bf1d4e6e3aa199",
+            "directory_permission": "0777",
+            "file_permission": "0777",
+            "filename": "./../talos/gen/talos-worker-1.yaml",
+            "id": "8e0860ecbe520b2df8c269b6f88107b099f1bbca",
+            "sensitive_content": null,
+            "source": null
+          },
+          "sensitive_attributes": [
+            [
+              {
+                "type": "get_attr",
+                "value": "content"
+              }
+            ],
+            [
+              {
+                "type": "get_attr",
+                "value": "sensitive_content"
+              }
+            ]
+          ],
+          "identity_schema_version": 0,
+          "dependencies": [
+            "data.talos_image_factory_extensions_versions.this",
+            "data.talos_machine_configuration.controlplane",
+            "data.talos_machine_configuration.worker",
+            "talos_image_factory_schematic.this",
+            "talos_machine_secrets.this"
+          ]
+        },
+        {
+          "index_key": "talos-worker-2",
+          "schema_version": 0,
+          "attributes": {
+            "content": "\"cluster\":\n  \"ca\":\n    \"crt\": \"LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJpakNDQVRDZ0F3SUJBZ0lSQU9GbkRiSDJxS0hkK1J6SnVlZk5IVm93Q2dZSUtvWkl6ajBFQXdJd0ZURVQKTUJFR0ExVUVDaE1LYTNWaVpYSnVaWFJsY3pBZUZ3MHlOakF6TVRneE1qSXhNRGhhRncwek5qQXpNVFV4TWpJeApNRGhhTUJVeEV6QVJCZ05WQkFvVENtdDFZbVZ5Ym1WMFpYTXdXVEFUQmdjcWhrak9QUUlCQmdncWhrak9QUU1CCkJ3TkNBQVJhSlVQYTRFSU5VanNNK0hVU21ITTAvendxdWc0SFBGQUFoVm9nL1FkZHJnS2pFWlNFWnBkT0VuaXgKUEVnakNBU3pEYnJMUXI3RldKTE0vSXkwampUcG8yRXdYekFPQmdOVkhROEJBZjhFQkFNQ0FvUXdIUVlEVlIwbApCQll3RkFZSUt3WUJCUVVIQXdFR0NDc0dBUVVGQndNQ01BOEdBMVVkRXdFQi93UUZNQU1CQWY4d0hRWURWUjBPCkJCWUVGRkhNaENXSnR3MmNBYWhWazhvY0JxeVBTTGtMTUFvR0NDcUdTTTQ5QkFNQ0EwZ0FNRVVDSVFERU1xeXgKVUMxQkZmY3RsSHdKVGEyMVllZ0JyVnpLUnNEYzlabWJSak9iMUFJZ2RRSk4yMkcwUU1wVVlnQnpEcnBDM0pqNgpiQUEwQmlmQzZaaVQ2ekN3b0ZvPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==\"\n    \"key\": \"\"\n  \"clusterName\": \"homelab\"\n  \"controlPlane\":\n    \"endpoint\": \"https://192.168.123.20:6443\"\n  \"discovery\":\n    \"enabled\": true\n    \"registries\":\n      \"kubernetes\":\n        \"disabled\": true\n      \"service\": {}\n  \"id\": \"_VziAGjGXw2N-AUG_8gTAnxdXabIVZGA3VbC37_8TjY=\"\n  \"network\":\n    \"dnsDomain\": \"cluster.local\"\n    \"podSubnets\":\n    - \"10.244.0.0/16\"\n    \"serviceSubnets\":\n    - \"10.96.0.0/12\"\n  \"secret\": \"WQt00uAIAlN0hjhJBHi486ewsGRXkTFGbdKOpcI2BB8=\"\n  \"token\": \"cvtkew.stk8xcp5u4no1q8w\"\n\"debug\": false\n\"machine\":\n  \"ca\":\n    \"crt\": \"LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJQekNCOHFBREFnRUNBaEVBcXZhV3ZYb0w5N2F3c09BOGh1VlU4VEFGQmdNclpYQXdFREVPTUF3R0ExVUUKQ2hNRmRHRnNiM013SGhjTk1qWXdNekU0TVRJeU1UQTRXaGNOTXpZd016RTFNVEl5TVRBNFdqQVFNUTR3REFZRApWUVFLRXdWMFlXeHZjekFxTUFVR0F5dGxjQU1oQUZiMkVYMFkxUU10cjFpcE5RSE5MaFdKdU91dWxjalFuTU1OCi9MbEJHQ1FIbzJFd1h6QU9CZ05WSFE4QkFmOEVCQU1DQW9Rd0hRWURWUjBsQkJZd0ZBWUlLd1lCQlFVSEF3RUcKQ0NzR0FRVUZCd01DTUE4R0ExVWRFd0VCL3dRRk1BTUJBZjh3SFFZRFZSME9CQllFRkh1b3pCOC94eXVHR3BTcAovTUNUa3d3MjcrWTdNQVVHQXl0bGNBTkJBTFk3aU8vS0k1ajVxK0J0Z01aY0E5Ryt2TTVFZm1sRjVNUzBRanFRCnVaZ2ljT1BxL2krSDdGbHBGUzRCZ3UzbTJGTi9USkF3QjJEMk03K05EUjBoT2drPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==\"\n    \"key\": \"\"\n  \"certSANs\": []\n  \"features\":\n    \"diskQuotaSupport\": true\n    \"hostDNS\":\n      \"enabled\": true\n      \"forwardKubeDNSToHost\": true\n    \"kubePrism\":\n      \"enabled\": true\n      \"port\": 7445\n    \"stableHostname\": false\n  \"install\":\n    \"disk\": \"/dev/vda\"\n    \"grubUseUKICmdline\": true\n    \"image\": \"factory.talos.dev/installer-secureboot/a72961cff61328db9bf029a0cc90eef92a5de708c83853e0c97fd87b8efe247e:v1.13.2\"\n    \"wipe\": false\n  \"kernel\":\n    \"modules\":\n    - \"name\": \"nvme_tcp\"\n    - \"name\": \"vfio_pci\"\n  \"kubelet\":\n    \"defaultRuntimeSeccompProfileEnabled\": true\n    \"disableManifestsDirectory\": true\n    \"extraConfig\":\n      \"memorySwap\":\n        \"swapBehavior\": \"LimitedSwap\"\n    \"extraMounts\":\n    - \"destination\": \"/var/lib/longhorn\"\n      \"options\":\n      - \"bind\"\n      - \"rshared\"\n      - \"rw\"\n      \"source\": \"/var/lib/longhorn\"\n      \"type\": \"bind\"\n    \"image\": \"ghcr.io/siderolabs/kubelet:v1.36.0\"\n  \"logging\":\n    \"destinations\":\n    - \"endpoint\": \"tcp://127.0.0.1:30517/\"\n      \"extraTags\":\n        \"node\": \"talos-worker-2\"\n      \"format\": \"json_lines\"\n  \"sysctls\":\n    \"vm.page-cluster\": \"0\"\n    \"vm.swappiness\": \"130\"\n  \"token\": \"6ri18o.4tv3sdtnnve14u2l\"\n  \"type\": \"worker\"\n\"persist\": true\n\"version\": \"v1alpha1\"\n---\n---\napiVersion: v1alpha1\nkind: VolumeConfig\nname: STATE\nencryption:\n  provider: luks2\n  keys:\n    - tpm:\n        options:\n          pcrs: [7]\n      slot: 0\n---\napiVersion: v1alpha1\nkind: VolumeConfig\nname: EPHEMERAL\nencryption:\n  provider: luks2\n  keys:\n    - tpm:\n        options:\n          pcrs: [7]\n      slot: 0\n      lockToState: true\n---\napiVersion: v1alpha1\nkind: HostnameConfig\nhostname: talos-worker-2\n---\napiVersion: v1alpha1\nkind: LinkConfig\nname: ens18\nup: true\naddresses:\n  - address: 10.10.20.22/24\nroutes:\n  - gateway: 10.10.20.2  # Control plane - has internet access\n  - destination: 192.168.123.0/24\n    gateway: 10.10.20.2  # Management network via control plane\n  - destination: 192.168.178.0/24\n    gateway: 10.10.20.2  # Horsmar network via FritzBox VPN\n---\napiVersion: v1alpha1\nkind: ResolverConfig\nnameservers:\n  - address: 192.168.123.1\n  - address: 8.8.8.8\n  - address: 1.1.1.1\n---\n# Forward kernel (dmesg) logs to Fluent Bit via local NodePort on this node.\n# Service log forwarding (machine.logging) is configured in terraform/talos.tf.\napiVersion: v1alpha1\nkind: KmsgLogConfig\nname: fluent-bit\nurl: \"tcp://127.0.0.1:30517/\"\n---\n# Longhorn CSI storage volume\n# This creates a formatted partition on the dedicated user volume disk (virtio2)\n# and mounts it at /var/mnt/longhorn for use by Longhorn as hostPath storage\napiVersion: v1alpha1\nkind: UserVolumeConfig\nname: longhorn\nprovisioning:\n  diskSelector:\n    # Match the dedicated storage disk: non-system virtio disk larger than 100GB\n    # This excludes the system disk (64GB) and swap disk (8GB)\n    match: '!system_disk \u0026\u0026 disk.transport == \"virtio\" \u0026\u0026 disk.size \u003e 100u * GiB'\n  grow: true  # Use all available space on the disk\n  minSize: 10GiB\nencryption:\n  provider: luks2\n  keys:\n    - tpm:\n        options:\n          pcrs: [7]\n      slot: 0\n      lockToState: true\n",
+            "content_base64": null,
+            "content_base64sha256": "mIn6G24keDNjMWf008GO8j9kcKbRnAriwujcEmP2OnA=",
+            "content_base64sha512": "E9868LUmTZP3IPBgI8GHthve5R9l5D54E4jFsO1HLHGEXvjezhXhknE9EPDOpFBXROp3aaixevM4tWz52K5dpQ==",
+            "content_md5": "4876415af2e22b2e73f1a44e2f06dfd1",
+            "content_sha1": "7030af86ba44fdac9c01650589eb5b41b54c0083",
+            "content_sha256": "9889fa1b6e247833633167f4d3c18ef23f6470a6d19c0ae2c2e8dc1263f63a70",
+            "content_sha512": "13df3af0b5264d93f720f06023c187b61bdee51f65e43e781388c5b0ed472c71845ef8dece15e192713d10f0cea4505744ea7769a8b17af338b56cf9d8ae5da5",
+            "directory_permission": "0777",
+            "file_permission": "0777",
+            "filename": "./../talos/gen/talos-worker-2.yaml",
+            "id": "7030af86ba44fdac9c01650589eb5b41b54c0083",
+            "sensitive_content": null,
+            "source": null
+          },
+          "sensitive_attributes": [
+            [
+              {
+                "type": "get_attr",
+                "value": "content"
+              }
+            ],
+            [
+              {
+                "type": "get_attr",
+                "value": "sensitive_content"
+              }
+            ]
+          ],
+          "identity_schema_version": 0,
+          "dependencies": [
+            "data.talos_image_factory_extensions_versions.this",
+            "data.talos_machine_configuration.controlplane",
+            "data.talos_machine_configuration.worker",
+            "talos_image_factory_schematic.this",
+            "talos_machine_secrets.this"
+          ]
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "proxmox_virtual_environment_vm",
+      "name": "workers",
+      "provider": "provider[\"registry.terraform.io/bpg/proxmox\"]",
+      "instances": [
+        {
+          "index_key": "talos-worker-1",
+          "schema_version": 0,
+          "attributes": {
+            "acpi": true,
+            "agent": [
+              {
+                "enabled": true,
+                "timeout": "10s",
+                "trim": false,
+                "type": "virtio",
+                "wait_for_ip": []
+              }
+            ],
+            "amd_sev": [],
+            "audio_device": [],
+            "bios": "ovmf",
+            "boot_order": [
+              "virtio0",
+              "net0"
+            ],
+            "cdrom": [],
+            "clone": [],
+            "cpu": [
+              {
+                "affinity": "",
+                "architecture": "",
+                "cores": 4,
+                "flags": [],
+                "hotplugged": 0,
+                "limit": 0,
+                "numa": false,
+                "sockets": 1,
+                "type": "host",
+                "units": 0
+              }
+            ],
+            "delete_unreferenced_disks_on_destroy": true,
+            "description": "Managed by Terraform",
+            "disk": [
+              {
+                "aio": "io_uring",
+                "backup": false,
+                "cache": "none",
+                "datastore_id": "local-zfs",
+                "discard": "on",
+                "file_format": "raw",
+                "file_id": "",
+                "import_from": "",
+                "interface": "virtio0",
+                "iothread": false,
+                "path_in_datastore": "vm-220-disk-2",
+                "queues": 0,
+                "replicate": true,
+                "serial": "",
+                "size": 64,
+                "speed": [],
+                "ssd": false
+              },
+              {
+                "aio": "io_uring",
+                "backup": false,
+                "cache": "none",
+                "datastore_id": "local-zfs",
+                "discard": "on",
+                "file_format": "raw",
+                "file_id": "",
+                "import_from": "",
+                "interface": "virtio2",
+                "iothread": false,
+                "path_in_datastore": "vm-220-disk-4",
+                "queues": 0,
+                "replicate": true,
+                "serial": "",
+                "size": 264,
+                "speed": [],
+                "ssd": false
+              }
+            ],
+            "efi_disk": [
+              {
+                "datastore_id": "local-zfs",
+                "file_format": "raw",
+                "pre_enrolled_keys": false,
+                "type": "4m"
+              }
+            ],
+            "hook_script_file_id": "",
+            "hostpci": [],
+            "hotplug": null,
+            "id": "220",
+            "initialization": [
+              {
+                "datastore_id": "local-zfs",
+                "dns": [],
+                "file_format": "",
+                "interface": "ide2",
+                "ip_config": [
+                  {
+                    "ipv4": [
+                      {
+                        "address": "10.10.20.21/24",
+                        "gateway": "10.10.20.1"
+                      }
+                    ],
+                    "ipv6": []
+                  }
+                ],
+                "meta_data_file_id": "",
+                "network_data_file_id": "",
+                "type": "",
+                "upgrade": true,
+                "user_account": [],
+                "user_data_file_id": "",
+                "vendor_data_file_id": ""
+              }
+            ],
+            "ipv4_addresses": [
+              [
+                "127.0.0.1",
+                "169.254.116.108"
+              ],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [
+                "10.10.20.21"
+              ],
+              [],
+              [
+                "10.244.1.112"
+              ],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              []
+            ],
+            "ipv6_addresses": [
+              [
+                "::1"
+              ],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [
+                "fe80::5054:ff:fe00:102"
+              ],
+              [
+                "fe80::8411:4fff:fe73:60db"
+              ],
+              [
+                "fe80::c44c:39ff:feac:9f54"
+              ],
+              [
+                "fe80::5c6c:34ff:fe20:c12c"
+              ],
+              [
+                "fe80::ccb0:6cff:fe74:8dd3"
+              ],
+              [
+                "fe80::4818:b9ff:fe02:dc7c"
+              ],
+              [
+                "fe80::c485:84ff:fec2:fbb9"
+              ],
+              [
+                "fe80::861:edff:fe31:ae32"
+              ],
+              [
+                "fe80::1016:8ff:fe78:f216"
+              ],
+              [
+                "fe80::f84c:23ff:fe5a:b4cc"
+              ],
+              [
+                "fe80::8059:a2ff:fe4d:42ce"
+              ],
+              [
+                "fe80::d0:4fff:fe45:72f8"
+              ],
+              [
+                "fe80::2cde:daff:feba:3e23"
+              ],
+              [
+                "fe80::10fa:9fff:feab:744b"
+              ],
+              [
+                "fe80::2c23:13ff:fed1:de8e"
+              ],
+              [
+                "fe80::bc4b:71ff:fe64:3fa1"
+              ],
+              [
+                "fe80::3c2e:ceff:fe2f:6b03"
+              ],
+              [
+                "fe80::8425:c2ff:fe09:40c8"
+              ],
+              [
+                "fe80::340a:20ff:fe13:ab2e"
+              ],
+              [
+                "fe80::5cee:a4ff:fe2b:e52e"
+              ],
+              [
+                "fe80::c0:4eff:fe17:a7e2"
+              ],
+              [
+                "fe80::e066:9eff:fe36:dba7"
+              ],
+              [
+                "fe80::1492:53ff:fe23:1b5a"
+              ],
+              [
+                "fe80::4d2:c7ff:fec6:3737"
+              ],
+              [
+                "fe80::20c8:a6ff:fe47:1be"
+              ],
+              [
+                "fe80::2c8c:46ff:fecb:b0c"
+              ],
+              [
+                "fe80::40a5:8aff:fe6f:e80f"
+              ],
+              [
+                "fe80::2855:7bff:fe23:349c"
+              ],
+              [
+                "fe80::840c:1bff:fefc:d36b"
+              ],
+              [
+                "fe80::b8f9:6fff:fee0:5377"
+              ],
+              [
+                "fe80::f41a:67ff:fe57:8c6c"
+              ]
+            ],
+            "keyboard_layout": "en-us",
+            "kvm_arguments": "",
+            "mac_addresses": [
+              "00:00:00:00:00:00",
+              "2E:07:12:39:D7:AD",
+              "36:7F:2A:65:8F:3C",
+              "00:00:00:00:00:00",
+              "00:00:00:00:00:00",
+              "00:00:00:00:00:00",
+              "00:00:00:00:00:00",
+              "52:54:00:00:01:02",
+              "86:11:4F:73:60:DB",
+              "C6:4C:39:AC:9F:54",
+              "5E:6C:34:20:C1:2C",
+              "CE:B0:6C:74:8D:D3",
+              "4A:18:B9:02:DC:7C",
+              "C6:85:84:C2:FB:B9",
+              "0A:61:ED:31:AE:32",
+              "12:16:08:78:F2:16",
+              "FA:4C:23:5A:B4:CC",
+              "82:59:A2:4D:42:CE",
+              "02:D0:4F:45:72:F8",
+              "2E:DE:DA:BA:3E:23",
+              "12:FA:9F:AB:74:4B",
+              "2E:23:13:D1:DE:8E",
+              "BE:4B:71:64:3F:A1",
+              "3E:2E:CE:2F:6B:03",
+              "86:25:C2:09:40:C8",
+              "36:0A:20:13:AB:2E",
+              "5E:EE:A4:2B:E5:2E",
+              "02:C0:4E:17:A7:E2",
+              "E2:66:9E:36:DB:A7",
+              "16:92:53:23:1B:5A",
+              "06:D2:C7:C6:37:37",
+              "22:C8:A6:47:01:BE",
+              "2E:8C:46:CB:0B:0C",
+              "42:A5:8A:6F:E8:0F",
+              "2A:55:7B:23:34:9C",
+              "86:0C:1B:FC:D3:6B",
+              "BA:F9:6F:E0:53:77",
+              "F6:1A:67:57:8C:6C"
+            ],
+            "machine": "q35",
+            "memory": [
+              {
+                "dedicated": 6144,
+                "floating": 0,
+                "hugepages": "",
+                "keep_hugepages": false,
+                "shared": 0
+              }
+            ],
+            "migrate": false,
+            "name": "talos-worker-1",
+            "network_device": [
+              {
+                "bridge": "vmbr1",
+                "disconnected": false,
+                "enabled": true,
+                "firewall": false,
+                "mac_address": "52:54:00:00:01:02",
+                "model": "virtio",
+                "mtu": 0,
+                "queues": 0,
+                "rate_limit": 0,
+                "trunks": "",
+                "vlan_id": 0
+              }
+            ],
+            "network_interface_names": [
+              "lo",
+              "bond0",
+              "dummy0",
+              "teql0",
+              "tunl0",
+              "sit0",
+              "ip6tnl0",
+              "ens18",
+              "cilium_net",
+              "cilium_host",
+              "cilium_vxlan",
+              "lxc483806a94216",
+              "lxc6088924f67e3",
+              "lxcf093976f77b7",
+              "lxce9b4cc68249c",
+              "lxc516d3a870e8a",
+              "lxce21c21dc6528",
+              "lxcc5e1cbd99d12",
+              "lxcc8719e2388fa",
+              "lxc_health",
+              "lxc93e8b5b8e527",
+              "lxc67c753c3e87a",
+              "lxcbefb88d03dfc",
+              "lxc39b0c7bc244c",
+              "lxc3b0e5a523a9c",
+              "lxc9c5ab32eeb5f",
+              "lxc19939a70c2f2",
+              "lxcddffa49318e0",
+              "lxcb1d9fdf99530",
+              "lxc1b31f2bb6718",
+              "lxcedf6499fb3ba",
+              "lxc75cb41e2ff52",
+              "lxc850e17b71d88",
+              "lxc74f3cb996187",
+              "lxcb3570d06e168",
+              "lxc0e7791f78266",
+              "lxc69573f37a886",
+              "lxc52a7dafef101"
+            ],
+            "node_name": "proxmox",
+            "numa": [],
+            "on_boot": true,
+            "operating_system": [
+              {
+                "type": "l26"
+              }
+            ],
+            "pool_id": "",
+            "protection": false,
+            "purge_on_destroy": true,
+            "reboot": false,
+            "reboot_after_update": true,
+            "rng": [],
+            "scsi_hardware": "virtio-scsi-pci",
+            "serial_device": [],
+            "smbios": [],
+            "started": true,
+            "startup": [],
+            "stop_on_destroy": false,
+            "tablet_device": true,
+            "tags": [
+              "talos",
+              "terraform",
+              "worker"
+            ],
+            "template": false,
+            "timeout_clone": 1800,
+            "timeout_create": 1800,
+            "timeout_migrate": 1800,
+            "timeout_move_disk": 1800,
+            "timeout_reboot": 1800,
+            "timeout_shutdown_vm": 1800,
+            "timeout_start_vm": 1800,
+            "timeout_stop_vm": 300,
+            "tpm_state": [
+              {
+                "datastore_id": "local-zfs",
+                "version": "v2.0"
+              }
+            ],
+            "usb": [],
+            "vga": [],
+            "virtiofs": [],
+            "vm_id": 220,
+            "watchdog": []
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA==",
+          "dependencies": [
+            "data.talos_image_factory_extensions_versions.this",
+            "proxmox_download_file.talos_iso",
+            "talos_image_factory_schematic.this"
+          ]
+        },
+        {
+          "index_key": "talos-worker-2",
+          "schema_version": 0,
+          "attributes": {
+            "acpi": true,
+            "agent": [
+              {
+                "enabled": true,
+                "timeout": "10s",
+                "trim": false,
+                "type": "virtio",
+                "wait_for_ip": []
+              }
+            ],
+            "amd_sev": [],
+            "audio_device": [],
+            "bios": "ovmf",
+            "boot_order": [
+              "virtio0",
+              "net0"
+            ],
+            "cdrom": [],
+            "clone": [],
+            "cpu": [
+              {
+                "affinity": "",
+                "architecture": "",
+                "cores": 4,
+                "flags": [],
+                "hotplugged": 0,
+                "limit": 0,
+                "numa": false,
+                "sockets": 1,
+                "type": "host",
+                "units": 0
+              }
+            ],
+            "delete_unreferenced_disks_on_destroy": true,
+            "description": "Managed by Terraform",
+            "disk": [
+              {
+                "aio": "io_uring",
+                "backup": false,
+                "cache": "none",
+                "datastore_id": "local-zfs",
+                "discard": "on",
+                "file_format": "raw",
+                "file_id": "",
+                "import_from": "",
+                "interface": "virtio0",
+                "iothread": false,
+                "path_in_datastore": "vm-221-disk-2",
+                "queues": 0,
+                "replicate": true,
+                "serial": "",
+                "size": 64,
+                "speed": [],
+                "ssd": false
+              },
+              {
+                "aio": "io_uring",
+                "backup": false,
+                "cache": "none",
+                "datastore_id": "local-zfs",
+                "discard": "on",
+                "file_format": "raw",
+                "file_id": "",
+                "import_from": "",
+                "interface": "virtio2",
+                "iothread": false,
+                "path_in_datastore": "vm-221-disk-4",
+                "queues": 0,
+                "replicate": true,
+                "serial": "",
+                "size": 264,
+                "speed": [],
+                "ssd": false
+              }
+            ],
+            "efi_disk": [
+              {
+                "datastore_id": "local-zfs",
+                "file_format": "raw",
+                "pre_enrolled_keys": false,
+                "type": "4m"
+              }
+            ],
+            "hook_script_file_id": "",
+            "hostpci": [],
+            "hotplug": null,
+            "id": "221",
+            "initialization": [
+              {
+                "datastore_id": "local-zfs",
+                "dns": [],
+                "file_format": "",
+                "interface": "ide2",
+                "ip_config": [
+                  {
+                    "ipv4": [
+                      {
+                        "address": "10.10.20.22/24",
+                        "gateway": "10.10.20.1"
+                      }
+                    ],
+                    "ipv6": []
+                  }
+                ],
+                "meta_data_file_id": "",
+                "network_data_file_id": "",
+                "type": "",
+                "upgrade": true,
+                "user_account": [],
+                "user_data_file_id": "",
+                "vendor_data_file_id": ""
+              }
+            ],
+            "ipv4_addresses": [
+              [
+                "127.0.0.1",
+                "169.254.116.108"
+              ],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [
+                "10.10.20.22"
+              ],
+              [],
+              [
+                "10.244.2.179"
+              ],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              []
+            ],
+            "ipv6_addresses": [
+              [
+                "::1"
+              ],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [
+                "fe80::5054:ff:fe00:103"
+              ],
+              [
+                "fe80::f8e0:5fff:feb9:f7a9"
+              ],
+              [
+                "fe80::fc84:a8ff:fe57:3e8d"
+              ],
+              [
+                "fe80::ecdf:2bff:fec4:c3cf"
+              ],
+              [
+                "fe80::d861:60ff:fe79:cef"
+              ],
+              [
+                "fe80::a457:d8ff:fe06:b5ca"
+              ],
+              [
+                "fe80::d4bb:feff:fe9f:85f8"
+              ],
+              [
+                "fe80::645c:63ff:fef6:f0b7"
+              ],
+              [
+                "fe80::70e4:74ff:fe56:7b80"
+              ],
+              [
+                "fe80::508d:f9ff:fe38:aad8"
+              ],
+              [
+                "fe80::dca2:c0ff:fe18:1fe5"
+              ],
+              [
+                "fe80::58c3:1eff:fe7d:29cd"
+              ],
+              [
+                "fe80::bcb6:46ff:fef0:4513"
+              ],
+              [
+                "fe80::f485:c6ff:fee5:3150"
+              ],
+              [
+                "fe80::d481:d2ff:fe4a:e1ea"
+              ],
+              [
+                "fe80::f828:40ff:feb2:406a"
+              ],
+              [
+                "fe80::9c90:39ff:fe53:3f6e"
+              ],
+              [
+                "fe80::9cd4:77ff:fe4f:e28c"
+              ],
+              [
+                "fe80::1436:d3ff:fe69:6fb3"
+              ],
+              [
+                "fe80::809a:e4ff:fe68:5602"
+              ],
+              [
+                "fe80::80dc:bcff:fe25:6fc2"
+              ],
+              [
+                "fe80::78b0:d6ff:fe02:a509"
+              ],
+              [
+                "fe80::5499:b5ff:feb5:c0f4"
+              ],
+              [
+                "fe80::5439:8fff:feef:5aed"
+              ],
+              [
+                "fe80::e496:17ff:fe79:9222"
+              ],
+              [
+                "fe80::c04a:aff:feec:cc25"
+              ],
+              [
+                "fe80::870:79ff:fe10:581c"
+              ],
+              [
+                "fe80::8cb4:70ff:fe4c:4e8f"
+              ],
+              [
+                "fe80::e800:43ff:fe81:3b61"
+              ],
+              [
+                "fe80::281c:a2ff:fec9:6df5"
+              ],
+              [
+                "fe80::b475:5aff:fea0:3ec1"
+              ],
+              [
+                "fe80::bc11:7ff:fef0:e804"
+              ],
+              [
+                "fe80::a86f:92ff:fec9:1733"
+              ],
+              [
+                "fe80::8006:f6ff:fe03:37e7"
+              ],
+              [
+                "fe80::1408:7aff:fe8e:52cb"
+              ]
+            ],
+            "keyboard_layout": "en-us",
+            "kvm_arguments": "",
+            "mac_addresses": [
+              "00:00:00:00:00:00",
+              "C2:E8:B6:CE:A2:76",
+              "36:F9:EB:9B:C6:AE",
+              "00:00:00:00:00:00",
+              "00:00:00:00:00:00",
+              "00:00:00:00:00:00",
+              "00:00:00:00:00:00",
+              "52:54:00:00:01:03",
+              "FA:E0:5F:B9:F7:A9",
+              "FE:84:A8:57:3E:8D",
+              "EE:DF:2B:C4:C3:CF",
+              "DA:61:60:79:0C:EF",
+              "A6:57:D8:06:B5:CA",
+              "D6:BB:FE:9F:85:F8",
+              "66:5C:63:F6:F0:B7",
+              "72:E4:74:56:7B:80",
+              "52:8D:F9:38:AA:D8",
+              "DE:A2:C0:18:1F:E5",
+              "5A:C3:1E:7D:29:CD",
+              "BE:B6:46:F0:45:13",
+              "F6:85:C6:E5:31:50",
+              "D6:81:D2:4A:E1:EA",
+              "FA:28:40:B2:40:6A",
+              "9E:90:39:53:3F:6E",
+              "9E:D4:77:4F:E2:8C",
+              "16:36:D3:69:6F:B3",
+              "82:9A:E4:68:56:02",
+              "82:DC:BC:25:6F:C2",
+              "7A:B0:D6:02:A5:09",
+              "56:99:B5:B5:C0:F4",
+              "56:39:8F:EF:5A:ED",
+              "E6:96:17:79:92:22",
+              "C2:4A:0A:EC:CC:25",
+              "0A:70:79:10:58:1C",
+              "8E:B4:70:4C:4E:8F",
+              "EA:00:43:81:3B:61",
+              "2A:1C:A2:C9:6D:F5",
+              "B6:75:5A:A0:3E:C1",
+              "BE:11:07:F0:E8:04",
+              "AA:6F:92:C9:17:33",
+              "82:06:F6:03:37:E7",
+              "16:08:7A:8E:52:CB"
+            ],
+            "machine": "q35",
+            "memory": [
+              {
+                "dedicated": 6144,
+                "floating": 0,
+                "hugepages": "",
+                "keep_hugepages": false,
+                "shared": 0
+              }
+            ],
+            "migrate": false,
+            "name": "talos-worker-2",
+            "network_device": [
+              {
+                "bridge": "vmbr1",
+                "disconnected": false,
+                "enabled": true,
+                "firewall": false,
+                "mac_address": "52:54:00:00:01:03",
+                "model": "virtio",
+                "mtu": 0,
+                "queues": 0,
+                "rate_limit": 0,
+                "trunks": "",
+                "vlan_id": 0
+              }
+            ],
+            "network_interface_names": [
+              "lo",
+              "bond0",
+              "dummy0",
+              "teql0",
+              "tunl0",
+              "sit0",
+              "ip6tnl0",
+              "ens18",
+              "cilium_net",
+              "cilium_host",
+              "cilium_vxlan",
+              "lxc344d0d949ca9",
+              "lxcc9885be39783",
+              "lxc82e927570a21",
+              "lxc0718880223ca",
+              "lxc3ac858f06202",
+              "lxcfc153cb761a2",
+              "lxccc3e10b8ace0",
+              "lxcbfe3c6456b7f",
+              "lxc0f10fc131bb6",
+              "lxc453a880fa8a4",
+              "lxc_health",
+              "lxc1444adb9cae3",
+              "lxca4a58dafb2b4",
+              "lxc18a8d726a137",
+              "lxcd16db70d534d",
+              "lxcd42ea7d04c85",
+              "lxc91065d6ad332",
+              "lxce30c5749d7ac",
+              "lxc0fbb49e8758e",
+              "lxc17ee1bcc9bda",
+              "lxc84ea26293921",
+              "lxc8d79fa0882f8",
+              "lxcdd09fca917ff",
+              "lxc9580941bc3c7",
+              "lxc4efeb64edcff",
+              "lxcedfa7fa1de26",
+              "lxc3dc7e4aefa10",
+              "lxce9f01199f53f",
+              "lxcdbc2ea7e139b",
+              "lxc85eba06ec938",
+              "lxcdee30c561447"
+            ],
+            "node_name": "proxmox",
+            "numa": [],
+            "on_boot": true,
+            "operating_system": [
+              {
+                "type": "l26"
+              }
+            ],
+            "pool_id": "",
+            "protection": false,
+            "purge_on_destroy": true,
+            "reboot": false,
+            "reboot_after_update": true,
+            "rng": [],
+            "scsi_hardware": "virtio-scsi-pci",
+            "serial_device": [],
+            "smbios": [],
+            "started": true,
+            "startup": [],
+            "stop_on_destroy": false,
+            "tablet_device": true,
+            "tags": [
+              "talos",
+              "terraform",
+              "worker"
+            ],
+            "template": false,
+            "timeout_clone": 1800,
+            "timeout_create": 1800,
+            "timeout_migrate": 1800,
+            "timeout_move_disk": 1800,
+            "timeout_reboot": 1800,
+            "timeout_shutdown_vm": 1800,
+            "timeout_start_vm": 1800,
+            "timeout_stop_vm": 300,
+            "tpm_state": [
+              {
+                "datastore_id": "local-zfs",
+                "version": "v2.0"
+              }
+            ],
+            "usb": [],
+            "vga": [],
+            "virtiofs": [],
+            "vm_id": 221,
+            "watchdog": []
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA==",
+          "dependencies": [
+            "data.talos_image_factory_extensions_versions.this",
+            "proxmox_download_file.talos_iso",
+            "talos_image_factory_schematic.this"
+          ]
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "talos_image_factory_schematic",
+      "name": "this",
+      "provider": "provider[\"registry.terraform.io/siderolabs/talos\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "id": "a72961cff61328db9bf029a0cc90eef92a5de708c83853e0c97fd87b8efe247e",
+            "schematic": "\"customization\":\n  \"systemExtensions\":\n    \"officialExtensions\":\n    - \"siderolabs/amdgpu\"\n    - \"siderolabs/amd-ucode\"\n    - \"siderolabs/iscsi-tools\"\n    - \"siderolabs/qemu-guest-agent\"\n    - \"siderolabs/util-linux-tools\"\n"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "dependencies": [
+            "data.talos_image_factory_extensions_versions.this"
+          ]
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "talos_machine_secrets",
+      "name": "this",
+      "provider": "provider[\"registry.terraform.io/siderolabs/talos\"]",
+      "instances": [
+        {
+          "schema_version": 1,
+          "attributes": {
+            "client_configuration": {
+              "ca_certificate": "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJQekNCOHFBREFnRUNBaEVBcXZhV3ZYb0w5N2F3c09BOGh1VlU4VEFGQmdNclpYQXdFREVPTUF3R0ExVUUKQ2hNRmRHRnNiM013SGhjTk1qWXdNekU0TVRJeU1UQTRXaGNOTXpZd016RTFNVEl5TVRBNFdqQVFNUTR3REFZRApWUVFLRXdWMFlXeHZjekFxTUFVR0F5dGxjQU1oQUZiMkVYMFkxUU10cjFpcE5RSE5MaFdKdU91dWxjalFuTU1OCi9MbEJHQ1FIbzJFd1h6QU9CZ05WSFE4QkFmOEVCQU1DQW9Rd0hRWURWUjBsQkJZd0ZBWUlLd1lCQlFVSEF3RUcKQ0NzR0FRVUZCd01DTUE4R0ExVWRFd0VCL3dRRk1BTUJBZjh3SFFZRFZSME9CQllFRkh1b3pCOC94eXVHR3BTcAovTUNUa3d3MjcrWTdNQVVHQXl0bGNBTkJBTFk3aU8vS0k1ajVxK0J0Z01aY0E5Ryt2TTVFZm1sRjVNUzBRanFRCnVaZ2ljT1BxL2krSDdGbHBGUzRCZ3UzbTJGTi9USkF3QjJEMk03K05EUjBoT2drPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==",
+              "client_certificate": "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJLRENCMjZBREFnRUNBaEFjU2JSNk1wTDNFa1pIWWxka2Znc0FNQVVHQXl0bGNEQVFNUTR3REFZRFZRUUsKRXdWMFlXeHZjekFlRncweU5qQXpNVGd4TWpJeE1EaGFGdzB5TnpBek1UZ3hNakl4TURoYU1CTXhFVEFQQmdOVgpCQW9UQ0c5ek9tRmtiV2x1TUNvd0JRWURLMlZ3QXlFQWdMbG12eDFQdnNIUHR1ZlRGZWtYQmdTakl2eG5iWldjCjh5K21BMlMwNFRpalNEQkdNQTRHQTFVZER3RUIvd1FFQXdJSGdEQVRCZ05WSFNVRUREQUtCZ2dyQmdFRkJRY0QKQWpBZkJnTlZIU01FR0RBV2dCUjdxTXdmUDhjcmhocVVxZnpBazVNTU51L21PekFGQmdNclpYQURRUUJEOGUxVApRbHlEY2tGdUVXbHQ0enU3TzNRTlhXWWtqdWdNaWZIcFZOWTR2aHNBcFEyV3FjdXNDYUR4TXJNU0R4aGM0N21BCksvL1dabFRmWGRPZ1FJTU4KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=",
+              "client_key": "LS0tLS1CRUdJTiBFRDI1NTE5IFBSSVZBVEUgS0VZLS0tLS0KTUM0Q0FRQXdCUVlESzJWd0JDSUVJS2dzM1h2M2pBMHppSjZnTEUyRFNMdTcwSlBHbkdvVnl3ZjAxcEhjWlVKRgotLS0tLUVORCBFRDI1NTE5IFBSSVZBVEUgS0VZLS0tLS0K"
+            },
+            "id": "machine_secrets",
+            "machine_secrets": {
+              "certs": {
+                "etcd": {
+                  "cert": "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJmakNDQVNTZ0F3SUJBZ0lSQU5sb2NPeHVXanhKN1hrZmpBOU11R3N3Q2dZSUtvWkl6ajBFQXdJd0R6RU4KTUFzR0ExVUVDaE1FWlhSalpEQWVGdzB5TmpBek1UZ3hNakl4TURoYUZ3MHpOakF6TVRVeE1qSXhNRGhhTUE4eApEVEFMQmdOVkJBb1RCR1YwWTJRd1dUQVRCZ2NxaGtqT1BRSUJCZ2dxaGtqT1BRTUJCd05DQUFRZERSSGkvbzJIClpvenRCaVVNRXNWKzZCelpmbzZldkR4TXVCZm9QSG5ZblBENFUzRmdTV052clN0YjNOUjBHNk9pK2dmRDduSzIKbWpNL3haVExIZnljbzJFd1h6QU9CZ05WSFE4QkFmOEVCQU1DQW9Rd0hRWURWUjBsQkJZd0ZBWUlLd1lCQlFVSApBd0VHQ0NzR0FRVUZCd01DTUE4R0ExVWRFd0VCL3dRRk1BTUJBZjh3SFFZRFZSME9CQllFRkt1d3JQTXh6VTB4CmRaMWV6bE9rbVhPRENHMmlNQW9HQ0NxR1NNNDlCQU1DQTBnQU1FVUNJUUNuc2EzZ3Z0VGtDR0VzMmtPL0d2OW4KWkRPVGNoaklXaFByYjFRTG5pREtRd0lnTHBvb2RWcVVMMzYzQ05Nd3oveXV3UzF2Y1ZLdVNQTS9CS3QzZU44Qwp6Ync9Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K",
+                  "key": "LS0tLS1CRUdJTiBFQyBQUklWQVRFIEtFWS0tLS0tCk1IY0NBUUVFSUh6Y3JxVEhsazh4YnRYaFZzL3prVUV4d05RWVpST0N0NHVvdS9CdEVXTVdvQW9HQ0NxR1NNNDkKQXdFSG9VUURRZ0FFSFEwUjR2Nk5oMmFNN1FZbERCTEZmdWdjMlg2T25ydzhUTGdYNkR4NTJKencrRk54WUVsagpiNjByVzl6VWRCdWpvdm9Idys1eXRwb3pQOFdVeXgzOG5BPT0KLS0tLS1FTkQgRUMgUFJJVkFURSBLRVktLS0tLQo="
+                },
+                "k8s": {
+                  "cert": "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJpakNDQVRDZ0F3SUJBZ0lSQU9GbkRiSDJxS0hkK1J6SnVlZk5IVm93Q2dZSUtvWkl6ajBFQXdJd0ZURVQKTUJFR0ExVUVDaE1LYTNWaVpYSnVaWFJsY3pBZUZ3MHlOakF6TVRneE1qSXhNRGhhRncwek5qQXpNVFV4TWpJeApNRGhhTUJVeEV6QVJCZ05WQkFvVENtdDFZbVZ5Ym1WMFpYTXdXVEFUQmdjcWhrak9QUUlCQmdncWhrak9QUU1CCkJ3TkNBQVJhSlVQYTRFSU5VanNNK0hVU21ITTAvendxdWc0SFBGQUFoVm9nL1FkZHJnS2pFWlNFWnBkT0VuaXgKUEVnakNBU3pEYnJMUXI3RldKTE0vSXkwampUcG8yRXdYekFPQmdOVkhROEJBZjhFQkFNQ0FvUXdIUVlEVlIwbApCQll3RkFZSUt3WUJCUVVIQXdFR0NDc0dBUVVGQndNQ01BOEdBMVVkRXdFQi93UUZNQU1CQWY4d0hRWURWUjBPCkJCWUVGRkhNaENXSnR3MmNBYWhWazhvY0JxeVBTTGtMTUFvR0NDcUdTTTQ5QkFNQ0EwZ0FNRVVDSVFERU1xeXgKVUMxQkZmY3RsSHdKVGEyMVllZ0JyVnpLUnNEYzlabWJSak9iMUFJZ2RRSk4yMkcwUU1wVVlnQnpEcnBDM0pqNgpiQUEwQmlmQzZaaVQ2ekN3b0ZvPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==",
+                  "key": "LS0tLS1CRUdJTiBFQyBQUklWQVRFIEtFWS0tLS0tCk1IY0NBUUVFSUMrOUpLRlRjSzFNWDljN29ycWNLZ1NIVE1KWjZXV1dlQXR5VThwZWY1ekdvQW9HQ0NxR1NNNDkKQXdFSG9VUURRZ0FFV2lWRDJ1QkNEVkk3RFBoMUVwaHpOUDg4S3JvT0J6eFFBSVZhSVAwSFhhNENveEdVaEdhWApUaEo0c1R4SUl3Z0VzdzI2eTBLK3hWaVN6UHlNdEk0MDZRPT0KLS0tLS1FTkQgRUMgUFJJVkFURSBLRVktLS0tLQo="
+                },
+                "k8s_aggregator": {
+                  "cert": "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJZRENDQVFXZ0F3SUJBZ0lRV3hqaEZiY1BmemdHMkJEeGVjZEtkekFLQmdncWhrak9QUVFEQWpBQU1CNFgKRFRJMk1ETXhPREV5TWpFd09Gb1hEVE0yTURNeE5URXlNakV3T0Zvd0FEQlpNQk1HQnlxR1NNNDlBZ0VHQ0NxRwpTTTQ5QXdFSEEwSUFCSHUwbzk3cmlrbjJrdW5qZVkwekR6T0JPbEM3cnpjb3djNG56VlpGQjlqS0J5YmxlcDR3CmgySXQ2ZjJvM1pyQWhQb2Zub3hPaitqb0lMUzQxOU1JR1JhallUQmZNQTRHQTFVZER3RUIvd1FFQXdJQ2hEQWQKQmdOVkhTVUVGakFVQmdnckJnRUZCUWNEQVFZSUt3WUJCUVVIQXdJd0R3WURWUjBUQVFIL0JBVXdBd0VCL3pBZApCZ05WSFE0RUZnUVV1Wm8vZWdiQVdTOVphcG16QlFwcHBsblNWSUV3Q2dZSUtvWkl6ajBFQXdJRFNRQXdSZ0loCkFNSWxrQlEzMTNiVEJJenYwN2tLcWlVV2VDamtCUTZVV0ZSOTZqK09FRTQwQWlFQXBLeTJIOFRqejVveHh6R2sKNE9ScmVBK3d2RCtNbTBTZkdweFVXRkNOS1AwPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==",
+                  "key": "LS0tLS1CRUdJTiBFQyBQUklWQVRFIEtFWS0tLS0tCk1IY0NBUUVFSUFvQmtUUE16SndYUjFRbGI2R09CRXMwMUNyazFielduTmU3L2FhYko2d3ZvQW9HQ0NxR1NNNDkKQXdFSG9VUURRZ0FFZTdTajN1dUtTZmFTNmVONWpUTVBNNEU2VUx1dk55akJ6aWZOVmtVSDJNb0hKdVY2bmpDSApZaTNwL2FqZG1zQ0UraCtlakU2UDZPZ2d0TGpYMHdnWkZnPT0KLS0tLS1FTkQgRUMgUFJJVkFURSBLRVktLS0tLQo="
+                },
+                "k8s_serviceaccount": {
+                  "key": "LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQpNSUlKS0FJQkFBS0NBZ0VBeTY0eFJxaHFBZng2U1Q5QzBMUkVTZnFWUWFpSkRneXB0YzdlREVLR2h1VWZ4WEFZClFsUllYOHFNanNId1hZbU4zdFVLazFsZXQvTWNhNU1aYzVEOWJEMjJkampYaEFlU3BWT2FURmt3Y016NDQ4Q28Kc2hCYVpzTm5vMEZvbTFLdHYyNnJSK0ZRUlErR2dITkl2c2thWW5xOHpSODE3SkpScWRvN1pWeEZTK3FlTU03MApyQi9TSnNmSmVIRXpPZG9BdkZlbFdhLzhuc3AvWUZOM20wUFBGdTZMWnV0UXo0VUZidllUem1Hc2FwM0l6N0U5CnhET1RrNGdaMDRYVlk1aUIwR09VTzFiQnBVa1lTRVlSRUVCWFhNUEp0aHVTR0lYUWF0b0V1cTduRDJ6MUZMdzIKdjNXb2xhUlVlZkpMcEZJRGEzUGJZZWNSUmhyOUdzV25INDhrVEJIYmsxN05ubnBXbWljZG5VNkpXVy9lU0I4VQpZREt4RFFsMVdrdE95by9Yd1lkenM2SXh0YUJOVS8xakZIQmt3R1BFcVdFeXJybGNOL3BJdFpGUTY0cnFVWjZTCjR2NmRZbEJjMmw3RXhTVzNBdk91K0RyM3NBRzI2Ry9XOGN4ZFlqanhuR1d0eXU0a0lWZ05NVDFUdFhBR2FsdFkKbE5nVmRjdHdrZU1hWDE2aitERG94WnhEeC8rT2VNREg5c2VoQVc3NnBFdGx2Rms3TktrNy9ZU1NnMUZYakxwbworT0YwU1Z3WDFJRGo4VEtXWGNHaEVkaTNuUUsxQ01uVERSZ3F6blNsblVXZG5EdWgwNC9nMWdLRHoxZVhsc043CmQrLzhVNjhUZ3RJbWZ4QkRkSXVtMCtnZW5Qbk00YkVEVGZKcWhUM2J1Qy8xQU9Cem9YRGtpOVZIeWpjQ0F3RUEKQVFLQ0FnQUtCV2NCMGo2UmlpblBPYUJKekNTOUlNVTI1SDZZb0lGd2ZxYzYvY0phcWlKa3dKQWcvWnJOT0V6NApwMmdXejhSMHVPeWZrTHJOU21oZC9FdUNJajN1M21pM0Qzd0htVjRSMTI1MHZBcWtPMFlOVDdzcXhucnA0TnpCCnlNMFFuMHN0L1pBVGdXMXFDRzhXWXhXcWRWdnkwd05rY24ycC9lbUhoL294a1h2bjZDYkc1ZnhlVm5lYVZrZ1EKbkQzRHI1MXdPUmx0czRJMmZtWU1oKzdHSWlPRlBnZWM4TmMrM0VRcmRMaEhVWnpybmZVc1dJT25ta3poeFh3TQpZU3U5Uk5xZldmdDF4amxqWlhQNmlUSkUza2ZTcUNrVzZIM0k3czJuMzUxTjg4T1haU0Vjb0h4S3pUa0R2aE1RCk9nd0VINGFWakJ5NFkyZVRjOXd5R1hCSGFEalBTOThCU0Y4dUhJSHNuYmgvU0Qra29JQ1R2WGt0RThnam1VengKT2oxam9ES09qc2U5YkwyYXJtdEN2b3hzWWZmZGN5RE5XazQ5UkRjSVQveXBGbThWNG9tck4yeUxoUEx6VlF0WQpXS1JxOW50allSWjIwRUVJUm0yTVhDUFI4TGtQQ29aQ3BCUGlPRGVGV0QwSWZ2Nms2eTZQUnd5N0I1TTBHeFYrCmE4L21wQnpEcTdpMVdSdzZEdVl1cjQwTGhmcUxsYjdKR083RUtDc3RtN0JKUll6VGZHQkN6dWI3bXBQL1BYNksKTW9yNTZqc283NUtnZnE4ZEFTTkZWZzRuK3YyV0FoQjJxV0VxZ2VwMWpQZzJkdkJJaURvZFdWQWIvaG5talIwWQpCWXRBeFVGTXBMb3h2QXRwQXhUY1Zjc292aDN1MlhWK2x1cmFHRlkrZm5yRms4aUVJUUtDQVFFQXphajNPVFRWClJtWmlXU0J2b3d0TTJGQ2FJNnpxNGY4UDg3K1o2SXJQTXFQQkNGL3pNbnp6S2lGVFAvTVpKSXRiSyswMWhGbkEKV3duRWZYQVVyck5pMSs4QmM2L3RVT1JqclRRYjdUUXlVUFQ1YzB0dEtQV1EyTE56dnVGZlBzOTNIVkhpa1p6OQpzK0Q2NS9wRG1GOXpzZkI4SFZ0OWFzR3lFVWVDeWpUOFdSMkpmZUNCcHhqNEJIdVRvU203UjY4VWM3QkExSlZqClpSZ0pVS3pFR01wM1BqRFRNcWJhQXFSUGtWYlVYaUJBQUFGa3k2Slo2ekRWY2pvZTNveXpoc2NtR2VlbFZncUIKZlluaTRnSFd5bER0eitmVWoyMUQ3d2piRmw5VkRieXh6Mml6SGVXZVUvRTJ5QzQvVERjRXFQYkZUd2EreWhKSApJRDdiVkZTWmNsNHBjUUtDQVFFQS9Za3V0azU0Q3E5SllQNnM0UTRmLzNtbk1nNTFsenlSbmx4U3lQbllKVi90Ckc5NHF6d2gvZnlYalQ3T2tYT1l6aW0vSVhQKzFscUpOWForMVhJRmJuRkpoNWlaK2oxS2xHcVpoMDNFd0J4UEIKZk10bCtHdnlJVWZyNjVncU1wU1NldzNkdTZPQ1pZSFpkTVlITEVhTXYrS1ZQL2tNSnN1cDBtc3RPemJKU28zbQp2UWRMdmNpMnFySmN2dlhhenJXdGZTQitES2Ivc29nS1BPZWRsWEd5b0krQ2s2WmlIaXFaNzVaajloNnlyYUwwCmpDUVMxOXhCTzQxYUt1QW4zZldlSnRsYnhPV21LY0VhVnBvWUMrVHZmRXNRYUF0MzJKclEwRGVOdWYycU8vdTIKVE5TWitIQzdhWm84RDB2LzlqUjhud09FazZ3WEdtSE51NDVNTjFvYUp3S0NBUUIza0ZUeWNESFI5UElXYU5JZQpVeEtBN0JOQXpHWGRyNkRCajlIVnJPV2F4ak1TUUY0dUt4QmZuUEkrU29HQ2luWWR5cEdEZVg1b0x2eUtCS0F4CmxON1JOUVYrRVhpQnY5WG5PMVZGQ1VSN1pvQ2pzK1VwbStKeTZabFFEc3lGd3EyNFlRTzhyaTJjNXg1WHdWcU0KK21sVHVNRWZmRElrMzZrN2ZIeWdQRCs5TzN2VXI3SVF5R1pnak11ZU5abklxaFBVMGxKT2hPODlOY1VzbnRSKwpxUzY3L0R5OHhONFlEUmlwSVhianBoSXZMcUEvOXdvWnZ0RkkwRnRqL1I3ZUsyZU9SZXNNWTUwMnMvUXdldXM1CndlVVFLdktiMCtWYjBhVTFrNFRxTUpxYlAzNXEwalRERG9oUHh2dEx2dXk1b29YQlZPV1VxeDJvdElKa3U2NWUKSERveEFvSUJBQ1VFdjdaTXRNaFNtYk00M0VNc0RjMytsRVFCeW5lZmwxOTQrWGx3eVhlRGp4cFBrUTZUbmhJUgpsU1FSQmNHdXR2M1NubjI5dEdUZkk4NjB3QVZXdWVxVU9Na2krNzJ2Z24zbXAwZjVNZHNHcm15clFpTklsNXoyClpHTU0zN1JzN3dwYWx2S0x5RUZMK1ZWTWlNV1ZNMzNjOW8vVnJFbUoyU3pwQ3p5bkhqTHRqekF3ZllXalpkQjgKcElBWlk2NWs1b1RybHB3QVVqdGVFNmlhNU81cUlIdkRHSHk0Z1lFSUZWdmZLSTlLSWlxcUxXeTg0NmR5K0c5YQpqenpOWitUSHRTVFUvY285QWNyODcveVBHVTI3U3FCcVVXWHZycnNJdDg1L0hnbDNHVUVTMnFaVE1Id084YjVVCmo4cG4vV0tVZlZHMmNNZ2pDMmlGdVVWV1hKaUVabWNDZ2dFQkFJMmpvL096NjdDd3VMZ0gxUGdTTVRlenRRYTIKRWlhNzBPZTVMNUhKamVPTVMweGtVc0pVWktBUnlUbVdOZnpXdTFrZVZ5Q2RmYnZEbVFVci9kOXorRHVjRlpUOQpWRHp0c0dyMlhjeUhrbHNEUnpiRkp3MEYxSGZkSnpPWVpnaGgxZVhhVElHNjkvaCtFcmRRN2gyRC96OVkrL29SCnF5WU1wZmlLUjZzQnRqUmFUQUIrYXR2VHRuLy9qajN3RVdUQzdpK05halJoM0V5TVpsaGVaaE1JRlg4Ni9YOVoKRkx4anVQSXR6eTFLU24zWHBHM0lBL3NaQmxvZTk3Y21jTTRROVAvRzAyemRXaTNJUlUyUEdKU2NlMDdtRGdvMwpEeFRJbjBpQXQwNm1uWWwyQitDVElkZHRtZXErT1pXNmI3VS94N09xOEEyMzVXNHZ6RkVQYzR0Z0pCaz0KLS0tLS1FTkQgUlNBIFBSSVZBVEUgS0VZLS0tLS0K"
+                },
+                "os": {
+                  "cert": "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJQekNCOHFBREFnRUNBaEVBcXZhV3ZYb0w5N2F3c09BOGh1VlU4VEFGQmdNclpYQXdFREVPTUF3R0ExVUUKQ2hNRmRHRnNiM013SGhjTk1qWXdNekU0TVRJeU1UQTRXaGNOTXpZd016RTFNVEl5TVRBNFdqQVFNUTR3REFZRApWUVFLRXdWMFlXeHZjekFxTUFVR0F5dGxjQU1oQUZiMkVYMFkxUU10cjFpcE5RSE5MaFdKdU91dWxjalFuTU1OCi9MbEJHQ1FIbzJFd1h6QU9CZ05WSFE4QkFmOEVCQU1DQW9Rd0hRWURWUjBsQkJZd0ZBWUlLd1lCQlFVSEF3RUcKQ0NzR0FRVUZCd01DTUE4R0ExVWRFd0VCL3dRRk1BTUJBZjh3SFFZRFZSME9CQllFRkh1b3pCOC94eXVHR3BTcAovTUNUa3d3MjcrWTdNQVVHQXl0bGNBTkJBTFk3aU8vS0k1ajVxK0J0Z01aY0E5Ryt2TTVFZm1sRjVNUzBRanFRCnVaZ2ljT1BxL2krSDdGbHBGUzRCZ3UzbTJGTi9USkF3QjJEMk03K05EUjBoT2drPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==",
+                  "key": "LS0tLS1CRUdJTiBFRDI1NTE5IFBSSVZBVEUgS0VZLS0tLS0KTUM0Q0FRQXdCUVlESzJWd0JDSUVJTlFvVzFtbk0rVC9sTkwwSklxYzNiVUtaWHhua3ErcXdmWks5djdLUjFyZgotLS0tLUVORCBFRDI1NTE5IFBSSVZBVEUgS0VZLS0tLS0K"
+                }
+              },
+              "cluster": {
+                "id": "_VziAGjGXw2N-AUG_8gTAnxdXabIVZGA3VbC37_8TjY=",
+                "secret": "WQt00uAIAlN0hjhJBHi486ewsGRXkTFGbdKOpcI2BB8="
+              },
+              "secrets": {
+                "aescbc_encryption_secret": null,
+                "bootstrap_token": "cvtkew.stk8xcp5u4no1q8w",
+                "secretbox_encryption_secret": "1ZbLP1sC0LAa+bsLcT0V8fwjP3Gfjp03LdUtNNjXqH0="
+              },
+              "trustdinfo": {
+                "token": "6ri18o.4tv3sdtnnve14u2l"
+              }
+            },
+            "talos_version": "v1.12"
+          },
+          "sensitive_attributes": [
+            [
+              {
+                "type": "get_attr",
+                "value": "client_configuration"
+              },
+              {
+                "type": "get_attr",
+                "value": "client_key"
+              }
+            ],
+            [
+              {
+                "type": "get_attr",
+                "value": "machine_secrets"
+              },
+              {
+                "type": "get_attr",
+                "value": "certs"
+              },
+              {
+                "type": "get_attr",
+                "value": "etcd"
+              },
+              {
+                "type": "get_attr",
+                "value": "key"
+              }
+            ],
+            [
+              {
+                "type": "get_attr",
+                "value": "machine_secrets"
+              },
+              {
+                "type": "get_attr",
+                "value": "certs"
+              },
+              {
+                "type": "get_attr",
+                "value": "k8s"
+              },
+              {
+                "type": "get_attr",
+                "value": "key"
+              }
+            ],
+            [
+              {
+                "type": "get_attr",
+                "value": "machine_secrets"
+              },
+              {
+                "type": "get_attr",
+                "value": "certs"
+              },
+              {
+                "type": "get_attr",
+                "value": "k8s_aggregator"
+              },
+              {
+                "type": "get_attr",
+                "value": "key"
+              }
+            ],
+            [
+              {
+                "type": "get_attr",
+                "value": "machine_secrets"
+              },
+              {
+                "type": "get_attr",
+                "value": "certs"
+              },
+              {
+                "type": "get_attr",
+                "value": "k8s_serviceaccount"
+              },
+              {
+                "type": "get_attr",
+                "value": "key"
+              }
+            ],
+            [
+              {
+                "type": "get_attr",
+                "value": "machine_secrets"
+              },
+              {
+                "type": "get_attr",
+                "value": "certs"
+              },
+              {
+                "type": "get_attr",
+                "value": "os"
+              },
+              {
+                "type": "get_attr",
+                "value": "key"
+              }
+            ],
+            [
+              {
+                "type": "get_attr",
+                "value": "machine_secrets"
+              },
+              {
+                "type": "get_attr",
+                "value": "cluster"
+              },
+              {
+                "type": "get_attr",
+                "value": "secret"
+              }
+            ],
+            [
+              {
+                "type": "get_attr",
+                "value": "machine_secrets"
+              },
+              {
+                "type": "get_attr",
+                "value": "secrets"
+              },
+              {
+                "type": "get_attr",
+                "value": "aescbc_encryption_secret"
+              }
+            ],
+            [
+              {
+                "type": "get_attr",
+                "value": "machine_secrets"
+              },
+              {
+                "type": "get_attr",
+                "value": "secrets"
+              },
+              {
+                "type": "get_attr",
+                "value": "bootstrap_token"
+              }
+            ],
+            [
+              {
+                "type": "get_attr",
+                "value": "machine_secrets"
+              },
+              {
+                "type": "get_attr",
+                "value": "secrets"
+              },
+              {
+                "type": "get_attr",
+                "value": "secretbox_encryption_secret"
+              }
+            ],
+            [
+              {
+                "type": "get_attr",
+                "value": "machine_secrets"
+              },
+              {
+                "type": "get_attr",
+                "value": "trustdinfo"
+              },
+              {
+                "type": "get_attr",
+                "value": "token"
+              }
+            ]
+          ],
+          "identity_schema_version": 0
+        }
+      ]
+    }
+  ],
+  "check_results": null
+}
