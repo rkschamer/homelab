@@ -154,6 +154,7 @@ spec:
         addServicesLabels: true
         serviceMonitor:
           enabled: true
+          trustCRDsExist: true
 
     providers:
       kubernetesCRD:
