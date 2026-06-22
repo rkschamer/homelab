@@ -9,3 +9,4 @@ resources:
   - snapshot-controller-release.yaml
   - longhorn-release.yaml
   - nfs-csi-release.yaml
+  - traefik-release.yaml
