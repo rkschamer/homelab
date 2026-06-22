@@ -17,7 +17,7 @@ spare capacity for future backed-up VMs or Longhorn offload.
 | Goal | How |
 |------|-----|
 | Eliminate ZFS ARC (~6 GB) | No ZFS anywhere after migration |
-| Make no-swap posture permanent | `swap.yaml` manifests and virtio1 disks removed before migration; ext4 install has no zvol |
+| Eliminate swap-on-zvol deadlock | Swap LV on ext4/LVM has no deadlock risk |
 | Preserve all VM data | vzdump to NAS before reinstall, qmrestore after |
 
 ## Storage Layout (Target)
@@ -27,7 +27,7 @@ NVMe 1 TB — PVE install target (ext4)
 ├── /dev/nvme0n1p1   EFI (512 MB)
 └── /dev/nvme0n1p2   LVM PV → VG "pve"  (auto-created by installer)
     ├── pve/root     ext4  ~100 GB   PVE OS
-    ├── pve/swap     LV    ~8 GB     NOTE: disable post-install (see 3.3)
+    ├── pve/swap     LV    ~8 GB     safe on ext4/LVM (no zvol deadlock risk)
     └── pve/data     LVM thin pool   "local-lvm" storage (~890 GB)
                      └── talos-controlplane-1 (virtio0 64 GB)
                          talos-worker-1       (virtio0 64 GB, virtio2 264 GB)
@@ -66,7 +66,9 @@ those keys. Break the circular dependency before wiping anything.
    kubectl -n kube-system get secret \
      -l sealedsecrets.bitnami.com/sealed-secrets-key=active \
      -o yaml > /tmp/sealed-secrets-master-key.yaml
-   rsync /tmp/sealed-secrets-master-key.yaml root@192.168.123.5:/volume1/backup/pve-config/
+   mount -t nfs 192.168.123.5:/volume1/backups /mnt/nas-backup
+   cp /tmp/sealed-secrets-master-key.yaml /mnt/nas-backup/pve-config/
+   umount /mnt/nas-backup
    ```
 
 ### 0.2 Remove swap manifests and virtio1 disks
@@ -160,8 +162,11 @@ cp    /etc/hosts                  /tmp/pve-backup/
 # System tuning
 cp -a /etc/sysctl.d/              /tmp/pve-backup/
 
-# Copy to NAS (see Appendix for Synology SSH setup)
-rsync -av /tmp/pve-backup/ root@192.168.123.5:/volume1/backup/pve-config/
+# Copy to NAS
+mkdir -p /mnt/nas-backup
+mount -t nfs 192.168.123.5:/volume1/backups /mnt/nas-backup
+cp -a /tmp/pve-backup/ /mnt/nas-backup/pve-config/
+umount /mnt/nas-backup
 ```
 
 > `storage.cfg` is backed up for reference only — do **not** restore it verbatim after
@@ -179,40 +184,29 @@ kubectl -n longhorn-system get volumes.longhorn.io \
 
 ### 0.6 Back up VM disks (vzdump to NAS)
 
-**Properly quiesce Longhorn before shutting down.** Do not simply `qm shutdown` workers.
+Shut down all VMs cleanly — Talos stops kubelet and syncs filesystems on shutdown, so the
+disk images will be consistent for vzdump. Workers first so Longhorn has a chance to flush,
+then control plane.
 
 ```bash
-# 1. Scale down all Longhorn-PVC-using workloads to detach volumes
-#    (repeat for every namespace that has PVCs backed by Longhorn)
-kubectl -n trusted scale deploy --all --replicas=0
-kubectl -n dmz scale deploy --all --replicas=0
-kubectl -n untrusted scale deploy --all --replicas=0
-kubectl -n monitoring scale deploy --all --replicas=0
+# Shut down workers first, then control plane
+talosctl shutdown --nodes 10.10.20.21,10.10.20.22
+# Wait for both to power off, then:
+talosctl shutdown --nodes 192.168.123.20
 
-# 2. Wait for volumes to detach
-kubectl -n longhorn-system get volumes.longhorn.io
-# Wait until all show state: "detached"
-
-# 3. Cordon and drain workers
-kubectl drain talos-worker-1 --ignore-daemonsets --delete-emptydir-data
-kubectl drain talos-worker-2 --ignore-daemonsets --delete-emptydir-data
-
-# 4. Shut down workers, then control plane
-qm shutdown 220
-qm shutdown 221
-qm shutdown 200
-
-# 5. Verify all stopped
+# Verify all stopped
 qm list
 
-# 6. vzdump all VMs to NAS
-vzdump 200 --storage <nas-backup-storage-id> --mode stop --compress zstd
-vzdump 220 --storage <nas-backup-storage-id> --mode stop --compress zstd
-vzdump 221 --storage <nas-backup-storage-id> --mode stop --compress zstd
+# vzdump all VMs to NAS
+vzdump 200 --storage nas --mode stop --compress zstd
+vzdump 220 --storage nas --mode stop --compress zstd
+vzdump 221 --storage nas --mode stop --compress zstd
+
+vzdump 111 --storage nas --mode stop --compress zstd
+vzdump 151 --storage nas --mode stop --compress zstd
+vzdump 110 --storage nas --mode stop --compress zstd
 ```
 
-Replace `<nas-backup-storage-id>` with the Proxmox storage ID for your NAS (Datacenter →
-Storage).
 
 > The Talos VMs (200, 220, 221) are not covered by the regular PVE backup schedule — the
 > explicit vzdump above is the only copy. Do not skip it.
@@ -221,14 +215,14 @@ Storage).
 
 ```bash
 # Confirm all VMs have recent .vma.zst files on NAS
-pvesm list <nas-backup-storage-id> --vmid 200
-pvesm list <nas-backup-storage-id> --vmid 220
-pvesm list <nas-backup-storage-id> --vmid 221
+pvesm list nas --vmid 200
+pvesm list nas --vmid 220
+pvesm list nas --vmid 221
 
-# Verify integrity — do this before touching hardware
-vma verify $(pvesm path <nas-backup-storage-id>:backup/vzdump-qemu-200*.vma.zst)
-vma verify $(pvesm path <nas-backup-storage-id>:backup/vzdump-qemu-220*.vma.zst)
-vma verify $(pvesm path <nas-backup-storage-id>:backup/vzdump-qemu-221*.vma.zst)
+# Verify integrity — vma verify doesn't handle .zst compression; use zstd --test
+for vmid in 200 220 221; do
+  zstd --test $(pvesm path nas:backup/vzdump-qemu-${vmid}*.vma.zst) && echo "VMID $vmid OK"
+done
 ```
 
 **Do not proceed to Phase 1 until all backups are verified present and intact on NAS.**
@@ -279,7 +273,7 @@ ip link show vmbr1
 ### 3.2 Restore system tuning
 
 ```bash
-cp /path/to/pve-backup/sysctl.d/99-proxmox.conf /etc/sysctl.d/
+cp /mnt/nas-backup/sysctl.d/99-swap.conf /etc/sysctl.d/
 sysctl --system
 ```
 
@@ -290,27 +284,11 @@ sysctl vm.swappiness   # expect 10
 
 Note: `/etc/modprobe.d/zfs.conf` (ARC cap) is no longer needed — ZFS is gone.
 
-### 3.3 Disable the installer-created swap LV
+The installer-created `pve/swap` LV is safe to keep. Unlike the old ZFS zvol, an LVM swap LV
+is a plain block device with no deadlock risk. With `vm.swappiness=10` it only activates under
+genuine memory pressure. Leave it as-is.
 
-The installer creates a `pve/swap` LV. Disable it to match the stable no-swap posture:
-
-```bash
-swapoff -a
-# Comment out or remove the swap entry in /etc/fstab
-sed -i '/swap/s/^/#/' /etc/fstab
-
-# Optionally reclaim the space
-lvremove /dev/pve/swap
-# Accept "Do you really want to remove..."
-```
-
-Confirm no swap:
-```bash
-swapon --show   # expect empty
-free -h          # swap line should show 0
-```
-
-### 3.4 Enable LVM thin discard
+### 3.3 Enable LVM thin discard
 
 Required so thin pools reclaim freed blocks from VMs; without this the pool fills up
 even when VMs delete data.
@@ -356,8 +334,14 @@ timedatectl status        # verify NTP active
 
 ### 3.7 Add NAS as backup storage
 
-Datacenter → Storage → Add → NFS (or SMB/CIFS) — point to your NAS backup location.
-This makes the vzdump files accessible for qmrestore in Phase 5.
+Datacenter → Storage → Add → NFS:
+- Server: `192.168.123.5`
+- Export: `/volume1/backups`
+- Subdirectory: `/proxmox`
+- ID: `nas` (match whatever storage ID you used for vzdump in Phase 0.6)
+- Content: VZDump backup file
+
+This makes the vzdump files from Phase 0.6 accessible for qmrestore in Phase 5.
 
 ### 3.8 Set up data-sata LVM thin pool
 
@@ -495,17 +479,6 @@ failure. If this happens:
 3. Fix the TPM issue (re-enroll keys via Talos `talosctl reset --graceful` on that node and
    re-join) before Longhorn marks the lost replica as faulted and waits for a third node
 
-### 6.4 Re-scale workloads
-
-```bash
-# Restore workload deployments that were scaled to 0 in Phase 0.6
-kubectl -n trusted scale deploy --all --replicas=1
-kubectl -n dmz scale deploy --all --replicas=1
-kubectl -n untrusted scale deploy --all --replicas=1
-kubectl -n monitoring scale deploy --all --replicas=1
-# Adjust replica counts above to match your actual desired replicas
-```
-
 ---
 
 ## Phase 7 — Terraform State Reconciliation
@@ -584,57 +557,38 @@ If something goes wrong after wiping:
 
 ---
 
-## Appendix: Enable SSH on Synology NAS for rsync
+## Appendix: Synology NFS Setup
 
-The `rsync` commands in this document push backups to `root@192.168.123.5`. Synology DSM
-disables SSH by default and restricts root login.
+The NFS mount used throughout this document is `192.168.123.5:/volume1/backups`.
 
-### Enable SSH
+### Enable NFS on the Synology
 
-1. DSM → **Control Panel** → **Terminal & SNMP** → **Terminal** tab
-2. Check **Enable SSH service**; set port (default 22 is fine for LAN-only)
-3. Click **Apply**
+DSM → **Control Panel** → **File Services** → **NFS** tab → check **Enable NFS service** → Apply.
 
-### Allow root login (required for rsync as root)
+### Grant PVE host access to the shared folder
 
-By default, DSM blocks root SSH login. Two options:
+DSM → **Control Panel** → **Shared Folder** → select `backups` → **Edit** → **NFS Permissions** tab → **Create**:
 
-**Option A — use your admin user instead of root (preferred):**
-```bash
-# On PVE host, use your DSM admin username
-rsync -av /tmp/pve-backup/ admin@192.168.123.5:/volume1/backup/pve-config/
-# The path /volume1/backup/ maps to the "backup" shared folder in DSM
-```
-
-**Option B — enable root SSH login:**
-1. DSM → **Control Panel** → **Terminal & SNMP** → enable SSH (as above)
-2. SSH into the NAS as your admin user, then:
-   ```bash
-   sudo sed -i 's/#PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config
-   sudo synoservicectl --restart sshd
-   ```
-3. Set root password if not set: `sudo passwd root`
-
-> DSM updates may revert sshd_config changes. Re-apply after DSM upgrades if root SSH stops
-> working.
-
-### Copy SSH key for passwordless auth
-
-On the PVE host:
-```bash
-ssh-copy-id admin@192.168.123.5   # or root@... if using Option B
-# Test:
-ssh admin@192.168.123.5 ls /volume1/backup/
-```
-
-### Shared folder path mapping
-
-| DSM Shared Folder | SSH path |
+| Field | Value |
 |---|---|
-| `backup` | `/volume1/backup/` |
-| `homes/admin` | `/var/services/homes/admin/` |
+| Hostname or IP | `192.168.123.8` |
+| Privilege | Read/Write |
+| Squash | **No mapping** |
+| Security | sys |
+| Enable asynchronous | checked |
 
-Create the destination folder before running rsync:
+**Squash must be "No mapping"** — otherwise root on PVE is remapped to `nobody` and file copies fail with permission errors.
+
+### Mount and use from PVE
+
 ```bash
-ssh admin@192.168.123.5 mkdir -p /volume1/backup/pve-config/
+mkdir -p /mnt/nas-backup
+mount -t nfs 192.168.123.5:/volume1/backups /mnt/nas-backup
+
+# verify
+ls /mnt/nas-backup
+
+umount /mnt/nas-backup
 ```
+
+The mount is temporary (not in `/etc/fstab`) — mount when needed, unmount when done.
