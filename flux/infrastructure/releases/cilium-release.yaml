@@ -16,6 +16,9 @@ metadata:
   namespace: kube-system
 spec:
   interval: 30m
+  dependsOn:
+    - name: prometheus-crds
+      namespace: kube-system
   chart:
     spec:
       chart: cilium
@@ -128,7 +131,6 @@ spec:
       enabled: true
       serviceMonitor:
         enabled: true
-        trustCRDsExist: true
 
     # PriorityClass for critical system component
     priorityClassName: system-node-critical
