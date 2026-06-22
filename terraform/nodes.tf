@@ -57,7 +57,7 @@ resource "proxmox_virtual_environment_vm" "control_plane" {
     interface    = "virtio0"
     size         = each.value.disks.system_size_in_gb
     discard      = "on"
-    backup       = false
+    backup       = true
   }
 
   operating_system {
@@ -147,7 +147,7 @@ resource "proxmox_virtual_environment_vm" "workers" {
     interface    = "virtio0"
     size         = each.value.disks.system_size_in_gb
     discard      = "on"
-    backup       = false
+    backup       = true
   }
 
   # User volume disk (for Longhorn CSI)

@@ -128,6 +128,7 @@ spec:
       enabled: true
       serviceMonitor:
         enabled: true
+        trustCRDsExist: true
 
     # PriorityClass for critical system component
     priorityClassName: system-node-critical
