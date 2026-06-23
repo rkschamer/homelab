@@ -1,0 +1,53 @@
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-pihole-config
+  annotations:
+    pv.kubernetes.io/provisioned-by: driver.longhorn.io
+spec:
+  capacity:
+    storage: 500Mi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: longhorn
+  csi:
+    driver: driver.longhorn.io
+    volumeHandle: pv-pihole-config
+    fsType: ext4
+    volumeAttributes:
+      migratable: "true"
+      numberOfReplicas: "2"
+      staleReplicaTimeout: "2880"
+  claimRef:
+    namespace: pi-hole
+    name: pihole-config
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-pihole-dnsmasq
+  annotations:
+    pv.kubernetes.io/provisioned-by: driver.longhorn.io
+spec:
+  capacity:
+    storage: 50Mi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: longhorn
+  csi:
+    driver: driver.longhorn.io
+    volumeHandle: pv-pihole-dnsmasq
+    fsType: ext4
+    volumeAttributes:
+      migratable: "true"
+      numberOfReplicas: "2"
+      staleReplicaTimeout: "2880"
+  claimRef:
+    namespace: pi-hole
+    name: pihole-dnsmasq

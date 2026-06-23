@@ -1,0 +1,26 @@
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-donetick-data
+  annotations:
+    pv.kubernetes.io/provisioned-by: driver.longhorn.io
+spec:
+  capacity:
+    storage: 1Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: longhorn
+  csi:
+    driver: driver.longhorn.io
+    volumeHandle: pv-donetick-data
+    fsType: ext4
+    volumeAttributes:
+      migratable: "true"
+      numberOfReplicas: "2"
+      staleReplicaTimeout: "2880"
+  claimRef:
+    namespace: donetick
+    name: donetick-data
