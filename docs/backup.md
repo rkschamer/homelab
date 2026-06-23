@@ -1,0 +1,165 @@
+# Cluster Backup Guide
+
+What needs to be backed up and why. Everything in this list is either unrecoverable
+or very painful to recover without a backup. Everything else regenerates from Git via Flux.
+
+## What cannot be recovered from Git
+
+| Item | Where it lives | How to back up | Criticality |
+|---|---|---|---|
+| **Sealed Secrets master key** | In-cluster only | Export to Vaultwarden (see below) | **Unrecoverable** |
+| **Git-crypt key** | Must be off-cluster | Already in Vaultwarden | **Unrecoverable** |
+| **Authelia database** | Longhorn PVC `authelia` | Longhorn backup | High — WebAuthn device registrations |
+| **Vaultwarden database** | Longhorn PVC `pv-vaultwarden-data` | Longhorn backup | **Unrecoverable** — holds all other credentials |
+| **Longhorn S3 credentials** | `backup-secret` SealedSecret | Vaultwarden vault export | Needed to access backups |
+| **Paperless documents** | NFS PVC `paperless-media` | NAS (Synology) — already on NAS | Safe as long as NAS is intact |
+| **Paperless database** | Longhorn PVC `pv-paperless-data` | Longhorn backup | Tags, correspondents, document metadata |
+| **Traefik acme.json** | Longhorn PVC `traefik` | Longhorn backup | ACME re-issues automatically if lost |
+
+---
+
+## Sealed Secrets master key
+
+This is the single most important backup. Without it, every SealedSecret in the repo
+is permanently unreadable — including SMTP credentials, API keys, OAuth secrets, and the
+Longhorn S3 backup credentials.
+
+**Export before any destructive operation:**
+
+```bash
+kubectl get secret -n kube-system \
+  -l sealedsecrets.bitnami.com/sealed-secrets-key=active \
+  -o yaml > /tmp/sealed-secrets-master-key.yaml
+
+# Copy to NAS
+mount -t nfs 192.168.123.5:/volume1/backups /mnt/nas-backup
+cp /tmp/sealed-secrets-master-key.yaml /mnt/nas-backup/pve-config/
+umount /mnt/nas-backup
+```
+
+Also save as a Vaultwarden attachment (Malter/PVE/Talos → "sealed secrets" item).
+
+**Restore:**
+
+```bash
+kubectl apply -f /path/to/sealed-secrets-master-key.yaml
+kubectl -n kube-system rollout restart deployment sealed-secrets-controller
+```
+
+> After a fresh cluster install, apply the key **before** Flux reconciles workloads.
+> If the controller generates a new key before you apply the backup, delete the
+> auto-generated key first (`kubectl delete secret -n kube-system <new-key-name>`)
+> then apply the backup key and restart the controller.
+
+---
+
+## Git-crypt key
+
+Decrypts `terraform/terraform.tfvars`, `terraform/terraform.tfstate`,
+`talos/gen/*.yaml`, `kubeconfig.yaml`, and `talos/gen/talosconfig`.
+
+Stored in Vaultwarden. Confirm it is there before any maintenance window.
+
+```bash
+# Verify unlock works
+git-crypt unlock /path/to/git-crypt.key
+cat terraform/terraform.tfvars  # should be readable
+```
+
+---
+
+## Longhorn volume backups
+
+All stateful service data is backed up to `s3://longhorn-bucket@garage` by Longhorn's
+daily recurring job. The backup schedule and retention are configured in the Longhorn UI.
+
+**Named PVs backed up by Longhorn:**
+
+| Volume | Service | Data |
+|---|---|---|
+| `pv-vaultwarden-data` | Vaultwarden | Password vault SQLite database + attachments |
+| `authelia` | Authelia | User DB, WebAuthn device registrations |
+| `pv-paperless-data` | Paperless | Document DB + search index |
+| `pv-paperless-gpt-data` | paperless-gpt | LLM classification state |
+| `pv-siyuan-data` | SiYuan | Personal knowledge base |
+| `pv-pihole-config` | Pi-hole | DNS blocklists, custom entries, settings |
+| `pv-pihole-dnsmasq` | Pi-hole | dnsmasq config |
+| `pv-donetick-data` | DoneTick | Task database |
+| `pv-karakeep-data` | Karakeep | Bookmark database |
+| `pv-orcaslicer-config` | OrcaSlicer | Printer profiles, filament settings |
+
+**Verify backups are running:**
+
+```bash
+kubectl -n longhorn-system get backupvolume
+# Check LASTBACKUPAT column — should be within the last 24h
+```
+
+**Restore procedure:** See `docs/longhorn.md` → "On a restore (from Longhorn backup)".
+
+---
+
+## Authelia: encryption key loss
+
+Authelia derives a `sub` UUID for each user from an internal salt stored in its database.
+If the Authelia database is wiped (e.g. encryption key not backed up), all OIDC clients
+that store the `sub` will break on next login.
+
+**Affected services:** Paperless, DoneTick, Karakeep — any service using Authelia OIDC.
+
+**Fix after Authelia database wipe:** See `docs/paperless-ngx.md` →
+"Post-restore: re-link OIDC social account". The pattern is the same for all OIDC clients:
+find the new `sub` from Authelia logs, update the `SocialAccount` (or equivalent) record
+in each application's database.
+
+**To avoid this:** ensure the Authelia Longhorn backup is healthy before any migration.
+The Authelia PVC (`authelia`) is included in the daily Longhorn backup.
+
+---
+
+## Vaultwarden: circular dependency
+
+Vaultwarden holds the git-crypt key and the sealed-secrets master key. But Vaultwarden
+itself runs on a Longhorn PVC, and Longhorn backup credentials are in a SealedSecret.
+
+**Break the circle before any cluster wipe:**
+
+1. Export Vaultwarden vault: **Tools → Export vault** → save JSON to operator workstation
+2. Confirm git-crypt key is on operator workstation
+3. Export sealed-secrets master key to NAS (see above)
+
+The Vaultwarden attachment (sealed-secrets-master-key.yaml) is encrypted by Vaultwarden's
+client-side encryption — it is only accessible via a running Vaultwarden server or a
+browser/desktop client with the vault already unlocked and cached.
+
+---
+
+## External credentials stored in SealedSecrets
+
+If the sealed-secrets master key is lost, these must be regenerated manually:
+
+| Service | What to regenerate | Where |
+|---|---|---|
+| Porkbun | DNS API key + secret (Traefik ACME) | porkbun.com → Account → API Keys |
+| Anthropic | API key (paperless-gpt) | console.anthropic.com |
+| Telegram | Bot token (Alertmanager) | @BotFather on Telegram |
+| Garage S3 | Bucket key + secret (Longhorn backups) | Garage admin UI |
+| SMTP | Email credentials (all services) | Email provider |
+| OAuth secrets | DoneTick, Karakeep, Paperless client secrets | Re-register apps in Authelia config |
+
+---
+
+## What regenerates automatically from Git
+
+No backup needed for any of these:
+
+- All Kubernetes manifests (Deployments, Services, ConfigMaps, IngressRoutes)
+- Helm chart releases and values
+- Flux CD configuration
+- Cilium network policies
+- Traefik routes and middlewares
+- Prometheus rules and Grafana dashboards
+- Talos machine configs (regenerated by `terraform apply`)
+- kubeconfig (regenerated by `talosctl kubeconfig`)
+- Longhorn recurring job schedules
+- MetalLB IP pool configuration
