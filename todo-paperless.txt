@@ -1,4 +1,0 @@
-  PAPERLESS_EMAIL_HOST: <smtp.example.com>
-  PAPERLESS_EMAIL_HOST_USER: <your@email.com>
-  PAPERLESS_EMAIL_FROM: <your@email.com>       # can be same as HOST_USER
-  PAPERLESS_EMAIL_HOST_PASSWORD: <app-password>
