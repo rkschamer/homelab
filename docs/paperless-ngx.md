@@ -167,7 +167,33 @@ Defined in `network-policies.yaml`:
 
 The gaming PC at `lumpy-new.fritz.box` is on the home LAN (192.168.123.0/24). Trusted zone pods can reach it via the cluster-wide egress policy in `flux/infrastructure/config/network-policies/host-firewall-policies.yaml`.
 
-## Useful Commands
+## Post-restore: re-link OIDC social account
+
+In case Authelia user have to be recreated, e.g. the internal database was lost, Authelia generates a new `sub` UUID for each user (the UUID is derived from the username + an internal salt that is reset when Authelia's database is wiped). Paperless stores the old `sub` in its `SocialAccount` table, so the OIDC login fails with "an account already exists with this email address".
+
+Find the new `sub` from the Authelia logs during a login attempt:
+
+```bash
+kubectl logs -n authelia deploy/authelia | grep "subject="
+# Look for: subject=<new-uuid> username=rene
+```
+
+Then update the social account in Paperless to use the new `sub`:
+
+```bash
+kubectl exec -n paperless-ngx deploy/paperless-ngx -- python manage.py shell -c "
+from allauth.socialaccount.models import SocialAccount
+sa = SocialAccount.objects.get(provider='authelia')
+print('old uid:', sa.uid)
+sa.uid = '<new-sub-uuid>'
+sa.save()
+print('updated to:', sa.uid)
+"
+```
+
+Repeat for each user that has a social account (`SocialAccount.objects.all()`).
+
+
 
 ```bash
 # Check pod status
