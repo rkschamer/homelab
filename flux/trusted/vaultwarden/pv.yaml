@@ -1,0 +1,26 @@
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-vaultwarden-data
+  annotations:
+    pv.kubernetes.io/provisioned-by: driver.longhorn.io
+spec:
+  capacity:
+    storage: 5Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: longhorn
+  csi:
+    driver: driver.longhorn.io
+    volumeHandle: pv-vaultwarden-data
+    fsType: ext4
+    volumeAttributes:
+      migratable: "true"
+      numberOfReplicas: "2"
+      staleReplicaTimeout: "2880"
+  claimRef:
+    namespace: vaultwarden
+    name: vaultwarden-data

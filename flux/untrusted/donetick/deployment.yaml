@@ -8,6 +8,7 @@ spec:
   accessModes:
     - ReadWriteOnce
   storageClassName: longhorn
+  volumeName: pv-donetick-data
   resources:
     requests:
       storage: 1Gi

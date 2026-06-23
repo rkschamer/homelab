@@ -4,6 +4,7 @@ kind: Kustomization
 
 resources:
   - namespace.yaml
+  - pv.yaml
   - pvc.yaml
   - unbound-config.yaml
   - deployment.yaml

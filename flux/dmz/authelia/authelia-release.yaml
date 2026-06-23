@@ -62,6 +62,7 @@ spec:
       enabled: true
       storageClass: longhorn
       size: 1Gi
+      existingClaim: authelia
 
     # Mount users_database.yml and SMTP password from the sealed secret
     secret:

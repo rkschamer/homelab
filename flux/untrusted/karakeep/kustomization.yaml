@@ -4,6 +4,7 @@ kind: Kustomization
 
 resources:
   - namespace.yaml
+  - pv.yaml
   - karakeep-sealedsecret.yaml
   - deployment.yaml
   - ingress.yaml

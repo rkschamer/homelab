@@ -12,6 +12,7 @@ spec:
   accessModes:
     - ReadWriteOnce
   storageClassName: longhorn
+  volumeName: pv-orcaslicer-config
   resources:
     requests:
       storage: 5Gi
