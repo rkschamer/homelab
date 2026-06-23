@@ -12,6 +12,8 @@ This is a Kubernetes homelab running on Proxmox VE, managed declaratively using 
 
 **Infrastructure as Code:** All infrastructure (Proxmox VMs, Talos configurations, Kubernetes manifests) is versioned in Git.
 
+**Storage:** All stateful services use named PersistentVolumes (`pv-<service>-<purpose>`) committed to Git alongside their PVCs. The Longhorn volume name must match the PV name exactly. This makes the cluster fully reproducible from Git after a restore without manual PV/PVC creation. See `docs/longhorn.md` for the full convention and PV manifest template.
+
 **Secrets Management:** All secrets must be encrypted as SealedSecrets before committing. Never commit plaintext secrets. Secrets are decrypted in-cluster by the Sealed Secrets controller.
 
 **Network Isolation:** Network zones (Trusted, DMZ, Untrusted, Monitoring) are enforced at the **pod level** via namespace labels (`network-zone: [trusted|dmz|untrusted|monitoring]`) and Cilium Network Policies, not via separate physical networks.
