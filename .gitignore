@@ -10,3 +10,5 @@ tmp/**
 *.key
 
 docker-compose/*
+
+__pycache__/
