@@ -8,6 +8,7 @@ spec:
   accessModes:
     - ReadWriteOnce
   storageClassName: longhorn
+  volumeName: pv-pihole-config
   resources:
     requests:
       storage: 500Mi
@@ -22,6 +23,7 @@ spec:
   accessModes:
     - ReadWriteOnce
   storageClassName: longhorn
+  volumeName: pv-pihole-dnsmasq
   resources:
     requests:
       storage: 50Mi
