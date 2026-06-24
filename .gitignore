@@ -5,7 +5,7 @@ tmp/**
 
 # Terraform files
 .terraform/
-*.tfstate.backup
+*.tfstate.*
 
 *.key
 
