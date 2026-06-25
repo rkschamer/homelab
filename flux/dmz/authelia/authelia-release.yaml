@@ -138,7 +138,7 @@ spec:
           clients:
             - client_id: 'donetick'
               client_name: 'Donetick'
-              client_secret: '$pbkdf2-sha512$310000$vYfWXAM9Z9M48tYWnU7vFw$ySBmsnZtvzu7.G1wQcD0KyO5XkY5soJeuO6xaq6FVSbGaWbW0wyXLZEj2fkm6dNjxY72bpGtQEvt057Xm/P2og'
+              client_secret: '$argon2id$v=19$m=65536,t=3,p=4$peSYnjdApuHyvr+4OtX2sg$ytrYtmoS5o9Ur3kTOzJ17RKi9zGMIjZ7DyrD13s4I24'
               public: false
               authorization_policy: 'two_factor'
               require_pkce: false
@@ -155,7 +155,7 @@ spec:
               token_endpoint_auth_method: 'client_secret_basic'
             - client_id: 'karakeep'
               client_name: 'Karakeep'
-              client_secret: '$pbkdf2-sha512$310000$KQA51yV1zcaAHY.HSWEOJA$qXi3JIZ7HbSHb8XKNP3GHIZBWAX33xcD1APWHLflXG0FNtueceVTQ0eS.VZxN60vfzKfSdfcbvrKg1VJT./oVA'
+              client_secret: '$argon2id$v=19$m=65536,t=3,p=4$CQVB4DnzR1BphyOpt1uvkA$+eQLLFnoH84W9bsNtUrD9D05BSAy6OqR+c7Tix3ajg8'
               public: false
               authorization_policy: 'two_factor'
               claims_policy: 'karakeep'
@@ -172,7 +172,7 @@ spec:
               token_endpoint_auth_method: 'client_secret_basic'
             - client_id: 'paperless'
               client_name: 'Paperless-ngx'
-              client_secret: '$pbkdf2-sha512$310000$0SUV3FCuRVj55bR/sNKesA$DaA9xXDrpvcAYVAE3WEC.Mj7pzz4WFkjxZeDUUlizdUMLSgJGC9pmWRS.FSIB1wlY3623BjXnnWx86lTd5pzqQ'
+              client_secret: '$argon2id$v=19$m=65536,t=3,p=4$AoPn/Wf1rBCRIyoha3tT3g$mMTwttP8V1R/Brx1h2S8XZ3jxlh5vn0nbZrAKNZlilE'
               public: false
               authorization_policy: 'two_factor'
               require_pkce: false
