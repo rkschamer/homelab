@@ -2,9 +2,9 @@
 apiVersion: longhorn.io/v1beta2
 kind: BackupTarget
 metadata:
-  name: nfs
+  name: s3
   namespace: longhorn-system
 spec:
-  backupTargetURL: nfs://192.168.123.5:/volume1/backups/longhorn
-  credentialSecret: ""
+  backupTargetURL: s3://longhorn-bucket@garage/
+  credentialSecret: backup-secret
   pollInterval: 1h0m0s
