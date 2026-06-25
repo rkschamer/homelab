@@ -12,7 +12,7 @@ or very painful to recover without a backup. Everything else regenerates from Gi
 | **Git-crypt key** | Must be off-cluster | Already in Vaultwarden | **Unrecoverable** |
 | **Authelia database** | Longhorn PVC `authelia` | Longhorn backup | High — WebAuthn device registrations |
 | **Vaultwarden database** | Longhorn PVC `pv-vaultwarden-data` | Longhorn backup | **Unrecoverable** — holds all other credentials |
-| **Longhorn S3 credentials** | `backup-secret` SealedSecret | Vaultwarden vault export | Needed to access backups |
+| **Longhorn S3 credentials** | `backup-secret` SealedSecret | Vaultwarden vault export | Needed to access Garage S3 backups (NFS target has no credentials) |
 | **Paperless documents** | NFS PVC `paperless-media` | NAS (Synology) — already on NAS | Safe as long as NAS is intact |
 | **Paperless database** | Longhorn PVC `pv-paperless-data` | Longhorn backup | Tags, correspondents, document metadata |
 | **Traefik acme.json** | Longhorn PVC `traefik` | Longhorn backup | ACME re-issues automatically if lost |
@@ -71,8 +71,9 @@ cat terraform/terraform.tfvars  # should be readable
 
 ## Longhorn volume backups
 
-All stateful service data is backed up to `s3://longhorn-bucket@garage` by Longhorn's
-daily recurring job. The backup schedule and retention are configured in the Longhorn UI.
+All stateful service data is backed up by Longhorn's daily recurring jobs:
+- **S3 (Garage):** `s3://longhorn-bucket@garage/` — `daily-backup` job at 02:00, 30-day retention
+- **NFS:** `nfs://192.168.123.5:/volume1/backups/longhorn` — `daily-backup-nfs` job at 02:30, 30-day retention, no credentials required
 
 **Named PVs backed up by Longhorn:**
 

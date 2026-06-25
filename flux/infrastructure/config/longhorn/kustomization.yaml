@@ -4,6 +4,7 @@ kind: Kustomization
 resources:
   - backup-secret.yaml
   - backup-target.yaml
+  - backup-target-nfs.yaml
   - longhorn-volumeattributesclass-rbac.yaml
   - volumesnapshotclass.yaml
   - recurring-jobs.yaml
