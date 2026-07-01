@@ -4,135 +4,145 @@
 
 - CPU: AMD Ryzen 5 5600G (6 cores / 12 threads), max supported RAM: 64 GB DDR4
 - RAM installed: 32 GB (27 GB visible to OS — remainder reserved by BIOS/iGPU)
-- Storage: single NVMe (ZFS pool `rpool`), 512 GB SATA SSD (to be added)
+- Storage (post-migration): NVMe on ext4/LVM, 512 GB SATA SSD as `data-sata` spare pool
 
-## Root Cause: Chronic Memory Overcommit
+## Status
 
-The Proxmox host is overcommitted. With all VMs running, RAM demand exceeds physical supply:
+- Post-migration (2026-06-23): swap-on-zvol deadlock eliminated, ZFS removed.
+- Post-incident (2026-07-01): control-plane VM bumped from 4 → 6 GB, workers rolled
+  back from 8 → 6 GB. See "Incident: 2026-07-01" below.
+
+## Current VM Memory Allocation
 
 | Consumer | RAM |
 |---|---|
-| talos-worker-1 | 8 GB (→ 6 GB after pending Terraform apply) |
-| talos-worker-2 | 8 GB (→ 6 GB after pending Terraform apply) |
-| talos-controlplane-1 | 4 GB |
+| talos-controlplane-1 | 6 GB (bumped from 4 GB after apiserver OOM) |
+| talos-worker-1 | 6 GB (rolled back from 8 GB) |
+| talos-worker-2 | 6 GB (rolled back from 8 GB) |
 | Home Assistant + other VMs | ~2–4 GB |
-| ZFS ARC (uncapped) | up to 26.3 GB |
 | PVE overhead | ~1–2 GB |
-| **Total demand** | **~27–30 GB on a 27 GB host** |
+| **Total demand** | **~21–24 GB on a 27 GB host** |
 
-Any additional load (backup job, OS upgrade, Longhorn rebuild) pushes the host over the edge.
+The host now has ~3 GB of genuine slack. `pve/swap` (LVM LV on ext4, not zvol) exists
+as a safety valve — safe under pressure, unlike the pre-migration zvol swap.
 
-## ZFS ARC Problem
+## Incident: 2026-07-01 — apiserver OOM on CP
 
-By default, OpenZFS sets `c_max` (maximum ARC size) to roughly 75–80% of physical RAM. On this host that was **26.3 GB** — nearly the entire available memory. Under load, ZFS could expand its cache to the point of starving running VMs and PVE services.
+### What happened
 
-**Fix applied:** ARC capped at 6 GB permanently.
+Two waves of alerts:
 
-```
-# /etc/modprobe.d/zfs.conf
-options zfs zfs_arc_max=6442450944
-```
+- **~01:00 UTC:** worker-1 kernel logged `clocksource: Long readout interval,
+  skipping watchdog check: cs_nsec: 3547019700` — the VM was paused ~3.5 s by the
+  hypervisor. Kubelet health check timed out, worker briefly NotReady. Consistent
+  with host-side pressure from the nightly backup job.
+- **~08:31 UTC:** kernel OOM inside the CP VM killed kube-apiserver:
+  ```
+  Out of memory: Killed process 3460 (kube-apiserver)
+    total-vm:3365048kB anon-rss:2002928kB
+    oom-kill: constraint=CONSTRAINT_NONE ... global_oom
+  ```
+  `global_oom` means the entire VM was out of memory, not a container cgroup limit.
+  Talos's PSI-based OOMController had been firing every ~500 ms for ~3 min before
+  the kernel intervened, but reported `victim processes: []` — it was trying to
+  reap phantom besteffort cgroups that had no live processes, so it couldn't free
+  anything. The kernel eventually picked apiserver because it had the largest
+  reclaimable footprint (anon-rss ~2 GB).
 
-This was also applied live without reboot:
-```bash
-echo 6442450944 > /sys/module/zfs/parameters/zfs_arc_max
-```
+### Root cause
 
-## Swap on ZFS Zvol — Deadlock
+The 4 GB CP allocation was too tight for the actual working set (Talos + etcd +
+apiserver + controller-manager + scheduler + kubelet + cilium-agent + kernel).
+Without swap, anonymous RSS from apiserver's Go heap could not be reclaimed — the
+kernel's only lever under pressure was OOM-kill.
 
-The Proxmox default installation places swap on a ZFS zvol (`rpool/swap`, exposed as `/dev/zd352`). This creates a well-known deadlock under memory pressure:
+The dashboard "1 GB free" reading was misleading: what looks like free memory is
+mostly page cache, which cannot substitute for anonymous pages when a Go process
+grows its heap. `MemAvailable` (not `MemFree`) is the number that matters, and it
+was near zero at the moment of the kill.
 
-1. Host runs low on memory
-2. Kernel tries to swap in pages from the zvol
-3. ZFS needs memory to service the I/O request
-4. Neither can proceed — both are waiting on the other
+### Fix applied
 
-### Observed Symptoms (2026-05-11)
+- **CP: 4 GB → 6 GB** (`terraform/terraform.tfvars`).
+- **Workers: 8 GB → 6 GB** (rolled back the 2026-06-23 bump to free host RAM for
+  the CP without exceeding the total envelope).
+- **`KubeMemoryOvercommit` alert relaxed** to fire at >90% requested/allocatable
+  instead of the upstream N-1 rule. The default rule effectively asks "can one
+  worker hold all pods if the other dies?" which is impractical on a 2-worker
+  homelab. See `flux/monitoring/prometheus-release.yaml`.
 
-The deadlock manifested during a PVE OS upgrade while Longhorn rebuilds were in progress:
+Apply order to minimize disruption:
+1. Push the Flux change first so the alert threshold updates before workers shrink.
+2. `terraform apply` to update VM configs.
+3. `talosctl reboot` each node in sequence (workers one at a time, then CP), waiting
+   for cluster health and Longhorn to stabilize between each.
 
-- `pvestatd` blocked in uninterruptible sleep (state D) for 122+ seconds
-- `systemd-journald` hit its watchdog timeout (3 min) and was SIGKILL'd — journal corrupted
-- `pve-firewall` froze for 357 seconds — VMs lost network connectivity
-- `pmxcfs` file locks timed out — scheduler could not read job config
-- VMs lost connectivity → Longhorn kubelet heartbeats missed → replica faults on all workers
+## Swap Posture
 
-The same mechanism likely caused prior Sunday night crashes triggered by backup I/O pressure.
+Swap was disabled cluster-wide during the 2026-05 incident and remains disabled on
+all Talos nodes (`talos/manifests/*/swap.yaml` removed, virtio1 disks removed in
+`terraform/nodes.tf`). This is the stable state.
 
-**Fix applied:** `vm.swappiness=10` to minimize swap usage under normal conditions.
+The PVE host itself keeps its installer-created `pve/swap` LV. Unlike the old ZFS
+zvol swap, an LVM swap LV on ext4 is a plain block device with no deadlock risk.
+With `vm.swappiness=10` it only activates under genuine memory pressure.
 
 ```
 # /etc/sysctl.d/99-proxmox.conf
 vm.swappiness=10
 ```
 
-## Why ZFS Was a Poor Fit Here
-
-ZFS's main benefits (RAID-Z redundancy, large ARC performance) require multiple disks and ample RAM respectively. This host has neither:
-
-- Single NVMe — no redundancy benefit from ZFS
-- Constrained RAM — ARC competes directly with VM memory
-- Swap-on-zvol — inherited deadlock from default Proxmox install
-
-An ext4/LVM setup would have been more appropriate, but in-place migration is not feasible without a full reinstall and restore. The mitigations below address the symptoms without requiring that.
-
-## Mitigations Applied
+## Mitigations History
 
 | Fix | Status |
 |---|---|
-| ZFS ARC capped at 6 GB (`/etc/modprobe.d/zfs.conf`) | Done |
-| `vm.swappiness=10` (`/etc/sysctl.d/99-proxmox.conf`) | Done |
+| ZFS → ext4 migration (removed ARC + zvol swap deadlock) | Done (2026-06-23) |
+| `vm.swappiness=10` on host | Done |
 | Longhorn `concurrentReplicaRebuildPerNodeLimit` raised to 5 | Done (in HelmRelease) |
 | PVE backup bandwidth limit set to 50 MiB/s | Done |
-| PVE backup fleecing enabled on `local-zfs` | Done |
-| Worker RAM reduced from 8 GB to 6 GB | Terraform applied, VMs need restart |
+| PVE backup fleecing enabled on local pool | Done |
+| CP 4 → 6 GB, workers 8 → 6 GB | Done (2026-07-01, needs apply + reboot) |
+| `KubeMemoryOvercommit` alert threshold relaxed to 0.9 | Done (2026-07-01, needs push) |
 
-## Open TODOs
+## Open Items
 
-### 1. Disable ZFS swap and reclaim the zvol
+### 1. Watch CP memory after the bump
 
-```bash
-swapoff /dev/zd352
-# Remove or comment out the swap entry in /etc/fstab
-zfs destroy rpool/swap   # verify name first: zfs list -t volume | grep swap
-```
+If apiserver RSS still climbs toward 2 GB in steady state on the 6 GB CP, that
+points to something abnormal — a watch-cache leak, an operator hammering LIST
+requests, or a large etcd DB. Worth investigating rather than just adding more RAM.
 
-This eliminates the deadlock mechanism entirely. Safe to do now — memory headroom improved after worker RAM reduction and ARC cap.
-
-### 2. Install 512 GB SATA SSD
-
-Partition layout:
-- 32 GB → raw Linux swap (outside ZFS, no deadlock risk)
-- ~480 GB → LVM thin pool for Proxmox storage (`data-sata`)
+Useful checks after cluster access is restored:
 
 ```bash
-parted /dev/sda mklabel gpt
-parted /dev/sda mkpart primary linux-swap 0% 7%
-parted /dev/sda mkpart primary 7% 100%
+# apiserver working set
+kubectl top pod -n kube-system -l component=kube-apiserver
 
-mkswap /dev/sda1
-# Add to /etc/fstab by UUID
-
-pvcreate /dev/sda2
-vgcreate data-sata /dev/sda2
-lvcreate -l 100%FREE --thinpool data-sata-pool data-sata
+# etcd DB size
+kubectl exec -n kube-system etcd-talos-controlplane-1 -- \
+  etcdctl --endpoints=https://127.0.0.1:2379 \
+  --cacert=/etc/kubernetes/pki/etcd/ca.crt \
+  --cert=/etc/kubernetes/pki/etcd/server.crt \
+  --key=/etc/kubernetes/pki/etcd/server.key \
+  endpoint status --write-out=table
 ```
 
-Then register `data-sata` as a storage pool in Proxmox (Datacenter → Storage → Add → LVM-Thin).
+### 2. Backup schedule review
 
-### 3. Migrate Longhorn worker disks to SATA SSD
+Wave 1 of the incident lined up with typical backup hours. Verify:
+- `cat /etc/pve/jobs.cfg` — what runs at ~01:00?
+- Datacenter → Backup → Bandwidth limit still 50 MiB/s?
+- Consider staggering VMs across different hours if all-at-once causes host stalls.
 
-The Longhorn data disks (`virtio2`) on both workers are currently ZFS zvols on the NVMe. Moving them to `data-sata` separates Longhorn I/O from backup I/O — the two workloads that caused the original Sunday crashes.
+### 3. Longhorn instance-manager memory requests
 
-Steps:
-1. Update `terraform.tfvars` — change `datastore_id` for `virtio2` on both workers to `data-sata`
-2. Apply Terraform (this recreates the disk, Longhorn will rebuild replicas from the surviving node)
-3. In Longhorn: once new disks are healthy, remove the old NVMe-backed disks from each node
+The bulk of the workers' pod memory requests is Longhorn instance-manager, which
+scales per replica. If `defaultInstanceManagerCPU`/`memory` is reducible in the
+Longhorn HelmRelease, that would give room to grow the workers back to 8 GB later
+without triggering the overcommit alert.
 
-### 4. Restart worker VMs to apply RAM reduction
+### 4. Long-term: upgrade to 64 GB RAM
 
-After Terraform applies the 6 GB memory change, worker VMs need a restart to pick up the new allocation. Coordinate with Longhorn — do one worker at a time so replicas remain healthy.
-
-### 5. Long-term: upgrade to 64 GB RAM
-
-The Ryzen 5 5600G supports up to 64 GB DDR4 (2 slots). A 2×32 GB DDR4 kit would provide permanent headroom, eliminating all of the above constraints. Currently deferred due to DDR4 pricing.
+The Ryzen 5 5600G supports up to 64 GB DDR4 (2 slots). A 2×32 GB DDR4 kit would
+provide permanent headroom, eliminating the whole class of overcommit failures.
+Currently deferred due to DDR4 pricing.

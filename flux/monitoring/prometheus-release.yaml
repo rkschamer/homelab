@@ -62,6 +62,40 @@ spec:
   values:
     cleanPrometheusOperatorObjectNames: true
 
+    # Disable the upstream KubeMemoryOvercommit rule and replace it below with a
+    # relaxed 90% threshold. The default rule fires when total pod memory requests
+    # exceed (allocatable − largest_node), i.e. it asks "can we tolerate losing one
+    # node?". On a 2-worker cluster that reduces to "can 1 worker hold everything?"
+    # which is impractical for this topology — the alert is near-firing by design.
+    # We keep the signal for genuine runaway growth but tolerate our normal steady
+    # state.
+    defaultRules:
+      disabled:
+        KubeMemoryOvercommit: true
+
+    additionalPrometheusRulesMap:
+      homelab-overrides:
+        groups:
+          - name: kubernetes-resources-homelab
+            rules:
+              - alert: KubeMemoryOvercommit
+                expr: |-
+                  sum(namespace_memory:kube_pod_container_resource_requests:sum{})
+                    /
+                  sum(kube_node_status_allocatable{resource="memory", job="kube-state-metrics"})
+                    > 0.9
+                for: 10m
+                labels:
+                  severity: warning
+                annotations:
+                  summary: Cluster has overcommitted memory resource requests.
+                  description: >-
+                    Cluster memory requests exceed 90% of allocatable capacity.
+                    Threshold relaxed from the upstream N-1 default because this
+                    2-worker cluster cannot tolerate node failure by design; see
+                    docs/memory-situation.md.
+                  runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubememoryovercommit
+
     grafana:
       enabled: true
       # RollingUpdate is incompatible with ReadWriteOnce PVCs — the new pod cannot
