@@ -4,6 +4,8 @@
 
 The homelab runs on a single Proxmox VE 9.x node (`proxmox`, `192.168.123.8:8006`). All VMs are provisioned and managed by Terraform using the `bpg/proxmox` provider. The node is accessed via Traefik reverse proxy at `https://pve.kschamer.info` for normal use, and directly at `https://192.168.123.8:8006` for emergency access.
 
+Historical note: this host was migrated from ZFS-on-NVMe to ext4/LVM on NVMe in 2026-06 to eliminate the ARC memory overhead and the swap-on-zvol deadlock risk. See [ext4-migration.md](ext4-migration.md) for the migration procedure and [memory-situation.md](memory-situation.md) for the current memory posture.
+
 ---
 
 ## Network Bridges
@@ -29,21 +31,38 @@ All VMs use a consistent hardware profile defined in Terraform:
 | Machine type  | q35                        | Modern PCIe bus; required for OVMF             |
 | CPU type      | host                       | Pass-through host CPU flags for best performance |
 | Secure Boot   | `pre_enrolled_keys = false` | Lets Talos auto-enroll its own Secure Boot keys |
-| TPM           | v2.0 on local-zfs          | Required by Talos for measured boot            |
+| TPM           | v2.0 on local-lvm          | Required by Talos for measured boot            |
 | QEMU agent    | enabled                    | Needed for graceful shutdown and IP reporting  |
 | OS type       | l26 (Linux 2.6–5.x)        | Correct VirtIO driver selection in Proxmox UI  |
 
-### Disk Layout (Workers)
+### Memory Allocation
 
-| Interface | Datastore  | Purpose                         |
-|-----------|------------|---------------------------------|
-| virtio0   | local-zfs  | System disk (64 GB)             |
-| virtio1   | local-zfs  | Swap disk (8 GB)                |
-| virtio2   | local-zfs  | Longhorn data disk (264 GB)     |
+| VM | Memory | Notes |
+|----|--------|-------|
+| talos-controlplane-1 | 6 GB | Bumped from 4 GB after 2026-07-01 apiserver OOM |
+| talos-worker-1 | 6 GB | Rolled back from 8 GB to keep the host envelope |
+| talos-worker-2 | 6 GB | Same |
 
-Control plane VMs have no virtio2 — Longhorn is workers-only.
+Swap is **disabled** on all Talos nodes — no swap disk, no swap partition, no `LimitedSwap` kubelet policy. The Proxmox host itself keeps its installer-created `pve/swap` LV with `vm.swappiness=10` as a safety valve. Full rationale in [memory-situation.md](memory-situation.md).
 
-All disks use `discard = on` (TRIM pass-through for ZFS thin provisioning). Longhorn data disks set `backup = false` because Longhorn handles its own replication.
+### Disk Layout
+
+**Control plane:**
+
+| Interface | Datastore  | Size  | Purpose                        |
+|-----------|------------|-------|--------------------------------|
+| virtio0   | local-lvm  | 64 GB | System disk (Talos)            |
+
+**Workers:**
+
+| Interface | Datastore  | Size   | Purpose                        |
+|-----------|------------|--------|--------------------------------|
+| virtio0   | local-lvm  | 64 GB  | System disk (Talos)            |
+| virtio2   | local-lvm  | 264 GB | Longhorn data disk (LUKS + TPM-encrypted; matched by `disk.size > 100 GiB` in the Talos UserVolumeConfig) |
+
+There is no virtio1 slot — the pre-migration swap disk was removed as part of the ext4 migration.
+
+All disks use `discard = on` (TRIM pass-through so LVM-thin can reclaim freed blocks). Longhorn data disks set `backup = false` because Longhorn handles its own replication.
 
 ### ISO / CDRom Lifecycle
 
@@ -55,13 +74,14 @@ The Talos ISO is downloaded once via `proxmox_download_file` and attached to all
 
 ## Storage
 
-| Datastore  | Type      | Usage                                      |
-|------------|-----------|--------------------------------------------|
-| local-zfs  | ZFS pool  | All VM disks (system, swap, EFI, TPM, Longhorn data) |
-| local      | Directory | ISO images, snippets                       |
-| nas        | NFS/CIFS  | External NAS (backup target)               |
+| Datastore  | Backend                | Usage                                          |
+|------------|------------------------|------------------------------------------------|
+| local-lvm  | LVM-thin on NVMe (ext4 root)  | All VM disks (system, EFI, TPM, Longhorn data) |
+| local      | Directory              | ISO images, snippets                           |
+| data-sata  | LVM-thin on 512 GB SATA SSD | Spare capacity (unused; reserved for future workloads) |
+| nas        | NFS                    | Synology `192.168.123.5:/volume1/backups` — vzdump target |
 
-ZFS provides thin provisioning, compression, and snapshots. `discard = on` on all virtio disks ensures freed blocks are returned to the pool.
+LVM-thin provides thin provisioning and snapshot support. `discard = on` on all virtio disks ensures freed blocks are returned to the pool. `issue_discards = 1` is set in `/etc/lvm/lvm.conf` so LVM itself passes trims down to the SSD.
 
 ---
 

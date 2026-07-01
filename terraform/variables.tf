@@ -42,7 +42,6 @@ variable "control_plane" {
     ip_address = string
     disks = object({
       system_size_in_gb = number
-      swap_size_in_gb   = number
     })
     memory = number
     cores  = number
@@ -63,7 +62,6 @@ variable "worker_nodes" {
     ip_address = string
     disks = object({
       system_size_in_gb = number
-      swap_size_in_gb   = number
       user_size_in_gb   = number
     })
     memory = number

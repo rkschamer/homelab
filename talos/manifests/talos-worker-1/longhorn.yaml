@@ -7,7 +7,7 @@ name: longhorn
 provisioning:
   diskSelector:
     # Match the dedicated storage disk: non-system virtio disk larger than 100GB
-    # This excludes the system disk (64GB) and swap disk (8GB)
+    # This excludes the 64GB system disk (virtio0); the storage disk is virtio2.
     match: '!system_disk && disk.transport == "virtio" && disk.size > 100u * GiB'
   grow: true  # Use all available space on the disk
   minSize: 10GiB

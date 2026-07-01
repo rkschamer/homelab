@@ -128,9 +128,6 @@ resource "local_file" "controlplane_config" {
               sysctls = {
                 "net.ipv4.ip_forward"          = "1"
                 "net.ipv6.conf.all.forwarding" = "1" # Optional: for IPv6
-                # Swap tuning for performance
-                "vm.swappiness"   = "130"  # Increased from default 60 - makes kernel more willing to use swap
-                "vm.page-cluster" = "0"    # Disable swap read-ahead for non-rotational devices
               },
               features = merge(
                 local.controlplane_config_patched.machine.features,
@@ -199,11 +196,6 @@ resource "local_file" "worker_config" {
                   stableHostname = false
                 }
               ),
-              // Swap tuning for performance
-              sysctls = {
-                "vm.swappiness"   = "130"  # Increased from default 60 - makes kernel more willing to use swap
-                "vm.page-cluster" = "0"    # Disable swap read-ahead for non-rotational devices
-              },
               kernel = {
                 modules = [
                   { name = "nvme_tcp" },
@@ -213,11 +205,6 @@ resource "local_file" "worker_config" {
               kubelet = merge(
                 local.worker_config_patched.machine.kubelet,
                 {
-                  extraConfig = {
-                    memorySwap = {
-                      swapBehavior = "LimitedSwap"  # Allow containers to use swap
-                    }
-                  },
                   extraMounts = [
                     {
                       destination = "/var/lib/longhorn"
