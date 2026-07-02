@@ -46,11 +46,11 @@ spec:
       replicas: 1
       resources:
         requests:
-          cpu: 200m
-          memory: 512Mi
+          cpu: 100m
+          memory: 256Mi
         limits:
           cpu: 1000m
-          memory: 2Gi
+          memory: 768Mi
       persistence:
         enabled: true
         storageClass: longhorn
