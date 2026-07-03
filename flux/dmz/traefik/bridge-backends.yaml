@@ -68,7 +68,7 @@ ports:
     protocol: TCP
 endpoints:
   - addresses:
-      - 192.168.123.11 # ha-proxy LXC - TCP proxy to Horsmar
+      - 192.168.123.11 # horsmar-proxy LXC - TCP proxy to Horsmar
     conditions:
       ready: true
 

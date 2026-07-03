@@ -124,7 +124,7 @@ spec:
       - 192.168.123.5/32 # NAS
       - 192.168.123.8/32 # Proxmox VE
       - 192.168.123.10/32 # Home Assistant
-      - 192.168.123.11/32 # ha-proxy LXC (Horsmar HA)
+      - 192.168.123.11/32 # horsmar-proxy LXC (Horsmar HA)
       - 192.168.123.20/32 # Kubernetes API server
 
 ---

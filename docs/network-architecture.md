@@ -491,21 +491,21 @@ Run a lightweight TCP proxy (LXC container) on the management network (192.168.1
 - Remote service sees traffic from management LAN IP (routable via VPN)
 
 ```
-┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│  Traefik Pod    │────▶│   ha-proxy LXC  │────▶│  FritzBox VPN   │────▶│  Horsmar HA     │
-│  (10.244.x.x)   │     │ 192.168.123.11  │     │                 │     │ 192.168.178.10  │
-└─────────────────┘     └─────────────────┘     └─────────────────┘     └─────────────────┘
+┌─────────────────┐     ┌─────────────────-----┐     ┌─────────────────┐     ┌─────────────────┐
+│  Traefik Pod    │────▶│   horsmar-proxy LXC  │────▶│  FritzBox VPN   │────▶│  Horsmar HA     │
+│  (10.244.x.x)   │     │ 192.168.123.11       │     │                 │     │ 192.168.178.10  │
+└─────────────────┘     └─────────────────-----┘     └─────────────────┘     └─────────────────┘
          │                      │                                               │
-         │    SNAT to           │         VPN tunnel                           │
-         │    10.10.20.x        │         routes to                            │
-         │                      │         192.168.178.x                        │
+         │    SNAT to           │         VPN tunnel                            │
+         │    10.10.20.x        │         routes to                             │
+         │                      │         192.168.178.x                         │
          │                      │                                               │
          └──────────────────────┴───────────────────────────────────────────────┘
                           Reply path works because remote sees
                           source IP 192.168.123.11 (routable via VPN)
 ```
 
-### ha-proxy LXC Setup
+### horsmar-proxy LXC Setup
 
 **Container:** Alpine Linux LXC on Proxmox
 - IP: 192.168.123.11
@@ -515,17 +515,17 @@ Run a lightweight TCP proxy (LXC container) on the management network (192.168.1
 ```bash
 apk add socat
 
-cat > /etc/init.d/ha-proxy << 'EOF'
+cat > /etc/init.d/horsmar-proxy << 'EOF'
 #!/sbin/openrc-run
 command="/usr/bin/socat"
 command_args="TCP-LISTEN:8123,fork,reuseaddr TCP:192.168.178.10:8123"
 command_background=true
-pidfile="/run/ha-proxy.pid"
+pidfile="/run/horsmar-proxy.pid"
 EOF
 
-chmod +x /etc/init.d/ha-proxy
-rc-update add ha-proxy default
-service ha-proxy start
+chmod +x /etc/init.d/horsmar-proxy
+rc-update add horsmar-proxy default
+service horsmar-proxy start
 ```
 
 ### Kubernetes Configuration
@@ -539,7 +539,7 @@ metadata:
   namespace: traefik
 subsets:
   - addresses:
-      - ip: 192.168.123.11  # ha-proxy LXC
+      - ip: 192.168.123.11  # horsmar-proxy LXC
     ports:
       - name: http
         port: 8123
@@ -550,7 +550,7 @@ subsets:
 Add proxy IP to `deny-dmz-to-home-lan` exceptions:
 ```yaml
 except:
-  - 192.168.123.11/32 # ha-proxy LXC (Horsmar HA)
+  - 192.168.123.11/32 # horsmar-proxy LXC (Horsmar HA)
 ```
 
 **Traefik Egress Policy** (flux/dmz/traefik/network-policy.yaml):
@@ -567,7 +567,7 @@ except:
 
 To proxy additional VPN-bridged services:
 
-1. Add socat listener in ha-proxy LXC (or create dedicated proxy)
+1. Add socat listener in horsmar-proxy LXC (or create dedicated proxy)
 2. Add Kubernetes Service/Endpoints pointing to proxy IP
 3. Add proxy IP to zone isolation exceptions (if needed)
 4. Add port to Traefik network policy
