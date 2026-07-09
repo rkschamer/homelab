@@ -50,7 +50,7 @@ spec:
         fsGroup: 1000
       containers:
         - name: siyuan
-          image: b3log/siyuan:v3.7.0
+          image: b3log/siyuan:v3.7.1
           # Kubernetes substitutes $(ACCESS_AUTH_CODE) from the env block
           # before passing args to the process, keeping the secret out of
           # the literal args string while still injecting it at runtime.
