@@ -55,6 +55,7 @@ spec:
           # before passing args to the process, keeping the secret out of
           # the literal args string while still injecting it at runtime.
           args:
+            - serve
             - --workspace=/siyuan/workspace
             - --accessAuthCode=$(ACCESS_AUTH_CODE)
           env:
