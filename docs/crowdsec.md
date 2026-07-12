@@ -156,6 +156,37 @@ kubectl logs -n crowdsec deployment/crowdsec-lapi --follow
 kubectl logs -n crowdsec deployment/crowdsec-appsec --follow
 ```
 
+## Known Issues
+
+### AppSec pod stuck: `403 Forbidden: user already exist`
+
+**Symptom:** the `crowdsec-appsec` pod fails to start, logging:
+
+```
+Error: cscli lapi register: api client register: api register (http://crowdsec-service.crowdsec:8080/) http 403 Forbidden: API error: user '<pod-name>': user already exist
+```
+
+**Cause:** the chart's init container unconditionally runs `cscli lapi register`, using the **pod name** as the LAPI machine name. On first start this succeeds and the credentials land in an `emptyDir`. But when the pod sandbox is recreated in place — node reboot, kubelet restart, hypervisor hiccup — the init container re-runs with the *same* pod name, and the LAPI rejects the duplicate registration with 403. The pod wedges even though its old credentials would still be valid. (Upstream chart 0.24.0 behavior; there is no fix without either TLS client-cert auth — which needs cert-manager or hand-managed cert secrets — or patching chart internals via a postRenderer. Both were judged not worth it for this setup.)
+
+**Fix:** delete the pod. The replacement gets a new name and registers cleanly:
+
+```bash
+kubectl delete pod -n crowdsec -l type=appsec
+```
+
+**Side effect:** every replacement pod registers a new machine, so dead machine records accumulate in the LAPI (visible in `cscli machines list` with stale heartbeats). They are harmless, but can be cleaned up:
+
+```bash
+kubectl exec -n crowdsec deployment/crowdsec-lapi -- \
+  cscli machines prune --duration 48h --force
+```
+
+### LAPI SQLite database corruption
+
+Observed 2026-07-12: `cscli machines prune` failed with `database disk image is malformed`, likely from an unclean node shutdown. Reads (and apparently normal operation, including new machine registration) still work — the corruption seems limited to pages touched by prune/delete. Left as-is since LAPI functions normally.
+
+If it starts causing real failures, either recover the database offline (`kubectl cp` the file from `/var/lib/crowdsec/data/crowdsec.db`, run `sqlite3 crowdsec.db ".recover" | sqlite3 new.db`, copy back, restart LAPI) or simply wipe it: the DB only holds machines, bouncer key hashes, and decisions — all reproducible. After a wipe, re-register the Traefik bouncer with the key from the existing SealedSecret (see Initial Setup), delete stale appsec pods so they re-register, and re-enroll in the Console if used.
+
 ## Enroll in CrowdSec Console (optional)
 
 The CrowdSec Console provides a web UI for viewing alerts and decisions across all enrolled engines.
