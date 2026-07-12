@@ -30,7 +30,7 @@ spec:
       priorityClassName: homelab-critical
       containers:
         - name: pihole
-          image: pihole/pihole:2026.07.1
+          image: pihole/pihole:2026.07.2
           env:
             - name: TZ
               value: Europe/Berlin
