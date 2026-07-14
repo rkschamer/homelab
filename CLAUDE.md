@@ -93,6 +93,9 @@ Cilium Network Policies in `flux/infrastructure/network-policies/` enforce these
 │   ├── trusted/           # Trusted zone services (Vaultwarden, SiYuan)
 │   ├── untrusted/         # Untrusted zone services (Pi-hole, Snowflake Proxy)
 │   └── monitoring/        # Monitoring stack (Prometheus, Loki, Fluent Bit)
+├── pets/                  # Manually managed hosts outside IaC (one folder per pet: runbook + scripts)
+│   ├── horsmar-proxy/     # socat TCP proxy for VPN-bridged services
+│   └── audible/           # audible-rs audiobook sync to NAS
 └── docs/                  # Detailed documentation
     ├── network-architecture.md
     ├── network-policies.md
@@ -274,6 +277,7 @@ For deep dives, consult:
 - `docs/network-policies.md` - Cilium policy details
 - `docs/talos-installation.md` - Installation, bootstrap, and upgrade procedures
 - `docs/crowdsec.md` - CrowdSec threat detection setup
+- `pets/README.md` - Manually managed hosts (not IaC); per-pet runbooks in subfolders
 - `terraform/README.md` - Terraform workflow and ISO-based deployment
 - `talos/manifests/README.md` - LinkConfig and network configuration
 

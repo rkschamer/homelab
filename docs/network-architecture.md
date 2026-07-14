@@ -507,26 +507,9 @@ Run a lightweight TCP proxy (LXC container) on the management network (192.168.1
 
 ### horsmar-proxy LXC Setup
 
-**Container:** Alpine Linux LXC on Proxmox
-- IP: 192.168.123.11
-- Resources: 64MB RAM, 1 CPU, 512MB disk
-
-**Installation:**
-```bash
-apk add socat
-
-cat > /etc/init.d/horsmar-proxy << 'EOF'
-#!/sbin/openrc-run
-command="/usr/bin/socat"
-command_args="TCP-LISTEN:8123,fork,reuseaddr TCP:192.168.178.10:8123"
-command_background=true
-pidfile="/run/horsmar-proxy.pid"
-EOF
-
-chmod +x /etc/init.d/horsmar-proxy
-rc-update add horsmar-proxy default
-service horsmar-proxy start
-```
+The proxy runs as a manually managed Alpine LXC (192.168.123.11). Container specs,
+installation, and recovery are documented in its runbook:
+[pets/horsmar-proxy/README.md](../pets/horsmar-proxy/README.md).
 
 ### Kubernetes Configuration
 
