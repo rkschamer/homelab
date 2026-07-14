@@ -1,4 +1,4 @@
-# Audible Sync LXC
+# Audible CLI Sync LXC
 
 Downloads purchased Audible titles with [audible-rs](https://github.com/mkb79/audible-rs)
 and syncs them to the NAS. Runs as a plain Alpine LXC **pet** on Proxmox — deliberately
