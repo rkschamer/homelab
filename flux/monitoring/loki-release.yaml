@@ -57,6 +57,9 @@ spec:
         accessModes:
           - ReadWriteOnce
         size: 20Gi
+        labels:
+          recurring-job-group.longhorn.io/default: disabled
+          recurring-job-group.longhorn.io/monitoring: enabled
 
     backend:
       replicas: 0

@@ -200,6 +200,10 @@ spec:
         evaluationInterval: 60s
         storageSpec:
           volumeClaimTemplate:
+            metadata:
+              labels:
+                recurring-job-group.longhorn.io/default: disabled
+                recurring-job-group.longhorn.io/monitoring: enabled
             spec:
               storageClassName: longhorn
               accessModes:
