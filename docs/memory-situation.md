@@ -11,20 +11,28 @@
 - Post-migration (2026-06-23): swap-on-zvol deadlock eliminated, ZFS removed.
 - Post-incident (2026-07-01): control-plane VM bumped from 4 → 6 GB, workers rolled
   back from 8 → 6 GB. See "Incident: 2026-07-01" below.
+- Post-incident (2026-07-22): Prometheus and Loki (the two heaviest worker tenants)
+  split onto separate workers via pod anti-affinity, with right-sized requests.
+  Workers re-bumped 6 → 8 GB, made affordable by enabling memory ballooning on the
+  Home Assistant VM so the host reclaims its unused RAM under pressure. See
+  "Incident: 2026-07-22" below.
 
 ## Current VM Memory Allocation
 
 | Consumer | RAM |
 |---|---|
 | talos-controlplane-1 | 6 GB (bumped from 4 GB after apiserver OOM) |
-| talos-worker-1 | 6 GB (rolled back from 8 GB) |
-| talos-worker-2 | 6 GB (rolled back from 8 GB) |
-| Home Assistant + other VMs | ~2–4 GB |
-| PVE overhead | ~1–2 GB |
-| **Total demand** | **~21–24 GB on a 27 GB host** |
+| talos-worker-1 | 8 GB (re-bumped from 6 GB, 2026-07-22) |
+| talos-worker-2 | 8 GB (re-bumped from 6 GB, 2026-07-22) |
+| Home Assistant | ballooning enabled — host reclaims unused RAM under pressure |
+| Other VMs + PVE overhead | ~2–3 GB |
+| **Total demand** | **~24–27 GB on a 27 GB host** |
 
-The host now has ~3 GB of genuine slack. `pve/swap` (LVM LV on ext4, not zvol) exists
-as a safety valve — safe under pressure, unlike the pre-migration zvol swap.
+Static headroom is now thin — the 8 GB workers push fixed k8s demand to 22 GB. The
+slack is instead **dynamic**: memory ballooning on the Home Assistant VM lets the
+host reclaim HA's idle RAM when under pressure, so the balloon is now load-bearing
+rather than a nice-to-have. `pve/swap` (LVM LV on ext4, not zvol) remains as a
+last-resort safety valve — safe under pressure, unlike the pre-migration zvol swap.
 
 ## Incident: 2026-07-01 — apiserver OOM on CP
 
@@ -77,6 +85,69 @@ Apply order to minimize disruption:
 3. `talosctl reboot` each node in sequence (workers one at a time, then CP), waiting
    for cluster health and Longhorn to stabilize between each.
 
+## Incident: 2026-07-22 — OOM spiral on worker-1
+
+### What happened
+
+Roughly 100 alerts across two waves, both on **worker-1 (10.10.20.21)**:
+
+- **~01:48–04:13 UTC:** `NodeDiskIOSaturation` (dm-1 aqu-sq to 16),
+  `NodeMemoryMajorPagesFaults` (500+/s), `NodeSystemSaturation` (load/core 3.46),
+  and a transient `crowdsec TargetDown` (scrape timed out on the saturated node).
+  Lined up with the nightly Longhorn snapshot/backup/purge jobs (02:00 backup,
+  02:30–03:00 delete/cleanup). Self-resolved once the jobs finished — but the
+  underlying memory tightness never cleared.
+- **~19:43 UTC:** worker-1's kubelet stopped posting status; node went `NotReady`
+  and stayed there. `KubePodCrashLooping` fired for longhorn-csi-plugin,
+  engine-image, cilium. Talos's OOMController logged **498 SIGKILLs in ~7.5 min**
+  (19:45:02–19:52:32), and `talosctl memory` showed **MemAvailable ~822 MB of
+  6844 MB**. The node had gone `NotReady` 8× over the preceding 5d7h — chronic,
+  not a one-off.
+
+### Root cause
+
+**Both Prometheus and Loki — the two heaviest memory + disk-write tenants — were
+pinned to the same 6 GB worker.** Their combined working set plus the node's
+baseline (Talos, cilium-agent, Longhorn instance-manager, daemonsets) exceeded
+physical RAM. Prometheus was also under-requesting badly (512Mi request vs ~1Gi
+real usage), so the scheduler saw phantom free memory and overpacked worker-1 to
+**289 % limit overcommit**.
+
+Contrast with 2026-07-01: that time the OOMController found only phantom besteffort
+cgroups (`victim processes: []`) and the kernel eventually OOM-killed apiserver.
+This time it found **real** victims — but all BestEffort (loki-canary,
+cilium-envoy, cilium-operator, metallb-frr-k8s, traefik). Killing them couldn't
+reclaim enough, because the memory was held by the *protected* Burstable tenants
+(Prometheus, Loki), which the reaper won't touch. So it churned BestEffort pods
+indefinitely — which is exactly the crashloop cascade — without ever relieving the
+real pressure, and the kubelet itself starved → `NotReady`.
+
+Aggravating factor: the 2026-07-14 change (`ff19e8d`) that moved Prometheus/Loki to
+a 6h snapshot group also added them to the `daily-backup` and `snapshot-cleanup`
+groups, concentrating their backup-read + snapshot-coalesce IO into the same
+02:00–03:00 window as everything else — feeding wave 1.
+
+### Fix applied
+
+- **Pod anti-affinity** (soft, weight 100, `topologyKey: kubernetes.io/hostname`)
+  between Prometheus and Loki so a single worker never hosts both. Soft rather than
+  hard: on a 2-worker cluster a hard rule would leave Prometheus/Loki `Pending`
+  whenever the other worker is down, losing alerting when it's most needed. See
+  `flux/monitoring/prometheus-release.yaml` and `flux/monitoring/loki-release.yaml`.
+- **Right-sized requests/limits.** Prometheus 512Mi→1Gi request, 1500Mi→2Gi limit;
+  Loki 256Mi→512Mi request, 768Mi→1Gi limit. The request bump is the load-bearing
+  change — it stops the scheduler overpacking. Prometheus was *not* hitting its old
+  limit (last exit was code 0, node eviction — not OOMKill), so the limit bump is
+  headroom, not a self-OOM fix.
+- **Workers 6 → 8 GB** (`terraform/terraform.tfvars`), affordable only because
+  **memory ballooning was enabled on the Home Assistant VM** — the host now
+  reclaims HA's idle RAM under pressure instead of reserving it statically. This
+  restores per-node headroom the 2026-07-01 rollback had removed.
+
+Recovery: `talosctl -n 10.10.20.21 reboot` to clear the wedged node; the changes
+only take effect on the next Flux reconcile once worker-1 is healthy again. After
+recovery, confirm the two pods land on different workers.
+
 ## Swap Posture
 
 Swap was disabled cluster-wide during the 2026-05 incident and remains disabled on
@@ -103,6 +174,10 @@ vm.swappiness=10
 | PVE backup fleecing enabled on local pool | Done |
 | CP 4 → 6 GB, workers 8 → 6 GB | Done (2026-07-01, needs apply + reboot) |
 | `KubeMemoryOvercommit` alert threshold relaxed to 0.9 | Done (2026-07-01, needs push) |
+| Prometheus/Loki pod anti-affinity (split across workers) | Done (2026-07-22, needs reconcile) |
+| Prometheus/Loki requests right-sized (stop scheduler overpack) | Done (2026-07-22, needs reconcile) |
+| Workers 6 → 8 GB (re-bump) | Done (2026-07-22, needs apply + reboot) |
+| Home Assistant VM ballooning enabled (frees host RAM) | Done (2026-07-22) |
 
 ## Open Items
 
@@ -133,6 +208,11 @@ Wave 1 of the incident lined up with typical backup hours. Verify:
 - `cat /etc/pve/jobs.cfg` — what runs at ~01:00?
 - Datacenter → Backup → Bandwidth limit still 50 MiB/s?
 - Consider staggering VMs across different hours if all-at-once causes host stalls.
+- **Longhorn recurring jobs** also cluster in 02:00–03:00 (`daily-backup` 02:00,
+  `snapshot-delete` 02:30/02:45, `snapshot-cleanup` 03:00) and now include the
+  monitoring volumes (`ff19e8d`). Stagger the monitoring backup/purge out of that
+  window to stop it compounding host pressure. See
+  `flux/infrastructure/config/longhorn/recurring-jobs.yaml`.
 
 ### 3. Longhorn instance-manager memory requests
 

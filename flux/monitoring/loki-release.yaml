@@ -44,13 +44,25 @@ spec:
 
     singleBinary:
       replicas: 1
+      # Mirror of the Prometheus anti-affinity: keep the two heaviest memory
+      # tenants on separate workers. Soft rule so Loki still schedules when only
+      # one worker is available. See docs/memory-situation.md.
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                topologyKey: kubernetes.io/hostname
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/name: prometheus
       resources:
         requests:
           cpu: 100m
-          memory: 256Mi
+          memory: 512Mi
         limits:
           cpu: 1000m
-          memory: 768Mi
+          memory: 1Gi
       persistence:
         enabled: true
         storageClass: longhorn

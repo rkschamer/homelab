@@ -220,13 +220,31 @@ spec:
         serviceMonitorNamespaceSelector: {}
         serviceMonitorSelector: {}
         serviceMonitorSelectorNilUsesHelmValues: false
+        # Keep Prometheus and Loki — the two heaviest memory tenants — off the
+        # same worker so a single 6 GB node never hosts both (the 2026-07-22 OOM
+        # spiral). Soft rule on purpose: on a 2-worker cluster a hard rule would
+        # leave Prometheus Pending whenever the other worker is down, losing
+        # alerting exactly when it's needed. Bounded limits below cap the blast
+        # radius if they ever do co-locate. See docs/memory-situation.md.
+        affinity:
+          podAntiAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+              - weight: 100
+                podAffinityTerm:
+                  topologyKey: kubernetes.io/hostname
+                  labelSelector:
+                    matchLabels:
+                      app.kubernetes.io/name: loki
+        # Request reflects real steady-state usage (~1Gi) so the scheduler
+        # reserves honestly instead of overpacking the node, which under the
+        # old 512Mi request is what let worker-1 reach 289% limit overcommit.
         resources:
           requests:
             cpu: 100m
-            memory: 512Mi
+            memory: 1Gi
           limits:
             cpu: 500m
-            memory: 1500Mi
+            memory: 2Gi
 
     # kube-proxy is replaced by Cilium's eBPF dataplane — no metrics to scrape.
     kubeProxy:
