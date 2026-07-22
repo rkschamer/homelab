@@ -221,7 +221,37 @@ scales per replica. If `defaultInstanceManagerCPU`/`memory` is reducible in the
 Longhorn HelmRelease, that would give room to grow the workers back to 8 GB later
 without triggering the overcommit alert.
 
-### 4. Long-term: upgrade to 64 GB RAM
+### 4. Migrate monitoring to VictoriaMetrics + VictoriaLogs
+
+The single largest worker memory tenant is Prometheus (~1Gi working set — the TSDB
++ Go heap that drove the 2026-07-22 OOM). **VictoriaMetrics** (`vmsingle` via the
+`victoria-metrics-k8s-stack` chart) does the same job at a fraction of the RAM —
+commonly 3–7× less, likely ~100–250Mi at this scale — and is a near drop-in for
+kube-prometheus-stack: PromQL-compatible (MetricsQL), and it bundles the *same*
+Alertmanager, Grafana, kube-state-metrics, and node-exporter we already run.
+**VictoriaLogs** is the parallel, memory-efficient replacement for Loki.
+
+This attacks the root memory pressure directly and would let the workers eventually
+drop back toward 6 GB, undoing the tight envelope the 2026-07-22 8 GB re-bump
+created. Not urgent — the OOM itself is already mitigated (anti-affinity + 8 GB +
+HA balloon) — so this is optimization, not firefighting.
+
+Migration effort is **moderate, not dramatic**:
+- Carries over near-untouched: Grafana (auth-proxy, dashboards, Loki datasource),
+  Alertmanager (email/Telegram/healthchecks + SealedSecret injection),
+  kube-state-metrics (incl. the Flux CRD custom-resource-state config),
+  node-exporter, and PromQL dashboards/queries.
+- Real work: swap the HelmRepository/HelmRelease (brings the VictoriaMetrics
+  Operator + `VMServiceScrape`/`VMPodScrape`/`VMRule` CRDs — it can auto-convert
+  the existing Prometheus-operator `ServiceMonitor`/`PodMonitor`/`PrometheusRule`
+  objects); port the custom `KubeMemoryOvercommit` rule; re-point the Longhorn
+  named PV + `recurring-job-group` labels to the new `vmsingle` PVC; adjust
+  retention syntax.
+- Cutover: accept a one-time gap in historical metrics/logs unless the TSDB is
+  migrated (fine for a homelab). VictoriaMetrics and VictoriaLogs are two separate
+  migrations — do Prometheus→VM first, Loki→VictoriaLogs later.
+
+### 5. Long-term: upgrade to 64 GB RAM
 
 The Ryzen 5 5600G supports up to 64 GB DDR4 (2 slots). A 2×32 GB DDR4 kit would
 provide permanent headroom, eliminating the whole class of overcommit failures.
