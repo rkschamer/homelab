@@ -95,7 +95,7 @@ Cilium Network Policies in `flux/infrastructure/network-policies/` enforce these
 │   └── monitoring/        # Monitoring stack (Prometheus, Loki, Fluent Bit)
 ├── pets/                  # Manually managed hosts outside IaC (one folder per pet: runbook + scripts)
 │   ├── horsmar-proxy/     # socat TCP proxy for VPN-bridged services
-│   └── audible/           # audible-rs audiobook sync to NAS
+│   └── audible-cli/       # audible-rs audiobook download to NFS-mounted NAS share
 └── docs/                  # Detailed documentation
     ├── network-architecture.md
     ├── network-policies.md

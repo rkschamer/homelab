@@ -23,4 +23,4 @@ service), not an accident. Keep this collection small.
 | Pet | Purpose | IP |
 |-----|---------|-----|
 | [horsmar-proxy](horsmar-proxy/) | socat TCP proxy bridging cluster traffic to Horsmar Home Assistant via FritzBox VPN | 192.168.123.11 |
-| [audible](audible/) | audible-rs audiobook download + sync to NAS | DHCP |
+| [audible-cli](audible-cli/) | audible-rs audiobook download to NFS-mounted NAS share | DHCP |
