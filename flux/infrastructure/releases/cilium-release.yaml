@@ -86,7 +86,11 @@ spec:
         auto:
           enabled: true
           method: cronJob
-          certValidityDuration: 1095
+          # validity duration in days for the generated TLS certificates
+          # this value needs to end before the validity end of the CA certificate, otherwise
+          # --ca-enforce-validity-throughout-leaves-duration=true would cause a failure
+          # during refresh
+          certValidityDuration: 730
           schedule: "0 0 1 */4 *"
       relay:
         enabled: true
@@ -108,7 +112,7 @@ spec:
     #
     # Using 'default' mode with explicit deny rules for zone isolation.
     # This is simpler than zero-trust and sufficient for homelab where
-    # network-level segmentation (VLANs) provides the primary isolation.
+    # no physical network segmentation between zones — CNP is the sole isolation layer.
     policyEnforcementMode: default
 
     # Policy Audit Mode disabled - using simple deny rules now
