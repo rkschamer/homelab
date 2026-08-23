@@ -119,7 +119,7 @@ spec:
         # Gotenberg: PDF and Office document conversion
         # -----------------------------------------------------------------------
         - name: gotenberg
-          image: docker.io/gotenberg/gotenberg:8.35
+          image: docker.io/gotenberg/gotenberg:8.36
           args:
             - gotenberg
             - --chromium-disable-javascript=true
