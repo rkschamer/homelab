@@ -277,6 +277,7 @@ For deep dives, consult:
 - `docs/network-policies.md` - Cilium policy details
 - `docs/talos-installation.md` - Installation, bootstrap, and upgrade procedures
 - `docs/crowdsec.md` - CrowdSec threat detection setup
+- `docs/architecture-review.md` - Topology analysis, memory/disk root causes, ranked optimizations
 - `pets/README.md` - Manually managed hosts (not IaC); per-pet runbooks in subfolders
 - `terraform/README.md` - Terraform workflow and ISO-based deployment
 - `talos/manifests/README.md` - LinkConfig and network configuration

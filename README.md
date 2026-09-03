@@ -118,3 +118,4 @@ git-crypt unlock /path/to/encryption-key
 - [Talos Installation & Cluster Maintenance](docs/talos-installation.md)
 - [CrowdSec](docs/crowdsec.md)
 - [Pi-hole Networking](docs/pihole.md)
+- [Architecture Review](docs/architecture-review.md) — topology analysis and ranked optimizations
