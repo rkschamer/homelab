@@ -17,10 +17,6 @@
         {
             "name": "TALOSCONFIG",
             "value": "${workspaceFolder}/talosconfig"
-        },
-        {
-            "name": "ANTHROPIC_BASE_URL",
-            "value": "http://host.docker.internal:6655/anthropic/"
         }
     ]
 }
